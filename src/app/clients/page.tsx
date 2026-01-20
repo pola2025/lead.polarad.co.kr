@@ -151,18 +151,21 @@ export default function ClientsPage() {
                           <img
                             src={client.logoUrl}
                             alt={client.name}
-                            className="h-10 w-10 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <div
-                            className="flex h-10 w-10 items-center justify-center rounded-lg text-white font-medium"
-                            style={{
-                              backgroundColor: client.primaryColor || "#3b82f6",
+                            className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
                             }}
-                          >
-                            {client.name.charAt(0)}
-                          </div>
-                        )}
+                          />
+                        ) : null}
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg text-white font-medium ${client.logoUrl ? 'hidden' : ''}`}
+                          style={{
+                            backgroundColor: client.primaryColor || "#3b82f6",
+                          }}
+                        >
+                          {client.name.charAt(0)}
+                        </div>
                         <div>
                           <p className="font-medium text-gray-900">{client.name}</p>
                           {client.landingTitle && (
@@ -201,7 +204,7 @@ export default function ClientsPage() {
                         {new Date(client.createdAt).toLocaleDateString("ko-KR")}
                       </span>
                     </td>
-                    <td>
+                    <td className="overflow-visible">
                       <div className="relative">
                         <button
                           onClick={() =>
@@ -212,9 +215,9 @@ export default function ClientsPage() {
                           <MoreVertical className="h-4 w-4 text-gray-500" />
                         </button>
                         {openMenu === client.id && (
-                          <div className="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
                             <a
-                              href={`https://polarlead.mkt9834.workers.dev/${client.slug}`}
+                              href={`/l/${client.slug}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

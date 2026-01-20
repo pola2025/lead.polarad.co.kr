@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function NewClientPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -24,6 +27,9 @@ export default function NewClientPage() {
     logoUrl: "",
     contractStart: "",
     contractEnd: "",
+    ctaButtonText: "",
+    thankYouTitle: "",
+    thankYouMessage: "",
   });
 
   const handleChange = (
@@ -40,6 +46,57 @@ export default function NewClientPage() {
         .replace(/\s+/g, "-")
         .replace(/-+/g, "-");
       setFormData((prev) => ({ ...prev, slug }));
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 타입 검증
+    if (!file.type.startsWith("image/")) {
+      setError("이미지 파일만 업로드 가능합니다.");
+      return;
+    }
+
+    // 파일 크기 검증 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("파일 크기는 5MB 이하만 가능합니다.");
+      return;
+    }
+
+    setUploading(true);
+    setError("");
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        setError(data.error || "업로드에 실패했습니다.");
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, logoUrl: data.url }));
+    } catch (err) {
+      console.error(err);
+      setError("파일 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setFormData((prev) => ({ ...prev, logoUrl: "" }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -199,45 +256,129 @@ export default function NewClientPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-700 mb-1">
-                    브랜드 컬러
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      id="primaryColor"
-                      name="primaryColor"
-                      value={formData.primaryColor}
-                      onChange={handleChange}
-                      className="h-10 w-10 cursor-pointer rounded border border-gray-300"
-                    />
-                    <input
-                      type="text"
-                      value={formData.primaryColor}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, primaryColor: e.target.value }))
-                      }
-                      className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                    로고 URL
-                  </label>
+              <div>
+                <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-700 mb-1">
+                  브랜드 컬러
+                </label>
+                <div className="flex items-center gap-2">
                   <input
-                    type="url"
-                    id="logoUrl"
-                    name="logoUrl"
-                    value={formData.logoUrl}
+                    type="color"
+                    id="primaryColor"
+                    name="primaryColor"
+                    value={formData.primaryColor}
                     onChange={handleChange}
-                    placeholder="https://..."
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    className="h-10 w-10 cursor-pointer rounded border border-gray-300"
+                  />
+                  <input
+                    type="text"
+                    value={formData.primaryColor}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, primaryColor: e.target.value }))
+                    }
+                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  로고
+                </label>
+                {formData.logoUrl ? (
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-20 w-20 rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                      <Image
+                        src={formData.logoUrl}
+                        alt="로고 미리보기"
+                        fill
+                        className="object-contain"
+                        unoptimized
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      className="inline-flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
+                    >
+                      <X className="h-4 w-4" />
+                      삭제
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 hover:bg-gray-50 transition-colors"
+                  >
+                    {uploading ? (
+                      <div className="text-sm text-gray-500">업로드 중...</div>
+                    ) : (
+                      <>
+                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                        <span className="text-sm text-gray-500">클릭하여 로고 업로드</span>
+                        <span className="text-xs text-gray-400 mt-1">PNG, JPG (최대 5MB)</span>
+                      </>
+                    )}
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 응답 메시지 커스터마이징 */}
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">응답 메시지 설정</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="ctaButtonText" className="block text-sm font-medium text-gray-700 mb-1">
+                  CTA 버튼 텍스트
+                </label>
+                <input
+                  type="text"
+                  id="ctaButtonText"
+                  name="ctaButtonText"
+                  value={formData.ctaButtonText}
+                  onChange={handleChange}
+                  placeholder="상담 신청하기"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="thankYouTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                  완료 페이지 제목
+                </label>
+                <input
+                  type="text"
+                  id="thankYouTitle"
+                  name="thankYouTitle"
+                  value={formData.thankYouTitle}
+                  onChange={handleChange}
+                  placeholder="신청이 완료되었습니다"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="thankYouMessage" className="block text-sm font-medium text-gray-700 mb-1">
+                  완료 페이지 메시지
+                </label>
+                <textarea
+                  id="thankYouMessage"
+                  name="thankYouMessage"
+                  value={formData.thankYouMessage}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="빠른 시일 내에 연락드리겠습니다. 감사합니다!"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                />
               </div>
             </div>
           </div>

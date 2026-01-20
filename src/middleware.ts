@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // 인증이 필요하지 않은 경로
-const publicPaths = ['/login', '/api/auth/login'];
+const publicPaths = ['/login', '/api/auth/login', '/l/', '/api/leads/submit'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

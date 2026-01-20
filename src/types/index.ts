@@ -22,6 +22,11 @@ export interface Client {
   logoUrl?: string;
   contractStart?: string;
   contractEnd?: string;
+  leadsTableId?: string; // 클라이언트 전용 Leads 테이블 ID
+  // 랜딩 페이지 커스터마이징
+  ctaButtonText?: string; // CTA 버튼 텍스트 (기본: "상담 신청하기")
+  thankYouTitle?: string; // 완료 페이지 제목 (기본: "신청이 완료되었습니다")
+  thankYouMessage?: string; // 완료 페이지 메시지
   createdAt: string;
 }
 

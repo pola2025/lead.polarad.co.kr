@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getLeads, createLead } from "@/lib/airtable";
+import {
+  getAllLeads,
+  getLeadsByClient,
+  createLead,
+  getClientById,
+} from "@/lib/airtable";
 import type { LeadStatus } from "@/types";
 
 export async function GET(request: NextRequest) {
@@ -11,7 +16,29 @@ export async function GET(request: NextRequest) {
       ? parseInt(searchParams.get("limit")!)
       : undefined;
 
-    const leads = await getLeads({ clientId, status, limit });
+    let leads;
+
+    if (clientId) {
+      // 특정 클라이언트의 리드 조회
+      const client = await getClientById(clientId);
+      if (!client) {
+        return NextResponse.json(
+          { success: false, error: "클라이언트를 찾을 수 없습니다." },
+          { status: 404 }
+        );
+      }
+      if (!client.leadsTableId) {
+        return NextResponse.json(
+          { success: false, error: "클라이언트에 리드 테이블이 설정되지 않았습니다." },
+          { status: 400 }
+        );
+      }
+      leads = await getLeadsByClient(clientId, client.leadsTableId, { status, limit });
+    } else {
+      // 전체 리드 조회
+      leads = await getAllLeads({ status, limit });
+    }
+
     return NextResponse.json({ success: true, data: leads });
   } catch (error) {
     console.error("Failed to fetch leads:", error);
@@ -34,8 +61,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const lead = await createLead({
-      clientId: body.clientId,
+    // 클라이언트 정보 조회
+    const client = await getClientById(body.clientId);
+    if (!client) {
+      return NextResponse.json(
+        { success: false, error: "클라이언트를 찾을 수 없습니다." },
+        { status: 404 }
+      );
+    }
+    if (!client.leadsTableId) {
+      return NextResponse.json(
+        { success: false, error: "클라이언트에 리드 테이블이 설정되지 않았습니다." },
+        { status: 400 }
+      );
+    }
+
+    const lead = await createLead(client.leadsTableId, body.clientId, {
       name: body.name,
       phone: body.phone,
       email: body.email,
