@@ -1,0 +1,71 @@
+"use client";
+
+import { useEffect } from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import Link from "next/link";
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    // 에러 로깅 (추후 Sentry 등 연동 가능)
+    console.error("Application error:", error);
+  }, [error]);
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="card max-w-md w-full text-center">
+        <div className="flex justify-center mb-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+            <AlertTriangle className="h-8 w-8 text-red-600" />
+          </div>
+        </div>
+
+        <h1 className="text-xl font-bold text-gray-900 mb-2">
+          문제가 발생했습니다
+        </h1>
+
+        <p className="text-gray-500 mb-6">
+          페이지를 불러오는 중 오류가 발생했습니다.
+          <br />
+          잠시 후 다시 시도해 주세요.
+        </p>
+
+        {process.env.NODE_ENV === "development" && (
+          <div className="mb-6 p-4 bg-gray-100 rounded-lg text-left">
+            <p className="text-xs font-mono text-red-600 break-all">
+              {error.message}
+            </p>
+            {error.digest && (
+              <p className="text-xs text-gray-400 mt-2">
+                Error ID: {error.digest}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={reset}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
+          >
+            <RefreshCw className="h-4 w-4" />
+            다시 시도
+          </button>
+
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Home className="h-4 w-4" />
+            홈으로 이동
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

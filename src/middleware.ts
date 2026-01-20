@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateTokenSync } from '@/lib/auth';
 
 // 인증이 필요하지 않은 경로
-const publicPaths = ['/login', '/api/auth/login', '/l/', '/api/leads/submit'];
+const publicPaths = ['/login', '/api/auth/login', '/l/', '/api/leads/submit', '/api/clients/by-slug/'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -27,6 +28,16 @@ export function middleware(request: NextRequest) {
     // 로그인 페이지로 리다이렉트
     const loginUrl = new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // 토큰 유효성 검증 (동기 버전 - KV 모드에서는 API에서 재검증)
+  if (!validateTokenSync(token)) {
+    // 유효하지 않은 토큰 - 로그인 페이지로 리다이렉트
+    const loginUrl = new URL('/login', request.url);
+    const response = NextResponse.redirect(loginUrl);
+    // 무효한 쿠키 삭제
+    response.cookies.delete('admin_token');
+    return response;
   }
 
   return NextResponse.next();
