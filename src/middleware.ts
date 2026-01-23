@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateTokenSync } from '@/lib/auth';
 
 // 인증이 필요하지 않은 경로
-const publicPaths = ['/login', '/api/auth/login', '/l/', '/api/leads/submit', '/api/clients/by-slug/'];
+const publicPaths = ['/login', '/api/auth/login', '/api/auth/kakao', '/api/og', '/l/', '/api/leads/submit', '/api/clients/by-slug/', '/privacy'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
