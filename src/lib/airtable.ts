@@ -718,6 +718,165 @@ export async function isBlacklisted(
   return false;
 }
 
+// ==================== 히트맵 (Heatmap Clicks) ====================
+
+export interface HeatmapClick {
+  id?: string;
+  clientSlug: string;
+  sessionId: string;
+  xPercent: number;
+  yPercent: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  elementSelector?: string;
+  deviceType: 'mobile' | 'desktop' | 'tablet';
+  createdAt: string;
+}
+
+function getHeatmapTable() {
+  return getBase()(process.env.AIRTABLE_HEATMAP_TABLE_ID || "HeatmapClicks");
+}
+
+// 히트맵 클릭 저장
+export async function saveHeatmapClick(data: Omit<HeatmapClick, "id" | "createdAt">): Promise<HeatmapClick> {
+  try {
+    const record = await getHeatmapTable().create({
+      clientSlug: data.clientSlug,
+      sessionId: data.sessionId,
+      xPercent: data.xPercent,
+      yPercent: data.yPercent,
+      viewportWidth: data.viewportWidth,
+      viewportHeight: data.viewportHeight,
+      elementSelector: data.elementSelector || "",
+      deviceType: data.deviceType,
+      createdAt: new Date().toISOString(),
+    });
+
+    return {
+      id: record.id,
+      clientSlug: record.get("clientSlug") as string,
+      sessionId: record.get("sessionId") as string,
+      xPercent: record.get("xPercent") as number,
+      yPercent: record.get("yPercent") as number,
+      viewportWidth: record.get("viewportWidth") as number,
+      viewportHeight: record.get("viewportHeight") as number,
+      elementSelector: record.get("elementSelector") as string | undefined,
+      deviceType: record.get("deviceType") as 'mobile' | 'desktop' | 'tablet',
+      createdAt: record.get("createdAt") as string,
+    };
+  } catch (error) {
+    console.error("히트맵 클릭 저장 실패:", error);
+    throw error;
+  }
+}
+
+// 히트맵 데이터 조회 (기간, 디바이스 필터)
+export async function getHeatmapClicks(
+  clientSlug: string,
+  options?: {
+    period?: "7d" | "30d" | "90d";
+    deviceType?: 'mobile' | 'desktop' | 'tablet';
+    limit?: number;
+  }
+): Promise<HeatmapClick[]> {
+  try {
+    const escapedSlug = escapeAirtableFormula(clientSlug);
+    const filterParts: string[] = [`{clientSlug} = "${escapedSlug}"`];
+
+    // 기간 필터
+    if (options?.period) {
+      const days = options.period === "7d" ? 7 : options.period === "30d" ? 30 : 90;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      filterParts.push(`IS_AFTER({createdAt}, "${startDate.toISOString()}")`);
+    }
+
+    // 디바이스 필터
+    if (options?.deviceType) {
+      filterParts.push(`{deviceType} = "${options.deviceType}"`);
+    }
+
+    const filterByFormula = filterParts.length > 1
+      ? `AND(${filterParts.join(", ")})`
+      : filterParts[0];
+
+    const records = await getHeatmapTable()
+      .select({
+        filterByFormula,
+        sort: [{ field: "createdAt", direction: "desc" }],
+        maxRecords: options?.limit || 5000,
+      })
+      .all();
+
+    return records.map((record) => ({
+      id: record.id,
+      clientSlug: record.get("clientSlug") as string,
+      sessionId: record.get("sessionId") as string,
+      xPercent: record.get("xPercent") as number,
+      yPercent: record.get("yPercent") as number,
+      viewportWidth: record.get("viewportWidth") as number,
+      viewportHeight: record.get("viewportHeight") as number,
+      elementSelector: record.get("elementSelector") as string | undefined,
+      deviceType: record.get("deviceType") as 'mobile' | 'desktop' | 'tablet',
+      createdAt: record.get("createdAt") as string,
+    }));
+  } catch (error) {
+    console.error("히트맵 데이터 조회 실패:", error);
+    return [];
+  }
+}
+
+// 히트맵 집계 데이터 (좌표별 클릭 수)
+export async function getHeatmapAggregated(
+  clientSlug: string,
+  options?: {
+    period?: "7d" | "30d" | "90d";
+    deviceType?: 'mobile' | 'desktop' | 'tablet';
+  }
+): Promise<{
+  points: { x: number; y: number; value: number }[];
+  elements: { selector: string; clicks: number }[];
+  total: number;
+}> {
+  const clicks = await getHeatmapClicks(clientSlug, { ...options, limit: 10000 });
+
+  // 좌표 그룹화 (5% 단위로 반올림)
+  const pointMap = new Map<string, number>();
+  const elementMap = new Map<string, number>();
+
+  clicks.forEach((click) => {
+    // 5% 단위로 그룹화
+    const roundedX = Math.round(click.xPercent / 5) * 5;
+    const roundedY = Math.round(click.yPercent / 5) * 5;
+    const key = `${roundedX},${roundedY}`;
+
+    pointMap.set(key, (pointMap.get(key) || 0) + 1);
+
+    // 요소별 클릭 수
+    if (click.elementSelector) {
+      elementMap.set(click.elementSelector, (elementMap.get(click.elementSelector) || 0) + 1);
+    }
+  });
+
+  const points = Array.from(pointMap.entries())
+    .map(([key, value]) => {
+      const [x, y] = key.split(",").map(Number);
+      return { x, y, value };
+    })
+    .sort((a, b) => b.value - a.value);
+
+  const elements = Array.from(elementMap.entries())
+    .map(([selector, clicks]) => ({ selector, clicks }))
+    .sort((a, b) => b.clicks - a.clicks)
+    .slice(0, 10);
+
+  return {
+    points,
+    elements,
+    total: clicks.length,
+  };
+}
+
 // ==================== 설정 (Settings) ====================
 
 export interface GA4Settings {

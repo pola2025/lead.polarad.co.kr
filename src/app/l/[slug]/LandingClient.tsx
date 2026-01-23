@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Check, ArrowRight, ArrowLeft, CheckCircle, Loader2, ChevronDown } from "lucide-react";
 import { formatPhoneInput, isPhoneComplete, validateName } from "@/lib/validation";
 import type { FormField, ProductFeature } from "@/types";
+import HeatmapTracker from "@/components/HeatmapTracker";
 
 interface ClientData {
   id: string;
@@ -205,6 +206,7 @@ export default function LandingClient({ client }: LandingClientProps) {
   if (step === "intro") {
     return (
       <div className="min-h-screen bg-gray-50">
+        <HeatmapTracker clientSlug={client.slug} />
         <div className="max-w-md mx-auto px-4 py-12">
           {client.logoUrl && (
             <div className="flex justify-center mb-8">
@@ -303,6 +305,7 @@ export default function LandingClient({ client }: LandingClientProps) {
   // 폼 페이지
   return (
     <div className="min-h-screen bg-gray-50">
+      <HeatmapTracker clientSlug={client.slug} />
       <div className="max-w-md mx-auto px-4 py-8">
         <button
           onClick={() => setStep("intro")}

@@ -143,6 +143,16 @@ export default function PortalDashboardPage() {
   // 미리보기 단계 상태 (1: 랜딩, 2: 폼, 3: 완료)
   const [previewStep, setPreviewStep] = useState<1 | 2 | 3>(1);
 
+  // 히트맵 상태
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [heatmapData, setHeatmapData] = useState<{
+    points: { x: number; y: number; value: number }[];
+    elements: { selector: string; clicks: number }[];
+    total: number;
+  } | null>(null);
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
+  const [heatmapDevice, setHeatmapDevice] = useState<"all" | "mobile" | "desktop" | "tablet">("all");
+
   const fetchClient = useCallback(async () => {
     try {
       const res = await fetch(`/api/portal/${slug}`);
@@ -226,6 +236,22 @@ export default function PortalDashboardPage() {
     }
   }, [slug]);
 
+  const fetchHeatmap = useCallback(async () => {
+    setHeatmapLoading(true);
+    try {
+      const deviceParam = heatmapDevice !== "all" ? `&device=${heatmapDevice}` : "";
+      const res = await fetch(`/api/portal/${slug}/heatmap?period=${statsPeriod}${deviceParam}`);
+      const data = await res.json();
+      if (data.success) {
+        setHeatmapData(data.data);
+      }
+    } catch (err) {
+      console.error("Heatmap fetch error:", err);
+    } finally {
+      setHeatmapLoading(false);
+    }
+  }, [slug, statsPeriod, heatmapDevice]);
+
   useEffect(() => {
     fetchClient();
   }, [fetchClient]);
@@ -244,6 +270,13 @@ export default function PortalDashboardPage() {
       fetchAnalytics();
     }
   }, [statsPeriod, activeTab, fetchAnalytics]);
+
+  // 히트맵 모달이 열릴 때 데이터 로드
+  useEffect(() => {
+    if (showHeatmap) {
+      fetchHeatmap();
+    }
+  }, [showHeatmap, fetchHeatmap]);
 
   const handleLogout = async () => {
     try {
@@ -678,15 +711,18 @@ export default function PortalDashboardPage() {
                   )}
                 </div>
 
-                {/* 5. 히트맵 카드 (추후 구현) */}
-                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white opacity-50">
+                {/* 5. 히트맵 카드 */}
+                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold mb-1">클릭 히트맵</h3>
-                      <p className="text-xs opacity-80">터치/클릭 위치 분석 (준비중)</p>
+                      <p className="text-xs opacity-80">터치/클릭 위치 분석</p>
                     </div>
-                    <button className="px-4 py-2 bg-white/20 rounded-lg text-sm font-medium cursor-not-allowed">
-                      준비중
+                    <button
+                      onClick={() => setShowHeatmap(true)}
+                      className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      전체보기
                     </button>
                   </div>
                 </div>
@@ -1494,6 +1530,132 @@ export default function PortalDashboardPage() {
               >
                 실제 랜딩 페이지에서 보기 →
               </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 히트맵 모달 */}
+      {showHeatmap && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-auto">
+            {/* 모달 헤더 */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-gray-900">클릭 히트맵</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {statsPeriod === "7d" ? "최근 7일" : statsPeriod === "30d" ? "최근 30일" : "최근 90일"} 클릭 데이터
+                </p>
+              </div>
+              <button
+                onClick={() => setShowHeatmap(false)}
+                className="text-gray-400 hover:text-gray-600 text-xl leading-none p-2"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 필터 */}
+            <div className="px-6 py-3 border-b border-gray-100 flex items-center gap-2">
+              <span className="text-xs text-gray-500">디바이스:</span>
+              {(["all", "mobile", "desktop", "tablet"] as const).map((device) => (
+                <button
+                  key={device}
+                  onClick={() => setHeatmapDevice(device)}
+                  className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                    heatmapDevice === device
+                      ? "bg-indigo-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {device === "all" ? "전체" : device === "mobile" ? "모바일" : device === "desktop" ? "데스크톱" : "태블릿"}
+                </button>
+              ))}
+            </div>
+
+            {/* 히트맵 콘텐츠 */}
+            <div className="p-6">
+              {heatmapLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                </div>
+              ) : heatmapData && heatmapData.total > 0 ? (
+                <div className="space-y-6">
+                  {/* 통계 요약 */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 bg-indigo-50 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-indigo-600">{heatmapData.total.toLocaleString()}</p>
+                      <p className="text-xs text-indigo-500">총 클릭 수</p>
+                    </div>
+                    <div className="flex-1 bg-purple-50 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-purple-600">{heatmapData.points.length}</p>
+                      <p className="text-xs text-purple-500">클릭 영역</p>
+                    </div>
+                  </div>
+
+                  {/* 히트맵 시각화 (간단한 그리드) */}
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">클릭 분포 (5% 단위 그리드)</h4>
+                    <div className="relative w-full aspect-[9/16] bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                      {/* 배경 그리드 */}
+                      <div className="absolute inset-0 grid grid-cols-20 grid-rows-20">
+                        {Array.from({ length: 400 }).map((_, i) => (
+                          <div key={i} className="border-r border-b border-gray-200/30" />
+                        ))}
+                      </div>
+                      {/* 클릭 포인트 */}
+                      {heatmapData.points.slice(0, 50).map((point, idx) => {
+                        const maxValue = heatmapData.points[0]?.value || 1;
+                        const intensity = point.value / maxValue;
+                        const size = Math.max(12, Math.min(40, 12 + intensity * 28));
+                        const opacity = Math.max(0.3, Math.min(1, 0.3 + intensity * 0.7));
+                        return (
+                          <div
+                            key={idx}
+                            className="absolute rounded-full bg-gradient-to-br from-red-500 to-orange-500 transform -translate-x-1/2 -translate-y-1/2"
+                            style={{
+                              left: `${point.x}%`,
+                              top: `${point.y}%`,
+                              width: `${size}px`,
+                              height: `${size}px`,
+                              opacity,
+                              boxShadow: `0 0 ${size}px rgba(239, 68, 68, ${opacity * 0.5})`,
+                            }}
+                            title={`${point.value}회 클릭`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-gray-400 text-center mt-2">
+                      상위 50개 클릭 영역 표시 (빨간색 = 높은 클릭 수)
+                    </p>
+                  </div>
+
+                  {/* 인기 클릭 요소 */}
+                  {heatmapData.elements.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">많이 클릭된 요소 TOP 5</h4>
+                      <div className="space-y-2">
+                        {heatmapData.elements.slice(0, 5).map((el, idx) => (
+                          <div key={idx} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+                            <span className="text-xs font-bold text-gray-400 w-5">{idx + 1}</span>
+                            <code className="flex-1 text-xs text-gray-600 truncate bg-gray-100 px-2 py-1 rounded">
+                              {el.selector}
+                            </code>
+                            <span className="text-sm font-semibold text-indigo-600">{el.clicks}회</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <MousePointerClick className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">클릭 데이터가 없습니다.</p>
+                  <p className="text-xs text-gray-400 mt-1">랜딩페이지에서 방문자가 클릭하면 데이터가 수집됩니다.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
