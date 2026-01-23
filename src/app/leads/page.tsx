@@ -11,7 +11,6 @@ import {
   Building,
   Edit,
   Trash2,
-  ShieldBan,
 } from "lucide-react";
 import type { Lead, Client, LeadStatus } from "@/types";
 
@@ -97,34 +96,10 @@ export default function LeadsPage() {
     setOpenMenu(null);
   };
 
-  const handleAddToBlacklist = async (lead: Lead) => {
-    if (!confirm(`${lead.phone}을(를) 블랙리스트에 추가하시겠습니까?`)) return;
-
-    try {
-      await fetch("/api/blacklist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientId: lead.clientId,
-          type: "phone",
-          value: lead.phone,
-          reason: `리드 ID: ${lead.id}에서 추가`,
-        }),
-      });
-
-      // 상태를 스팸으로 변경
-      await handleStatusChange(lead, "blacklist");
-      alert("블랙리스트에 추가되었습니다.");
-    } catch (error) {
-      console.error("Failed to add to blacklist:", error);
-    }
-    setOpenMenu(null);
-  };
-
   const filteredLeads = leads.filter((lead) => {
     const matchesSearch =
-      lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.phone.includes(searchTerm) ||
+      lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.phone?.includes(searchTerm) ||
       lead.businessName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesClient = !filterClient || lead.clientId === filterClient;
     const matchesStatus = !filterStatus || lead.status === filterStatus;
@@ -181,7 +156,6 @@ export default function LeadsPage() {
               <option value="new">신규</option>
               <option value="contacted">연락완료</option>
               <option value="converted">전환</option>
-              <option value="blacklist">블랙리스트</option>
             </select>
           </div>
         </div>
@@ -243,7 +217,7 @@ export default function LeadsPage() {
                             <div className="border-b border-gray-100 px-4 py-2">
                               <p className="text-xs text-gray-500 mb-2">상태 변경</p>
                               <div className="flex flex-wrap gap-1">
-                                {(["new", "contacted", "converted", "blacklist"] as LeadStatus[]).map(
+                                {(["new", "contacted", "converted"] as LeadStatus[]).map(
                                   (status) => (
                                     <button
                                       key={status}
@@ -265,13 +239,6 @@ export default function LeadsPage() {
                             >
                               <Edit className="h-4 w-4" />
                               수정
-                            </button>
-                            <button
-                              onClick={() => handleAddToBlacklist(lead)}
-                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:bg-gray-100"
-                            >
-                              <ShieldBan className="h-4 w-4" />
-                              블랙리스트 추가
                             </button>
                             <button
                               onClick={() => handleDelete(lead.id)}
@@ -370,7 +337,7 @@ export default function LeadsPage() {
                               <div className="border-b border-gray-100 px-4 py-2">
                                 <p className="text-xs text-gray-500 mb-2">상태 변경</p>
                                 <div className="flex flex-wrap gap-1">
-                                  {(["new", "contacted", "converted", "blacklist"] as LeadStatus[]).map(
+                                  {(["new", "contacted", "converted"] as LeadStatus[]).map(
                                     (status) => (
                                       <button
                                         key={status}
@@ -392,13 +359,6 @@ export default function LeadsPage() {
                               >
                                 <Edit className="h-4 w-4" />
                                 수정
-                              </button>
-                              <button
-                                onClick={() => handleAddToBlacklist(lead)}
-                                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:bg-gray-100"
-                              >
-                                <ShieldBan className="h-4 w-4" />
-                                블랙리스트 추가
                               </button>
                               <button
                                 onClick={() => handleDelete(lead.id)}

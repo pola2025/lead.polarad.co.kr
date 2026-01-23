@@ -30,7 +30,10 @@ interface Stats {
 
 // KST 기준 날짜 문자열 생성 (YYYY-MM-DD 형식)
 function formatDateKST(date: Date): string {
-  return date.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+  // KST = UTC + 9시간
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const kstTime = new Date(date.getTime() + kstOffset);
+  return kstTime.toISOString().split("T")[0];
 }
 
 export default function StatsPage() {
