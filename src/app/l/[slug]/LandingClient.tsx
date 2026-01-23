@@ -473,7 +473,10 @@ export default function LandingClient({ client }: LandingClientProps) {
             )}
           </button>
 
-          <p className="text-xs text-gray-500 text-center">본 접수정보는 상담접수에만 이용되며 상담 후 폐기됩니다.</p>
+          <div className="text-xs text-gray-500 text-center space-y-1">
+            <p>본 접수정보는 상담접수에만 이용되며 상담 후 폐기됩니다.</p>
+            <p>카카오 로그인은 친구추가, 채널추가, 메세지발송에 활용되지 않으며, 접수자 인증목적으로만 사용됩니다.</p>
+          </div>
         </form>
       </div>
     </div>
