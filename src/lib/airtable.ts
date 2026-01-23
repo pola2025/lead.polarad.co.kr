@@ -74,6 +74,7 @@ const LEADS_TABLE_FIELDS: LeadsTableField[] = [
     type: "singleSelect",
     options: {
       choices: [
+        { name: "kakao_login", color: "yellowLight2" },
         { name: "new", color: "blueLight2" },
         { name: "contacted", color: "purpleLight2" },
         { name: "converted", color: "greenLight2" },
@@ -558,6 +559,27 @@ export async function findLeadById(leadId: string): Promise<{ lead: Lead; client
   }
 
   return null;
+}
+
+// 카카오ID로 kakao_login 상태의 리드 검색
+export async function findKakaoLoginLead(
+  leadsTableId: string,
+  kakaoId: string,
+  clientId: string
+): Promise<Lead | null> {
+  try {
+    const records = await getClientLeadsTable(leadsTableId)
+      .select({
+        filterByFormula: `AND({kakaoId} = "${kakaoId}", {status} = "kakao_login")`,
+        maxRecords: 1,
+      })
+      .all();
+
+    if (records.length === 0) return null;
+    return parseLeadRecord(records[0], clientId);
+  } catch {
+    return null;
+  }
 }
 
 export async function createLead(

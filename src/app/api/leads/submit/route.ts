@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getClientById, createLead, isBlacklisted } from "@/lib/airtable";
+import { getClientById, createLead, updateLead, findKakaoLoginLead, isBlacklisted } from "@/lib/airtable";
 import {
   validatePhone,
   validateName,
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 리드 생성 - 커스텀 필드 포함
+    // 리드 생성 또는 업데이트 - 커스텀 필드 포함
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const leadData: Record<string, any> = {
       name: normalizedName,
@@ -195,7 +195,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await createLead(client.leadsTableId, clientId, leadData);
+    // 카카오 로그인 리드가 있으면 업데이트, 없으면 새로 생성
+    if (kakaoId) {
+      const existingLead = await findKakaoLoginLead(client.leadsTableId, kakaoId, clientId);
+      if (existingLead) {
+        // 기존 kakao_login 리드를 new 상태로 업데이트
+        await updateLead(existingLead.id, client.leadsTableId, clientId, leadData);
+        console.log(`[Lead] Updated kakao_login lead ${existingLead.id} to new status`);
+      } else {
+        await createLead(client.leadsTableId, clientId, leadData);
+      }
+    } else {
+      await createLead(client.leadsTableId, clientId, leadData);
+    }
 
     // 텔레그램 알림 (비동기 - 실패해도 리드 저장은 성공)
     if (client.telegramChatId) {

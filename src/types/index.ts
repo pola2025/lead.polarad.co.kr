@@ -2,7 +2,7 @@
 export type ClientStatus = "active" | "inactive" | "pending";
 
 // 리드 상태
-export type LeadStatus = "new" | "contacted" | "converted" | "spam";
+export type LeadStatus = "kakao_login" | "new" | "contacted" | "converted" | "spam";
 
 // 블랙리스트 타입
 export type BlacklistType = "phone" | "kakaoId" | "ip" | "keyword";

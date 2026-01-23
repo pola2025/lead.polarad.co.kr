@@ -16,6 +16,7 @@ import {
 import type { Lead, Client, LeadStatus } from "@/types";
 
 const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
+  kakao_login: { label: "카카오로그인", class: "badge-kakao" },
   new: { label: "신규", class: "badge-new" },
   contacted: { label: "연락완료", class: "badge-contacted" },
   converted: { label: "전환", class: "badge-converted" },

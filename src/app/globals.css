@@ -78,6 +78,10 @@ body {
   @apply bg-yellow-100 text-yellow-800;
 }
 
+.badge-kakao {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
 .badge-new {
   @apply bg-blue-100 text-blue-800;
 }

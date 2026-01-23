@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getClientBySlug, createLead } from "@/lib/airtable";
 
 /**
  * 카카오 OAuth 콜백 API
@@ -6,7 +7,8 @@ import { NextRequest, NextResponse } from "next/server";
  *
  * 1. 인가 코드로 토큰 발급
  * 2. 토큰으로 사용자 정보(이메일) 조회
- * 3. 원래 페이지로 리다이렉트 (이메일을 쿼리 파라미터로 전달)
+ * 3. 에어테이블에 리드 생성 (kakao_login 상태)
+ * 4. 원래 페이지로 리다이렉트 (이메일을 쿼리 파라미터로 전달)
  */
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
@@ -94,7 +96,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/l/${state}?kakao_error=no_email`);
     }
 
-    // 3. 토큰 연결 해제 (일회성 인증이므로)
+    // 3. 에어테이블에 리드 생성 (kakao_login 상태)
+    // 카카오 로그인만 해도 리드 정보 기록
+    try {
+      const client = await getClientBySlug(state);
+      if (client && client.leadsTableId && client.status === "active") {
+        // IP 주소 가져오기
+        const forwarded = request.headers.get("x-forwarded-for");
+        const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+        const userAgent = request.headers.get("user-agent") || "unknown";
+
+        await createLead(client.leadsTableId, client.id, {
+          kakaoId: kakaoId,
+          email: email,
+          status: "kakao_login",
+          ipAddress: ip,
+          userAgent: userAgent.substring(0, 500),
+        });
+        console.log(`[Kakao] Lead created for user ${kakaoId} (kakao_login status)`);
+      }
+    } catch (leadError) {
+      // 리드 생성 실패해도 로그인은 진행
+      console.error("Failed to create kakao_login lead:", leadError);
+    }
+
+    // 4. 토큰 연결 해제 (일회성 인증이므로)
     // 선택사항: 사용자 데이터를 더 이상 보관하지 않으므로 연결 해제
     try {
       await fetch("https://kapi.kakao.com/v1/user/unlink", {
@@ -108,7 +134,7 @@ export async function GET(request: NextRequest) {
       console.warn("Failed to unlink Kakao user:", unlinkError);
     }
 
-    // 4. 원래 페이지로 리다이렉트 (이메일과 카카오ID를 쿼리 파라미터로 전달)
+    // 5. 원래 페이지로 리다이렉트 (이메일과 카카오ID를 쿼리 파라미터로 전달)
     const redirectUrl = new URL(`${baseUrl}/l/${state}`);
     redirectUrl.searchParams.set("kakao_email", email);
     if (kakaoId) {
