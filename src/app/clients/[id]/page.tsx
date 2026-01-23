@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
-import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send, Image, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send, Image, Loader2, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import type { Client, FormField, ProductFeature } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
@@ -454,7 +454,16 @@ export default function EditClientPage({
             <ArrowLeft className="h-4 w-4" />
             <span className="break-keep">클라이언트 목록</span>
           </Link>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">클라이언트 수정</h1>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">클라이언트 수정</h1>
+            <Link
+              href={`/clients/${id}/stats`}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100 transition-colors"
+            >
+              <BarChart3 className="h-4 w-4" />
+              통계 보기
+            </Link>
+          </div>
           <p className="mt-1 text-sm text-gray-500">{formData.name}</p>
         </div>
 

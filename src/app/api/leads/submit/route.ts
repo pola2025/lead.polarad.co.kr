@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
 
     // 고객 이메일 알림 (비동기)
     // 랜딩 페이지 디자인 + 접수 내용 자동 포함
-    if (client.emailEnabled && email) {
+    if (email) {
       // 접수 내용 데이터 구성
       const leadData: { label: string; value: string }[] = [];
       for (const field of enabledFields) {
