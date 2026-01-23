@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
-import { Plus, Search, ExternalLink, Trash2, Key } from "lucide-react";
+import { Plus, Search, ExternalLink, Trash2, Key, BarChart3 } from "lucide-react";
 import type { Client } from "@/types";
 
 const statusLabels: Record<string, { label: string; class: string }> = {
@@ -187,6 +187,14 @@ export default function ClientsPage() {
 
                   {/* 액션 버튼 */}
                   <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-gray-100">
+                    <Link
+                      href={`/clients/${client.id}/stats`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                    >
+                      <BarChart3 className="h-3.5 w-3.5" />
+                      <span className="break-keep">통계</span>
+                    </Link>
                     <a
                       href={`/l/${client.slug}`}
                       target="_blank"
@@ -300,6 +308,14 @@ export default function ClientsPage() {
                       </td>
                       <td>
                         <div className="flex items-center justify-end gap-1">
+                          <Link
+                            href={`/clients/${client.id}/stats`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-2 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                            title="통계"
+                          >
+                            <BarChart3 className="h-4 w-4" />
+                          </Link>
                           <a
                             href={`/l/${client.slug}`}
                             target="_blank"

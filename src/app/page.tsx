@@ -227,20 +227,20 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto -mx-4 md:mx-0">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                          <th className="px-3 md:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap">
                             이름
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                          <th className="px-3 md:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap">
                             연락처
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                          <th className="px-3 md:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap">
                             상태
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                          <th className="px-3 md:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap">
                             접수일
                           </th>
                         </tr>
@@ -248,13 +248,13 @@ export default function DashboardPage() {
                       <tbody className="divide-y divide-gray-200">
                         {recentLeads.map((lead) => (
                           <tr key={lead.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                            <td className="px-3 md:px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
                               {lead.name}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-500">
+                            <td className="px-3 md:px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
                               {lead.phone}
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-3 md:px-4 py-3">
                               <span
                                 className={`badge ${
                                   lead.status === "new"
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                                   : "블랙리스트"}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-500">
+                            <td className="px-3 md:px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
                               {new Date(lead.createdAt).toLocaleDateString("ko-KR")}
                             </td>
                           </tr>
