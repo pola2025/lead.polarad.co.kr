@@ -939,7 +939,7 @@ export default function PortalDashboardPage() {
                         </div>
                       </div>
                       {/* 빠른 상태 변경 버튼 */}
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0 ml-2">
+                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-2">
                         {/* 상태 버튼들 */}
                         <div className="flex gap-1.5">
                           {lead.status !== "contacted" && (
@@ -959,6 +959,7 @@ export default function PortalDashboardPage() {
                             </button>
                           )}
                         </div>
+                        <p className="text-[11px] text-gray-400 sm:hidden">버튼 클릭시 상태 적용</p>
                         {/* 더보기 메뉴 */}
                         <div className="relative">
                           <button
