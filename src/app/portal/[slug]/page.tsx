@@ -12,11 +12,23 @@ import {
   Bell,
   ExternalLink,
   Clock,
+  BarChart3,
+  Users,
+  MousePointerClick,
+  TrendingUp,
 } from "lucide-react";
 import type { FormField } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
 import { formatOperatingHours } from "@/lib/operating-hours";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
+
+interface AnalyticsData {
+  today: { users: number; pageviews: number };
+  week: { users: number; pageviews: number };
+  month: { users: number; pageviews: number };
+  daily: { date: string; users: number; pageviews: number }[];
+  sources: { source: string; users: number }[];
+}
 
 interface ClientData {
   id: string;
@@ -52,7 +64,9 @@ export default function PortalDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [activeTab, setActiveTab] = useState<"fields" | "messages" | "notifications">("fields");
+  const [activeTab, setActiveTab] = useState<"stats" | "fields" | "messages" | "notifications">("stats");
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
   // 폼 필드 상태
@@ -125,9 +139,30 @@ export default function PortalDashboardPage() {
     }
   }, [slug, router]);
 
+  const fetchAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetch(`/api/portal/${slug}/analytics`);
+      const data = await res.json();
+      if (data.success) {
+        setAnalytics(data.data);
+      }
+    } catch (err) {
+      console.error("Analytics fetch error:", err);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, [slug]);
+
   useEffect(() => {
     fetchClient();
   }, [fetchClient]);
+
+  useEffect(() => {
+    if (activeTab === "stats") {
+      fetchAnalytics();
+    }
+  }, [activeTab, fetchAnalytics]);
 
   const handleLogout = async () => {
     try {
@@ -263,6 +298,17 @@ export default function PortalDashboardPage() {
         {/* 탭 */}
         <div className="flex gap-2 mb-6 flex-wrap">
           <button
+            onClick={() => setActiveTab("stats")}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === "stats"
+                ? "bg-primary-600 text-white"
+                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            <BarChart3 className="h-4 w-4" />
+            방문 통계
+          </button>
+          <button
             onClick={() => setActiveTab("fields")}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === "fields"
@@ -296,6 +342,131 @@ export default function PortalDashboardPage() {
             고객 알림 설정
           </button>
         </div>
+
+        {/* 방문 통계 */}
+        {activeTab === "stats" && (
+          <div className="space-y-6">
+            {analyticsLoading ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              </div>
+            ) : analytics ? (
+              <>
+                {/* 요약 카드 */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <Users className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <span className="text-sm text-gray-500">오늘 방문자</span>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">{analytics.today.users.toLocaleString()}</p>
+                    <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.today.pageviews.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <TrendingUp className="h-5 w-5 text-green-600" />
+                      </div>
+                      <span className="text-sm text-gray-500">7일간</span>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">{analytics.week.users.toLocaleString()}</p>
+                    <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.week.pageviews.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <MousePointerClick className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <span className="text-sm text-gray-500">30일간</span>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">{analytics.month.users.toLocaleString()}</p>
+                    <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.month.pageviews.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* 일별 추이 차트 */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">일별 방문자 추이 (30일)</h3>
+                  <div className="h-48 flex items-end gap-1">
+                    {analytics.daily.length > 0 ? (
+                      analytics.daily.slice(-30).map((day, idx) => {
+                        const maxUsers = Math.max(...analytics.daily.map(d => d.users), 1);
+                        const height = (day.users / maxUsers) * 100;
+                        const date = day.date;
+                        const formattedDate = date ? `${date.slice(4, 6)}/${date.slice(6, 8)}` : "";
+                        return (
+                          <div
+                            key={idx}
+                            className="flex-1 group relative"
+                          >
+                            <div
+                              className="w-full bg-blue-500 hover:bg-blue-600 rounded-t transition-all cursor-pointer"
+                              style={{ height: `${Math.max(height, 2)}%` }}
+                            />
+                            <div className="opacity-0 group-hover:opacity-100 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
+                              {formattedDate}: {day.users}명
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                        데이터가 없습니다
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 유입 경로 */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">유입 경로 TOP 5</h3>
+                  {analytics.sources.length > 0 ? (
+                    <div className="space-y-3">
+                      {analytics.sources.map((source, idx) => {
+                        const maxUsers = analytics.sources[0]?.users || 1;
+                        const width = (source.users / maxUsers) * 100;
+                        return (
+                          <div key={idx} className="flex items-center gap-3">
+                            <span className="w-6 text-sm text-gray-400">{idx + 1}</span>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-sm text-gray-700 truncate max-w-[200px]">
+                                  {source.source === "(direct) / (none)" ? "직접 방문" : source.source}
+                                </span>
+                                <span className="text-sm font-medium text-gray-900">{source.users}명</span>
+                              </div>
+                              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-blue-500 rounded-full"
+                                  style={{ width: `${width}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-gray-400 text-sm text-center py-4">유입 데이터가 없습니다</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">통계 데이터를 불러올 수 없습니다.</p>
+                <button
+                  onClick={fetchAnalytics}
+                  className="mt-4 text-sm text-primary-600 hover:underline"
+                >
+                  다시 시도
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 수집 정보 설정 */}
         {activeTab === "fields" && (
