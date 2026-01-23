@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendPortalPassword, createSlackChannel } from '@/lib/slack';
+import { sendSlackMessage, createSlackChannel, generatePassword } from '@/lib/slack';
 import { getClientBySlug, updateClient } from '@/lib/airtable';
 
 export async function POST(request: NextRequest) {
   try {
-    const { slug } = await request.json();
+    const { slug, regenerate = false } = await request.json();
 
     if (!slug) {
       return NextResponse.json(
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 클라이언트 조회하여 slackChannelId 확인
+    // 클라이언트 조회
     const client = await getClientBySlug(slug);
     if (!client) {
       return NextResponse.json(
@@ -31,24 +31,79 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 비밀번호 생성 및 슬랙 전송 (클라이언트 채널로)
-    const password = await sendPortalPassword(slug, channelId || undefined);
+    // 비밀번호 결정: 재발급이거나 기존 비밀번호가 없으면 새로 생성
+    let password: string;
+    let isNew = false;
 
-    if (!password) {
+    console.log(`[Portal Password] Client: ${slug}, existing password: ${client.portalPassword ? 'YES' : 'NO'}, regenerate: ${regenerate}`);
+
+    if (regenerate || !client.portalPassword) {
+      password = generatePassword();
+      isNew = true;
+      // Airtable에 새 비밀번호 저장
+      console.log(`[Portal Password] Saving new password to Airtable...`);
+      await updateClient(client.id, { portalPassword: password });
+      console.log(`[Portal Password] Password saved successfully`);
+    } else {
+      password = client.portalPassword;
+    }
+
+    // 슬랙으로 전송
+    const targetChannel = channelId || process.env.SLACK_QNA_CHANNEL_ID;
+    if (!targetChannel) {
       return NextResponse.json(
-        { success: false, error: '슬랙 전송에 실패했습니다. 슬랙 설정을 확인해주세요.' },
+        { success: false, error: '슬랙 채널이 설정되지 않았습니다.' },
+        { status: 500 }
+      );
+    }
+
+    const actionText = isNew ? '새로 생성됨' : '기존 비밀번호';
+    const success = await sendSlackMessage({
+      channel: targetChannel,
+      text: `🔐 포털 비밀번호 (${actionText})`,
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `🔐 *포털 비밀번호* (${actionText})\n클라이언트: \`${slug}\``,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `*비밀번호:*\n\`\`\`${password}\`\`\``,
+          },
+        },
+        {
+          type: "context",
+          elements: [
+            {
+              type: "mrkdwn",
+              text: `포털 URL: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://polarlead.kr'}/portal/${slug}/login`,
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: '슬랙 전송에 실패했습니다.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: '비밀번호가 슬랙으로 전송되었습니다.',
+      message: isNew ? '새 비밀번호가 생성되어 슬랙으로 전송되었습니다.' : '기존 비밀번호가 슬랙으로 전송되었습니다.',
+      isNew,
     });
   } catch (error) {
     console.error('Password generation error:', error);
     return NextResponse.json(
-      { success: false, error: '비밀번호 생성 중 오류가 발생했습니다.' },
+      { success: false, error: '비밀번호 처리 중 오류가 발생했습니다.' },
       { status: 500 }
     );
   }

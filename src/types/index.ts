@@ -139,6 +139,8 @@ export interface Client {
   airtableShareUrl?: string;
   // OG 이미지 URL
   ogImageUrl?: string;
+  // 포털 비밀번호 (해시 저장)
+  portalPassword?: string;
   createdAt: string;
 }
 

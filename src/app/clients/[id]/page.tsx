@@ -204,17 +204,16 @@ export default function EditClientPage({
     }
   };
 
-  const sendPasswordToSlack = async () => {
-    // UI 블로킹 방지를 위해 confirm 제거, 바로 실행
+  const sendPasswordToSlack = async (regenerate: boolean = false) => {
     setSendingPassword(true);
     setPasswordSent(false);
-    setError(null);
+    setError("");
 
     try {
       const res = await fetch(`/api/portal/generate-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: formData.slug }),
+        body: JSON.stringify({ slug: formData.slug, regenerate }),
       });
 
       const data = await res.json();
@@ -1216,11 +1215,11 @@ export default function EditClientPage({
                 </label>
                 <div className="flex items-center gap-2">
                   <span className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm text-gray-500">
-                    환경변수: <code className="font-mono">lead_{formData.slug}_PW</code>
+                    Airtable에 저장됨 (비밀번호 전송 클릭 시 슬랙으로 전송)
                   </span>
                   <button
                     type="button"
-                    onClick={sendPasswordToSlack}
+                    onClick={() => sendPasswordToSlack(false)}
                     disabled={sendingPassword}
                     className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
                       passwordSent
@@ -1241,13 +1240,26 @@ export default function EditClientPage({
                     ) : (
                       <>
                         <Send className="h-4 w-4" />
-                        슬랙으로 비밀번호 전송
+                        비밀번호 전송
                       </>
                     )}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("새 비밀번호를 발급하시겠습니까? 기존 비밀번호는 사용할 수 없게 됩니다.")) {
+                        sendPasswordToSlack(true);
+                      }
+                    }}
+                    disabled={sendingPassword}
+                    className="inline-flex items-center gap-2 rounded-lg border border-orange-300 px-4 py-2 text-sm font-medium text-orange-600 hover:bg-orange-50 transition-colors disabled:opacity-50"
+                  >
+                    <Key className="h-4 w-4" />
+                    재발급
+                  </button>
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
-                  비밀번호 생성 후 슬랙으로 전송됩니다. 환경변수에 추가한 뒤 배포하세요.
+                  비밀번호가 없으면 새로 생성됩니다. 재발급 시 기존 비밀번호는 무효화됩니다.
                 </p>
               </div>
             </div>

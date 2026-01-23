@@ -45,6 +45,7 @@ const REQUIRED_FIELDS: { name: string; type: string; description?: string }[] = 
   { name: 'operatingEndTime', type: 'singleLineText', description: '운영 종료시간' },
   { name: 'airtableShareUrl', type: 'url', description: '에어테이블 공유 URL' },
   { name: 'ogImageUrl', type: 'url', description: 'OG 이미지 URL' },
+  { name: 'portalPassword', type: 'singleLineText', description: '포털 비밀번호' },
   { name: 'createdAt', type: 'dateTime', description: '생성일시' },
 ];
 

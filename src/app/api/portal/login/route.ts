@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
 
     // 클라이언트 조회
     const client = await getClientBySlug(slug);
+    console.log(`[Portal Login] Client: ${slug}, portalPassword exists: ${client?.portalPassword ? 'YES' : 'NO'}`);
 
     if (!client) {
       return NextResponse.json(
@@ -23,17 +24,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 환경변수에서 비밀번호 확인 (형식: lead_{slug}_PW)
-    const envPassword = process.env[`lead_${slug}_PW`];
-
-    if (!envPassword) {
+    // Airtable에서 비밀번호 확인
+    if (!client.portalPassword) {
       return NextResponse.json(
-        { success: false, error: '포털 비밀번호가 설정되지 않았습니다.' },
+        { success: false, error: '포털 비밀번호가 설정되지 않았습니다. 관리자에게 문의하세요.' },
         { status: 403 }
       );
     }
 
-    if (envPassword !== password) {
+    if (client.portalPassword !== password) {
       return NextResponse.json(
         { success: false, error: '비밀번호가 일치하지 않습니다.' },
         { status: 401 }
