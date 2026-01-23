@@ -133,18 +133,18 @@ export default function NewClientPage() {
     <div className="min-h-screen">
       <Sidebar />
 
-      <main className="ml-64 p-8">
+      <main className="pt-16 pb-20 px-4 md:pt-0 md:pb-0 md:ml-64 md:p-8">
         {/* 헤더 */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <Link
             href="/clients"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-3 md:mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            클라이언트 목록
+            <span className="break-keep">클라이언트 목록</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">새 클라이언트 등록</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">새 클라이언트 등록</h1>
+          <p className="mt-1 text-sm text-gray-500 break-keep">
             새로운 리드 수집 랜딩 페이지 고객을 등록합니다.
           </p>
         </div>

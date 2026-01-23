@@ -140,11 +140,11 @@ export default function DashboardPage() {
       <Sidebar />
 
       {/* 메인 콘텐츠 */}
-      <main className="ml-64 p-8">
+      <main className="pt-16 pb-20 px-4 md:pt-0 md:pb-0 md:ml-64 md:p-8">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">대시보드</h1>
+          <p className="mt-1 text-sm text-gray-500 break-keep">
             polarlead 리드 관리 현황을 확인하세요.
           </p>
         </div>
@@ -156,33 +156,33 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* 통계 카드 */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
               {statCards.map((stat) => {
                 const Icon = stat.icon;
                 return (
                   <div key={stat.name} className="card">
-                    <div className="flex items-center">
+                    <div className="flex items-start md:items-center">
                       <div
-                        className={`flex h-12 w-12 items-center justify-center rounded-lg ${stat.color}`}
+                        className={`flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg flex-shrink-0 ${stat.color}`}
                       >
-                        <Icon className="h-6 w-6 text-white" />
+                        <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
                       </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-500">
+                      <div className="ml-3 md:ml-4 min-w-0">
+                        <p className="text-xs md:text-sm font-medium text-gray-500 break-keep">
                           {stat.name}
                         </p>
-                        <p className="text-2xl font-semibold text-gray-900">
+                        <p className="text-lg md:text-2xl font-semibold text-gray-900">
                           {stat.value}
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4 text-sm">
+                    <div className="mt-2 md:mt-4 text-xs md:text-sm">
                       {stat.change !== undefined ? (
-                        <div className="flex items-center">
+                        <div className="flex items-center flex-wrap">
                           {stat.change >= 0 ? (
-                            <ArrowUp className="h-4 w-4 text-green-500" />
+                            <ArrowUp className="h-3 w-3 md:h-4 md:w-4 text-green-500" />
                           ) : (
-                            <ArrowDown className="h-4 w-4 text-red-500" />
+                            <ArrowDown className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
                           )}
                           <span
                             className={
@@ -191,10 +191,10 @@ export default function DashboardPage() {
                           >
                             {Math.abs(stat.change).toFixed(1)}%
                           </span>
-                          <span className="ml-1 text-gray-500">vs 지난 달</span>
+                          <span className="ml-1 text-gray-500 hidden md:inline">vs 지난 달</span>
                         </div>
                       ) : stat.subValue ? (
-                        <span className="text-gray-500">{stat.subValue}</span>
+                        <span className="text-gray-500 break-keep">{stat.subValue}</span>
                       ) : (
                         <span className="text-gray-400">데이터 없음</span>
                       )}
@@ -205,14 +205,14 @@ export default function DashboardPage() {
             </div>
 
             {/* 최근 리드 섹션 */}
-            <div className="mt-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="mt-6 md:mt-8">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h2 className="text-base md:text-lg font-semibold text-gray-900 break-keep">
                   최근 접수된 리드
                 </h2>
                 <Link
                   href="/leads"
-                  className="text-sm text-primary-600 hover:text-primary-700"
+                  className="text-sm text-primary-600 hover:text-primary-700 break-keep"
                 >
                   전체 보기 →
                 </Link>
@@ -288,14 +288,14 @@ export default function DashboardPage() {
             </div>
 
             {/* 활성 클라이언트 섹션 */}
-            <div className="mt-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">
+            <div className="mt-6 md:mt-8">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h2 className="text-base md:text-lg font-semibold text-gray-900 break-keep">
                   활성 클라이언트
                 </h2>
                 <Link
                   href="/clients"
-                  className="text-sm text-primary-600 hover:text-primary-700"
+                  className="text-sm text-primary-600 hover:text-primary-700 break-keep"
                 >
                   전체 보기 →
                 </Link>
@@ -313,12 +313,12 @@ export default function DashboardPage() {
                     </Link>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-3 md:gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {activeClients.map((client) => (
                       <Link
                         key={client.id}
                         href={`/clients/${client.id}`}
-                        className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                        className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 md:p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                       >
                         {client.logoUrl ? (
                           <img

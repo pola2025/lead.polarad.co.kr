@@ -96,46 +96,46 @@ export default function BlacklistPage() {
     <div className="min-h-screen">
       <Sidebar />
 
-      <main className="ml-64 p-8">
+      <main className="pt-16 pb-20 px-4 md:pt-0 md:pb-0 md:ml-64 md:p-8">
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">블랙리스트 관리</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">블랙리스트 관리</h1>
+            <p className="mt-1 text-sm text-gray-500 break-keep">
               스팸 및 악성 접수를 차단합니다.
             </p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors w-full sm:w-auto"
           >
             <Plus className="h-4 w-4" />
-            차단 추가
+            <span className="break-keep">차단 추가</span>
           </button>
         </div>
 
         {/* 필터 */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="relative flex-1 min-w-[200px] max-w-md">
+        <div className="space-y-3 md:space-y-0 md:flex md:flex-wrap md:gap-4 mb-4 md:mb-6">
+          <div className="relative w-full md:flex-1 md:min-w-[200px] md:max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="차단 값으로 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-400" />
+            <Filter className="h-4 w-4 text-gray-400 hidden md:block" />
             <select
               value={filterClient}
               onChange={(e) => setFilterClient(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="flex-1 md:flex-none rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="">전체</option>
-              <option value="global">전역 차단만</option>
+              <option value="global">전역 차단</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name}
@@ -145,79 +145,127 @@ export default function BlacklistPage() {
           </div>
         </div>
 
-        {/* 테이블 */}
+        {/* 블랙리스트 목록 */}
         {loading ? (
           <div className="card flex items-center justify-center py-12">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
           </div>
         ) : filteredBlacklist.length === 0 ? (
           <div className="card flex flex-col items-center justify-center py-12 text-gray-500">
-            <p>등록된 블랙리스트가 없습니다.</p>
+            <p className="break-keep">등록된 블랙리스트가 없습니다.</p>
           </div>
         ) : (
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>타입</th>
-                  <th>차단 값</th>
-                  <th>적용 범위</th>
-                  <th>사유</th>
-                  <th>등록일</th>
-                  <th className="w-12"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredBlacklist.map((entry) => (
-                  <tr key={entry.id}>
-                    <td>
-                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-                        {typeLabels[entry.type]}
-                      </span>
-                    </td>
-                    <td>
-                      <code className="rounded bg-red-50 px-2 py-1 text-xs text-red-700">
+          <>
+            {/* 모바일 카드 리스트 */}
+            <div className="space-y-3 md:hidden">
+              {filteredBlacklist.map((entry) => (
+                <div key={entry.id} className="card">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
+                          {typeLabels[entry.type]}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-gray-500">
+                          {entry.clientId ? (
+                            <>
+                              <User className="h-3 w-3" />
+                              <span className="truncate">{getClientName(entry.clientId)}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Globe className="h-3 w-3" />
+                              <span>전역</span>
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <code className="rounded bg-red-50 px-2 py-1 text-sm text-red-700 block break-all">
                         {entry.value}
                       </code>
-                    </td>
-                    <td>
-                      <span className="flex items-center gap-1 text-sm">
-                        {entry.clientId ? (
-                          <>
-                            <User className="h-3 w-3 text-gray-400" />
-                            {getClientName(entry.clientId)}
-                          </>
-                        ) : (
-                          <>
-                            <Globe className="h-3 w-3 text-gray-400" />
-                            전역 차단
-                          </>
-                        )}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="text-sm text-gray-600">
-                        {entry.reason || "-"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="text-xs text-gray-500">
-                        {new Date(entry.createdAt).toLocaleDateString("ko-KR")}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
+                      {entry.reason && (
+                        <p className="text-xs text-gray-500 mt-2 break-keep">{entry.reason}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      className="rounded p-2 text-gray-400 hover:bg-gray-100 hover:text-red-600 flex-shrink-0"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">
+                    {new Date(entry.createdAt).toLocaleDateString("ko-KR")}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 데스크톱 테이블 */}
+            <div className="table-container hidden md:block">
+              <table>
+                <thead>
+                  <tr>
+                    <th>타입</th>
+                    <th>차단 값</th>
+                    <th>적용 범위</th>
+                    <th>사유</th>
+                    <th>등록일</th>
+                    <th className="w-12"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredBlacklist.map((entry) => (
+                    <tr key={entry.id}>
+                      <td>
+                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                          {typeLabels[entry.type]}
+                        </span>
+                      </td>
+                      <td>
+                        <code className="rounded bg-red-50 px-2 py-1 text-xs text-red-700">
+                          {entry.value}
+                        </code>
+                      </td>
+                      <td>
+                        <span className="flex items-center gap-1 text-sm">
+                          {entry.clientId ? (
+                            <>
+                              <User className="h-3 w-3 text-gray-400" />
+                              {getClientName(entry.clientId)}
+                            </>
+                          ) : (
+                            <>
+                              <Globe className="h-3 w-3 text-gray-400" />
+                              전역 차단
+                            </>
+                          )}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="text-sm text-gray-600">
+                          {entry.reason || "-"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="text-xs text-gray-500">
+                          {new Date(entry.createdAt).toLocaleDateString("ko-KR")}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleDelete(entry.id)}
+                          className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* 추가 모달 */}

@@ -135,36 +135,36 @@ export default function LeadsPage() {
     <div className="min-h-screen">
       <Sidebar />
 
-      <main className="ml-64 p-8">
+      <main className="pt-16 pb-20 px-4 md:pt-0 md:pb-0 md:ml-64 md:p-8">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">리드 관리</h1>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">리드 관리</h1>
+          <p className="mt-1 text-sm text-gray-500 break-keep">
             접수된 리드를 관리하고 상태를 업데이트합니다.
           </p>
         </div>
 
         {/* 필터 */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="relative flex-1 min-w-[200px] max-w-md">
+        <div className="space-y-3 md:space-y-0 md:flex md:flex-wrap md:gap-4 mb-4 md:mb-6">
+          <div className="relative w-full md:flex-1 md:min-w-[200px] md:max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="이름, 연락처, 상호명으로 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-400" />
+            <Filter className="h-4 w-4 text-gray-400 hidden md:block" />
             <select
               value={filterClient}
               onChange={(e) => setFilterClient(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="flex-1 md:flex-none rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
-              <option value="">모든 클라이언트</option>
+              <option value="">전체 클라이언트</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name}
@@ -175,9 +175,9 @@ export default function LeadsPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as LeadStatus | "")}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="flex-1 md:flex-none rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
-              <option value="">모든 상태</option>
+              <option value="">전체 상태</option>
               <option value="new">신규</option>
               <option value="contacted">연락완료</option>
               <option value="converted">전환</option>
@@ -186,89 +186,60 @@ export default function LeadsPage() {
           </div>
         </div>
 
-        {/* 테이블 */}
+        {/* 리드 목록 */}
         {loading ? (
           <div className="card flex items-center justify-center py-12">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
           </div>
         ) : filteredLeads.length === 0 ? (
           <div className="card flex flex-col items-center justify-center py-12 text-gray-500">
-            <p>접수된 리드가 없습니다.</p>
+            <p className="break-keep">접수된 리드가 없습니다.</p>
           </div>
         ) : (
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>접수자</th>
-                  <th>연락처</th>
-                  <th>상호/업종</th>
-                  <th>클라이언트</th>
-                  <th>상태</th>
-                  <th>접수일</th>
-                  <th className="w-12"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredLeads.map((lead) => (
-                  <tr key={lead.id}>
-                    <td>
-                      <div>
+          <>
+            {/* 모바일 카드 리스트 */}
+            <div className="space-y-3 md:hidden">
+              {filteredLeads.map((lead) => (
+                <div key={lead.id} className="card">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
                         <p className="font-medium text-gray-900">{lead.name}</p>
-                        {lead.email && (
-                          <p className="flex items-center gap-1 text-xs text-gray-500">
-                            <Mail className="h-3 w-3" />
-                            {lead.email}
-                          </p>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <p className="flex items-center gap-1">
-                        <Phone className="h-3 w-3 text-gray-400" />
-                        {lead.phone}
-                      </p>
-                    </td>
-                    <td>
-                      {lead.businessName ? (
-                        <div>
-                          <p className="flex items-center gap-1">
-                            <Building className="h-3 w-3 text-gray-400" />
-                            {lead.businessName}
-                          </p>
-                          {lead.industry && (
-                            <p className="text-xs text-gray-500">{lead.industry}</p>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td>
-                      <span className="text-sm">{getClientName(lead.clientId)}</span>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${statusLabels[lead.status]?.class || "badge-new"}`}
-                      >
-                        {statusLabels[lead.status]?.label || "신규"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="text-xs text-gray-500">
-                        {new Date(lead.createdAt).toLocaleString("ko-KR")}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="relative">
-                        <button
-                          onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
-                          className="rounded p-1 hover:bg-gray-100"
+                        <span
+                          className={`badge flex-shrink-0 ${statusLabels[lead.status]?.class || "badge-new"}`}
                         >
-                          <MoreVertical className="h-4 w-4 text-gray-500" />
-                        </button>
-                        {openMenu === lead.id && (
-                          <div className="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          {statusLabels[lead.status]?.label || "신규"}
+                        </span>
+                      </div>
+                      <p className="flex items-center gap-1.5 text-sm text-gray-600">
+                        <Phone className="h-3.5 w-3.5 text-gray-400" />
+                        <a href={`tel:${lead.phone}`} className="hover:text-primary-600">{lead.phone}</a>
+                      </p>
+                      {lead.email && (
+                        <p className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
+                          <Mail className="h-3.5 w-3.5 text-gray-400" />
+                          <span className="truncate">{lead.email}</span>
+                        </p>
+                      )}
+                      {lead.businessName && (
+                        <p className="flex items-center gap-1.5 text-sm text-gray-500 mt-0.5">
+                          <Building className="h-3.5 w-3.5 text-gray-400" />
+                          <span>{lead.businessName}</span>
+                          {lead.industry && <span className="text-gray-400">· {lead.industry}</span>}
+                        </p>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
+                        className="rounded p-2 hover:bg-gray-100"
+                      >
+                        <MoreVertical className="h-5 w-5 text-gray-500" />
+                      </button>
+                      {openMenu === lead.id && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setOpenMenu(null)} />
+                          <div className="absolute right-0 z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
                             <div className="border-b border-gray-100 px-4 py-2">
                               <p className="text-xs text-gray-500 mb-2">상태 변경</p>
                               <div className="flex flex-wrap gap-1">
@@ -310,14 +281,142 @@ export default function LeadsPage() {
                               삭제
                             </button>
                           </div>
-                        )}
-                      </div>
-                    </td>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+                    <span className="break-keep">{getClientName(lead.clientId)}</span>
+                    <span>{new Date(lead.createdAt).toLocaleDateString("ko-KR")}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 데스크톱 테이블 */}
+            <div className="table-container hidden md:block">
+              <table>
+                <thead>
+                  <tr>
+                    <th>접수자</th>
+                    <th>연락처</th>
+                    <th>상호/업종</th>
+                    <th>클라이언트</th>
+                    <th>상태</th>
+                    <th>접수일</th>
+                    <th className="w-12"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredLeads.map((lead) => (
+                    <tr key={lead.id}>
+                      <td>
+                        <div>
+                          <p className="font-medium text-gray-900">{lead.name}</p>
+                          {lead.email && (
+                            <p className="flex items-center gap-1 text-xs text-gray-500">
+                              <Mail className="h-3 w-3" />
+                              {lead.email}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <p className="flex items-center gap-1">
+                          <Phone className="h-3 w-3 text-gray-400" />
+                          {lead.phone}
+                        </p>
+                      </td>
+                      <td>
+                        {lead.businessName ? (
+                          <div>
+                            <p className="flex items-center gap-1">
+                              <Building className="h-3 w-3 text-gray-400" />
+                              {lead.businessName}
+                            </p>
+                            {lead.industry && (
+                              <p className="text-xs text-gray-500">{lead.industry}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className="text-sm">{getClientName(lead.clientId)}</span>
+                      </td>
+                      <td>
+                        <span
+                          className={`badge ${statusLabels[lead.status]?.class || "badge-new"}`}
+                        >
+                          {statusLabels[lead.status]?.label || "신규"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="text-xs text-gray-500">
+                          {new Date(lead.createdAt).toLocaleString("ko-KR")}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="relative">
+                          <button
+                            onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
+                            className="rounded p-1 hover:bg-gray-100"
+                          >
+                            <MoreVertical className="h-4 w-4 text-gray-500" />
+                          </button>
+                          {openMenu === lead.id && (
+                            <div className="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                              <div className="border-b border-gray-100 px-4 py-2">
+                                <p className="text-xs text-gray-500 mb-2">상태 변경</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {(["new", "contacted", "converted", "spam"] as LeadStatus[]).map(
+                                    (status) => (
+                                      <button
+                                        key={status}
+                                        onClick={() => handleStatusChange(lead, status)}
+                                        className={`badge ${statusLabels[status].class} cursor-pointer hover:opacity-80`}
+                                      >
+                                        {statusLabels[status].label}
+                                      </button>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setEditingLead(lead);
+                                  setOpenMenu(null);
+                                }}
+                                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <Edit className="h-4 w-4" />
+                                수정
+                              </button>
+                              <button
+                                onClick={() => handleAddToBlacklist(lead)}
+                                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:bg-gray-100"
+                              >
+                                <ShieldBan className="h-4 w-4" />
+                                블랙리스트 추가
+                              </button>
+                              <button
+                                onClick={() => handleDelete(lead.id)}
+                                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                삭제
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* 수정 모달 */}

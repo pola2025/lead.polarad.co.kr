@@ -142,12 +142,12 @@ export default function StatsPage() {
     <div className="min-h-screen">
       <Sidebar />
 
-      <main className="ml-64 p-8">
+      <main className="pt-16 pb-20 px-4 md:pt-0 md:pb-0 md:ml-64 md:p-8">
         {/* 헤더 */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">통계</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">통계</h1>
+            <p className="mt-1 text-sm text-gray-500 break-keep">
               리드 접수 현황과 전환율을 확인합니다.
             </p>
           </div>
@@ -156,7 +156,7 @@ export default function StatsPage() {
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value as "week" | "month" | "year")}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="flex-1 sm:flex-none rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
               <option value="week">최근 7일</option>
               <option value="month">최근 30일</option>
@@ -172,15 +172,15 @@ export default function StatsPage() {
         ) : stats ? (
           <>
             {/* 주요 통계 카드 */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4 mb-6 md:mb-8">
               <div className="card">
-                <div className="flex items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500">
-                    <FileText className="h-6 w-6 text-white" />
+                <div className="flex items-start md:items-center">
+                  <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg bg-blue-500 flex-shrink-0">
+                    <FileText className="h-5 w-5 md:h-6 md:w-6 text-white" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">전체 리드</p>
-                    <p className="text-2xl font-semibold text-gray-900">
+                  <div className="ml-3 md:ml-4 min-w-0">
+                    <p className="text-xs md:text-sm font-medium text-gray-500 break-keep">전체 리드</p>
+                    <p className="text-lg md:text-2xl font-semibold text-gray-900">
                       {stats.totalLeads.toLocaleString()}
                     </p>
                   </div>
@@ -188,85 +188,80 @@ export default function StatsPage() {
               </div>
 
               <div className="card">
-                <div className="flex items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500">
-                    <TrendingUp className="h-6 w-6 text-white" />
+                <div className="flex items-start md:items-center">
+                  <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg bg-green-500 flex-shrink-0">
+                    <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-white" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">이번 달 리드</p>
-                    <p className="text-2xl font-semibold text-gray-900">
+                  <div className="ml-3 md:ml-4 min-w-0">
+                    <p className="text-xs md:text-sm font-medium text-gray-500 break-keep">이번 달</p>
+                    <p className="text-lg md:text-2xl font-semibold text-gray-900">
                       {stats.thisMonthLeads.toLocaleString()}
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 flex items-center text-sm">
+                <div className="mt-2 md:mt-4 flex items-center text-xs md:text-sm">
                   {monthChange >= 0 ? (
-                    <ArrowUp className="h-4 w-4 text-green-500" />
+                    <ArrowUp className="h-3 w-3 md:h-4 md:w-4 text-green-500" />
                   ) : (
-                    <ArrowDown className="h-4 w-4 text-red-500" />
+                    <ArrowDown className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
                   )}
                   <span
                     className={monthChange >= 0 ? "text-green-600" : "text-red-600"}
                   >
                     {Math.abs(monthChange).toFixed(1)}%
                   </span>
-                  <span className="ml-1 text-gray-500">vs 지난 달</span>
+                  <span className="ml-1 text-gray-500 hidden md:inline">vs 지난 달</span>
                 </div>
               </div>
 
               <div className="card">
-                <div className="flex items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500">
-                    <Users className="h-6 w-6 text-white" />
+                <div className="flex items-start md:items-center">
+                  <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg bg-purple-500 flex-shrink-0">
+                    <Users className="h-5 w-5 md:h-6 md:w-6 text-white" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">전환율</p>
-                    <p className="text-2xl font-semibold text-gray-900">
+                  <div className="ml-3 md:ml-4 min-w-0">
+                    <p className="text-xs md:text-sm font-medium text-gray-500 break-keep">전환율</p>
+                    <p className="text-lg md:text-2xl font-semibold text-gray-900">
                       {stats.conversionRate.toFixed(1)}%
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 text-sm text-gray-500">
-                  {stats.convertedLeads}명 전환 / {stats.totalLeads - stats.spamLeads}명
-                  유효
+                <div className="mt-2 md:mt-4 text-xs md:text-sm text-gray-500 break-keep">
+                  {stats.convertedLeads}건 / {stats.totalLeads - stats.spamLeads}건
                 </div>
               </div>
 
               <div className="card">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">상태별 현황</p>
-                    <div className="mt-2 space-y-1 text-sm">
-                      <p>
-                        <span className="badge badge-new mr-2">신규</span>
-                        {stats.newLeads}
-                      </p>
-                      <p>
-                        <span className="badge badge-contacted mr-2">연락완료</span>
-                        {stats.contactedLeads}
-                      </p>
-                      <p>
-                        <span className="badge badge-converted mr-2">전환</span>
-                        {stats.convertedLeads}
-                      </p>
-                      <p>
-                        <span className="badge badge-spam mr-2">스팸</span>
-                        {stats.spamLeads}
-                      </p>
-                    </div>
-                  </div>
+                <p className="text-xs md:text-sm font-medium text-gray-500 mb-2 break-keep">상태별 현황</p>
+                <div className="grid grid-cols-2 gap-1 text-xs md:text-sm">
+                  <p className="flex items-center gap-1">
+                    <span className="badge badge-new">신규</span>
+                    <span>{stats.newLeads}</span>
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <span className="badge badge-contacted">연락</span>
+                    <span>{stats.contactedLeads}</span>
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <span className="badge badge-converted">전환</span>
+                    <span>{stats.convertedLeads}</span>
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <span className="badge badge-spam">스팸</span>
+                    <span>{stats.spamLeads}</span>
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* 차트 영역 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {/* 일별 추이 */}
               <div className="card">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4 break-keep">
                   일별 접수 추이 (최근 30일)
                 </h3>
-                <div className="h-64 flex items-end gap-1">
+                <div className="h-48 md:h-64 flex items-end gap-0.5 md:gap-1">
                   {stats.leadsByDate.map((d, i) => {
                     const maxCount = Math.max(...stats.leadsByDate.map((x) => x.count));
                     const height = maxCount > 0 ? (d.count / maxCount) * 100 : 0;
@@ -293,7 +288,7 @@ export default function StatsPage() {
 
               {/* 클라이언트별 현황 */}
               <div className="card">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4 break-keep">
                   클라이언트별 리드
                 </h3>
                 {stats.leadsByClient.length === 0 ? (

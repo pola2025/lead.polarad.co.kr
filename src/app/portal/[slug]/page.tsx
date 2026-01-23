@@ -36,12 +36,33 @@ const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
 import { formatOperatingHours } from "@/lib/operating-hours";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
 
+interface DeviceOsItem {
+  os: string;
+  users: number;
+  percentage: number;
+}
+
 interface AnalyticsData {
   today: { users: number; pageviews: number };
   week: { users: number; pageviews: number };
   month: { users: number; pageviews: number };
   daily: { date: string; users: number; pageviews: number }[];
   sources: { source: string; users: number }[];
+  devices: { device: string; users: number; percentage: number }[];
+  deviceOs: {
+    mobile: DeviceOsItem[];
+    desktop: DeviceOsItem[];
+    tablet: DeviceOsItem[];
+  };
+  regions: { city: string; users: number; percentage: number }[];
+}
+
+interface LeadsStatsData {
+  today: { leads: number; submissions: number };
+  week: { leads: number; submissions: number };
+  month: { leads: number; submissions: number };
+  funnel: { logins: number; submissions: number };
+  daily: { date: string; leads: number; submissions: number }[];
 }
 
 interface ClientData {
@@ -81,7 +102,10 @@ export default function PortalDashboardPage() {
   const [activeTab, setActiveTab] = useState<"stats" | "leads" | "fields" | "messages" | "notifications">("stats");
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [leadsStats, setLeadsStats] = useState<LeadsStatsData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [statsPeriod, setStatsPeriod] = useState<"7d" | "30d" | "90d">("30d");
+  const [expandedDevice, setExpandedDevice] = useState<string | null>("mobile");
 
   // 접수내역 관련 상태
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -163,17 +187,29 @@ export default function PortalDashboardPage() {
   const fetchAnalytics = useCallback(async () => {
     setAnalyticsLoading(true);
     try {
-      const res = await fetch(`/api/portal/${slug}/analytics`);
-      const data = await res.json();
-      if (data.success) {
-        setAnalytics(data.data);
+      // GA4 통계와 리드 통계를 병렬로 조회
+      const [analyticsRes, leadsStatsRes] = await Promise.all([
+        fetch(`/api/portal/${slug}/analytics?period=${statsPeriod}`),
+        fetch(`/api/portal/${slug}/leads-stats?period=${statsPeriod}`),
+      ]);
+
+      const [analyticsData, leadsStatsData] = await Promise.all([
+        analyticsRes.json(),
+        leadsStatsRes.json(),
+      ]);
+
+      if (analyticsData.success) {
+        setAnalytics(analyticsData.data);
+      }
+      if (leadsStatsData.success) {
+        setLeadsStats(leadsStatsData.data);
       }
     } catch (err) {
       console.error("Analytics fetch error:", err);
     } finally {
       setAnalyticsLoading(false);
     }
-  }, [slug]);
+  }, [slug, statsPeriod]);
 
   const fetchLeads = useCallback(async () => {
     setLeadsLoading(true);
@@ -201,6 +237,13 @@ export default function PortalDashboardPage() {
       fetchLeads();
     }
   }, [activeTab, fetchAnalytics, fetchLeads]);
+
+  // 기간 변경 시 통계 다시 불러오기
+  useEffect(() => {
+    if (activeTab === "stats") {
+      fetchAnalytics();
+    }
+  }, [statsPeriod, activeTab, fetchAnalytics]);
 
   const handleLogout = async () => {
     try {
@@ -450,105 +493,224 @@ export default function PortalDashboardPage() {
           </h2>
         </div>
 
-        {/* 방문 통계 */}
+        {/* 방문 통계 v4 */}
         {activeTab === "stats" && (
-          <div className="space-y-6">
+          <div className="space-y-4">
+            {/* 기간 필터 */}
+            <div className="flex items-center gap-1 flex-wrap">
+              {(["7d", "30d", "90d"] as const).map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setStatsPeriod(period)}
+                  className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
+                    statsPeriod === period
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {period === "7d" ? "7일" : period === "30d" ? "30일" : "90일"}
+                </button>
+              ))}
+            </div>
+
             {analyticsLoading ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
               </div>
             ) : analytics ? (
               <>
-                {/* 요약 카드 */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                  <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
-                    <div className="flex items-center gap-3 mb-2 sm:mb-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                      </div>
-                      <span className="text-sm text-gray-500">오늘 방문자</span>
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{analytics.today.users.toLocaleString()}</p>
-                    <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.today.pageviews.toLocaleString()}</p>
-                  </div>
-                  <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
-                    <div className="flex items-center gap-3 mb-2 sm:mb-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                        <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                      </div>
-                      <span className="text-sm text-gray-500">7일간</span>
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{analytics.week.users.toLocaleString()}</p>
-                    <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.week.pageviews.toLocaleString()}</p>
-                  </div>
-                  <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
-                    <div className="flex items-center gap-3 mb-2 sm:mb-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                        <MousePointerClick className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                      </div>
-                      <span className="text-sm text-gray-500">30일간</span>
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{analytics.month.users.toLocaleString()}</p>
-                    <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.month.pageviews.toLocaleString()}</p>
-                  </div>
-                </div>
+                {/* 1. 전환율 히어로 (축소) */}
+                {(() => {
+                  const visitors = analytics.month.users || 0;
+                  const logins = leadsStats?.funnel.logins || 0;
+                  const submissions = leadsStats?.funnel.submissions || 0;
+                  const conversionRate = visitors > 0 ? Math.round((submissions / visitors) * 100) : 0;
+                  const loginRate = visitors > 0 ? Math.round((logins / visitors) * 100) : 0;
+                  const submitRate = logins > 0 ? Math.round((submissions / logins) * 100) : 0;
 
-                {/* 일별 추이 차트 */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">일별 방문자 추이 (30일)</h3>
-                  <div className="h-48 flex items-end gap-1">
-                    {analytics.daily.length > 0 ? (
-                      analytics.daily.slice(-30).map((day, idx) => {
-                        const maxUsers = Math.max(...analytics.daily.map(d => d.users), 1);
-                        const height = (day.users / maxUsers) * 100;
-                        const date = day.date;
-                        const formattedDate = date ? `${date.slice(4, 6)}/${date.slice(6, 8)}` : "";
-                        return (
-                          <div
-                            key={idx}
-                            className="flex-1 group relative"
-                          >
-                            <div
-                              className="w-full bg-blue-500 hover:bg-blue-600 rounded-t transition-all cursor-pointer"
-                              style={{ height: `${Math.max(height, 2)}%` }}
-                            />
-                            <div className="opacity-0 group-hover:opacity-100 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-10">
-                              {formattedDate}: {day.users}명
+                  return (
+                    <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-4 text-white">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs opacity-80 mb-0.5">{statsPeriod === "7d" ? "7일" : statsPeriod === "30d" ? "30일" : "90일"} 전환율</p>
+                          <p className="text-3xl font-bold">{conversionRate}%</p>
+                          <p className="text-xs opacity-70 mt-1">{visitors.toLocaleString()} 방문 → {submissions.toLocaleString()} 접수</p>
+                        </div>
+                        <div className="flex gap-4 text-center">
+                          <div>
+                            <p className="text-xl font-bold">{loginRate}%</p>
+                            <p className="text-[10px] opacity-70">로그인율</p>
+                          </div>
+                          <div>
+                            <p className="text-xl font-bold">{submitRate}%</p>
+                            <p className="text-[10px] opacity-70">접수율</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 2. 전환 퍼널 */}
+                {(() => {
+                  const visitors = analytics.month.users || 0;
+                  const logins = leadsStats?.funnel.logins || 0;
+                  const submissions = leadsStats?.funnel.submissions || 0;
+                  const loginRate = visitors > 0 ? Math.round((logins / visitors) * 100) : 0;
+                  const submitRate = visitors > 0 ? Math.round((submissions / visitors) * 100) : 0;
+
+                  return (
+                    <div className="bg-white rounded-xl border border-gray-200 p-4">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-3">전환 퍼널</h3>
+                      <div className="space-y-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="w-14 text-xs text-gray-600">방문</span>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-medium text-gray-900">{visitors.toLocaleString()}명</span>
+                              <span className="text-[10px] text-gray-500">100%</span>
+                            </div>
+                            <div className="h-2.5 bg-blue-500 rounded-full"></div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-14 text-xs text-gray-600">로그인</span>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-medium text-gray-900">{logins.toLocaleString()}명</span>
+                              <span className="text-[10px] text-gray-500">{loginRate}%</span>
+                            </div>
+                            <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${loginRate}%` }}></div>
                             </div>
                           </div>
-                        );
-                      })
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                        데이터가 없습니다
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-14 text-xs text-gray-600">접수완료</span>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-medium text-gray-900">{submissions.toLocaleString()}명</span>
+                              <span className="text-[10px] text-gray-500">{submitRate}%</span>
+                            </div>
+                            <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${submitRate}%` }}></div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    )}
+                    </div>
+                  );
+                })()}
+
+                {/* 3. 기기별 방문자 (아코디언) */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <h3 className="text-sm font-semibold text-gray-900 p-4 pb-2">기기별 방문자</h3>
+                  {analytics.devices && analytics.devices.length > 0 ? (
+                    <div className="border-t border-gray-100">
+                      {analytics.devices.map((device) => {
+                        const deviceKey = device.device.toLowerCase();
+                        const deviceEmoji = deviceKey === "mobile" ? "📱" : deviceKey === "desktop" ? "💻" : "📟";
+                        const deviceLabel = deviceKey === "mobile" ? "모바일" : deviceKey === "desktop" ? "데스크톱" : "태블릿";
+                        const isExpanded = expandedDevice === deviceKey;
+                        const osData = analytics.deviceOs?.[deviceKey as keyof typeof analytics.deviceOs] || [];
+
+                        return (
+                          <div key={device.device} className="border-b border-gray-100 last:border-b-0">
+                            <button
+                              onClick={() => setExpandedDevice(isExpanded ? null : deviceKey)}
+                              className="w-full flex items-center justify-between p-3 hover:bg-gray-50"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">{deviceEmoji}</span>
+                                <span className="text-sm text-gray-700">{deviceLabel}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">{device.percentage}%</span>
+                                <span className="text-xs text-gray-400">({device.users.toLocaleString()}명)</span>
+                                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </button>
+                            {isExpanded && osData.length > 0 && (
+                              <div className="bg-gray-50 px-4 py-2.5 space-y-2">
+                                {osData.slice(0, 3).map((os) => (
+                                  <div key={os.os} className="flex items-center justify-between">
+                                    <span className="text-xs text-gray-600">
+                                      {os.os === "Android" ? "🤖" : os.os === "iOS" ? "🍎" : os.os === "Windows" ? "🪟" : os.os === "Macintosh" ? "🍎" : "💻"} {os.os}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                        <div className="h-full bg-green-500 rounded-full" style={{ width: `${os.percentage}%` }}></div>
+                                      </div>
+                                      <span className="text-xs font-medium w-8">{os.percentage}%</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-400 text-sm">기기 데이터가 없습니다</div>
+                  )}
+                </div>
+
+                {/* 4. 지역별 방문자 */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">지역별 방문자</h3>
+                  {analytics.regions && analytics.regions.length > 0 ? (
+                    <div className="space-y-2">
+                      {analytics.regions.slice(0, 5).map((region, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500 w-16 truncate">{region.city}</span>
+                          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-rose-500 rounded-full" style={{ width: `${region.percentage}%` }}></div>
+                          </div>
+                          <span className="text-xs font-medium w-8 text-right">{region.percentage}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-400 text-sm text-center py-4">지역 데이터가 없습니다</p>
+                  )}
+                </div>
+
+                {/* 5. 히트맵 카드 (추후 구현) */}
+                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white opacity-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold mb-1">클릭 히트맵</h3>
+                      <p className="text-xs opacity-80">터치/클릭 위치 분석 (준비중)</p>
+                    </div>
+                    <button className="px-4 py-2 bg-white/20 rounded-lg text-sm font-medium cursor-not-allowed">
+                      준비중
+                    </button>
                   </div>
                 </div>
 
-                {/* 유입 경로 */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">유입 경로 TOP 5</h3>
-                  {analytics.sources.length > 0 ? (
-                    <div className="space-y-3">
+                {/* 유입 경로 (기존) */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">유입 경로 TOP 5</h3>
+                  {analytics.sources && analytics.sources.length > 0 ? (
+                    <div className="space-y-2.5">
                       {analytics.sources.map((source, idx) => {
                         const maxUsers = analytics.sources[0]?.users || 1;
                         const width = (source.users / maxUsers) * 100;
                         return (
-                          <div key={idx} className="flex items-center gap-3">
-                            <span className="w-6 text-sm text-gray-400">{idx + 1}</span>
+                          <div key={idx} className="flex items-center gap-2">
+                            <span className="w-5 text-xs text-gray-400">{idx + 1}</span>
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-gray-700 truncate max-w-[200px]">
+                                <span className="text-xs text-gray-700 truncate max-w-[180px]">
                                   {source.source === "(direct) / (none)" ? "직접 방문" : source.source}
                                 </span>
-                                <span className="text-sm font-medium text-gray-900">{source.users}명</span>
+                                <span className="text-xs font-medium text-gray-900">{source.users}명</span>
                               </div>
-                              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-blue-500 rounded-full"
-                                  style={{ width: `${width}%` }}
-                                />
+                              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${width}%` }} />
                               </div>
                             </div>
                           </div>

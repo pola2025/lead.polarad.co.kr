@@ -717,3 +717,87 @@ export async function isBlacklisted(
 
   return false;
 }
+
+// ==================== 설정 (Settings) ====================
+
+export interface GA4Settings {
+  id?: string;
+  ga4PropertyId: string;
+  ga4ServiceAccountEmail: string;
+  ga4PrivateKey: string;
+  updatedAt?: string;
+}
+
+function getSettingsTable() {
+  return getBase()(process.env.AIRTABLE_SETTINGS_TABLE_ID || "Settings");
+}
+
+export async function getGA4Settings(): Promise<GA4Settings | null> {
+  try {
+    const records = await getSettingsTable()
+      .select({
+        filterByFormula: `{key} = "ga4_settings"`,
+        maxRecords: 1,
+      })
+      .all();
+
+    if (records.length === 0) return null;
+
+    const record = records[0];
+    return {
+      id: record.id,
+      ga4PropertyId: record.get("ga4PropertyId") as string || "",
+      ga4ServiceAccountEmail: record.get("ga4ServiceAccountEmail") as string || "",
+      ga4PrivateKey: record.get("ga4PrivateKey") as string || "",
+      updatedAt: record.get("updatedAt") as string,
+    };
+  } catch (error) {
+    console.error("GA4 설정 조회 실패:", error);
+    return null;
+  }
+}
+
+export async function saveGA4Settings(data: Omit<GA4Settings, "id" | "updatedAt">): Promise<GA4Settings> {
+  const existingSettings = await getGA4Settings();
+
+  if (existingSettings?.id) {
+    // 기존 레코드 업데이트
+    const records = await getSettingsTable().update([
+      {
+        id: existingSettings.id,
+        fields: {
+          ga4PropertyId: data.ga4PropertyId || "",
+          ga4ServiceAccountEmail: data.ga4ServiceAccountEmail || "",
+          ga4PrivateKey: data.ga4PrivateKey || "",
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    ]);
+    const record = records[0];
+
+    return {
+      id: record.id,
+      ga4PropertyId: record.get("ga4PropertyId") as string || "",
+      ga4ServiceAccountEmail: record.get("ga4ServiceAccountEmail") as string || "",
+      ga4PrivateKey: record.get("ga4PrivateKey") as string || "",
+      updatedAt: record.get("updatedAt") as string,
+    };
+  } else {
+    // 새 레코드 생성
+    const record = await getSettingsTable().create({
+      key: "ga4_settings",
+      ga4PropertyId: data.ga4PropertyId,
+      ga4ServiceAccountEmail: data.ga4ServiceAccountEmail,
+      ga4PrivateKey: data.ga4PrivateKey,
+      updatedAt: new Date().toISOString(),
+    });
+
+    return {
+      id: record.id,
+      ga4PropertyId: record.get("ga4PropertyId") as string || "",
+      ga4ServiceAccountEmail: record.get("ga4ServiceAccountEmail") as string || "",
+      ga4PrivateKey: record.get("ga4PrivateKey") as string || "",
+      updatedAt: record.get("updatedAt") as string,
+    };
+  }
+}

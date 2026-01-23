@@ -37,7 +37,7 @@ body {
 
 /* 테이블 스타일 */
 .table-container {
-  @apply rounded-lg border border-gray-200 bg-white;
+  @apply rounded-lg border border-gray-200 bg-white overflow-x-auto;
 }
 
 .table-container table {
@@ -96,4 +96,43 @@ body {
 
 .badge-spam {
   @apply bg-red-100 text-red-800;
+}
+
+/* Safe Area (iOS 노치/홈 인디케이터 대응) */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* 모바일 반응형 유틸리티 */
+.break-keep {
+  word-break: keep-all;
+}
+
+/* 모바일 테이블 스타일 */
+@media (max-width: 767px) {
+  .table-container {
+    @apply rounded-none border-x-0 -mx-4;
+  }
+
+  .table-container th,
+  .table-container td {
+    @apply px-3 py-2 whitespace-nowrap;
+  }
+}
+
+/* 모바일 카드 스타일 */
+@media (max-width: 767px) {
+  .card {
+    @apply p-4 rounded-lg;
+  }
+}
+
+/* 고아텍스트 방지 */
+.prevent-orphan {
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }

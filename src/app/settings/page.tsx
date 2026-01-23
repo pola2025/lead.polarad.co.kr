@@ -8,16 +8,16 @@ export default function SettingsPage() {
     <div className="min-h-screen">
       <Sidebar />
 
-      <main className="ml-64 p-8">
+      <main className="pt-16 pb-20 px-4 md:pt-0 md:pb-0 md:ml-64 md:p-8">
         {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">설정</h1>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">설정</h1>
+          <p className="mt-1 text-sm text-gray-500 break-keep">
             시스템 설정을 관리합니다.
           </p>
         </div>
 
-        <div className="max-w-2xl space-y-6">
+        <div className="max-w-2xl space-y-4 md:space-y-6">
           {/* 알림 설정 */}
           <div className="card">
             <div className="flex items-center gap-3 mb-4">

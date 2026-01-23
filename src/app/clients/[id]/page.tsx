@@ -399,7 +399,7 @@ export default function EditClientPage({
     return (
       <div className="min-h-screen">
         <Sidebar />
-        <main className="ml-64 p-8">
+        <main className="pt-16 pb-20 px-4 md:pt-0 md:pb-0 md:ml-64 md:p-8">
           <div className="flex items-center justify-center py-12">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
           </div>
@@ -412,34 +412,55 @@ export default function EditClientPage({
     <div className="min-h-screen">
       <Sidebar />
 
-      <main className="ml-64 p-8">
+      {/* 저장 결과 모달 */}
+      {saveSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-xl shadow-xl p-6 flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-200">
+            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <Check className="h-6 w-6 text-green-600" />
+            </div>
+            <p className="text-lg font-medium text-gray-900">저장되었습니다</p>
+          </div>
+        </div>
+      )}
+
+      {/* 에러 모달 */}
+      {error && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-xl shadow-xl p-6 flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-200 max-w-sm">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <X className="h-6 w-6 text-red-600" />
+            </div>
+            <p className="text-lg font-medium text-gray-900">오류 발생</p>
+            <p className="text-sm text-gray-600 text-center">{error}</p>
+            <button
+              type="button"
+              onClick={() => setError("")}
+              className="mt-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+
+      <main className="pt-16 pb-20 px-4 md:pt-0 md:pb-0 md:ml-64 md:p-8">
         {/* 헤더 */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <Link
             href="/clients"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-3 md:mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            클라이언트 목록
+            <span className="break-keep">클라이언트 목록</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">클라이언트 수정</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">클라이언트 수정</h1>
           <p className="mt-1 text-sm text-gray-500">{formData.name}</p>
         </div>
 
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-          {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
-              {error}
-            </div>
-          )}
 
-          {saveSuccess && (
-            <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-600 flex items-center gap-2">
-              <Check className="h-4 w-4" />
-              저장되었습니다.
-            </div>
-          )}
 
           {/* 기본 정보 */}
           <div className="card">
