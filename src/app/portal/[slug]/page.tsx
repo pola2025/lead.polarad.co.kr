@@ -805,6 +805,20 @@ export default function PortalDashboardPage() {
                     ))
                   )}
 
+                  {/* 개인정보 이용동의 */}
+                  <div className="pt-2">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        defaultChecked
+                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">
+                        <span className="text-blue-600 underline">개인정보 이용약관</span>에 동의합니다. <span className="text-red-500">*</span>
+                      </span>
+                    </label>
+                  </div>
+
                   <button
                     onClick={() => setPreviewStep(3)}
                     className="w-full rounded-lg px-4 py-3 text-sm font-medium text-white mt-2"
@@ -812,6 +826,8 @@ export default function PortalDashboardPage() {
                   >
                     {messages.ctaButtonText || "상담 신청하기"}
                   </button>
+
+                  <p className="text-xs text-gray-500 text-center">본 접수정보는 상담접수에만 이용되며 상담 후 폐기됩니다.</p>
                 </div>
 
                 {/* 뒤로 가기 */}
