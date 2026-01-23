@@ -137,6 +137,8 @@ export interface Client {
   operatingEndTime?: string; // 종료시간 (HH:mm)
   // 에어테이블 공유 URL (텔레그램 알림용)
   airtableShareUrl?: string;
+  // OG 이미지 URL
+  ogImageUrl?: string;
   createdAt: string;
 }
 

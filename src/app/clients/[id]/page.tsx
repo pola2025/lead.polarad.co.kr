@@ -4,12 +4,105 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
-import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send } from "lucide-react";
+import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send, Image } from "lucide-react";
 import Link from "next/link";
 import type { Client, FormField, ProductFeature } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
 import { Plus, Trash2, GripVertical, Clock } from "lucide-react";
 import { formatOperatingHours } from "@/lib/operating-hours";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+// 드래그 가능한 서비스 특징 아이템 컴포넌트
+interface SortableFeatureItemProps {
+  feature: ProductFeature;
+  index: number;
+  onUpdate: (index: number, feature: ProductFeature) => void;
+  onDelete: (index: number) => void;
+}
+
+function SortableFeatureItem({ feature, index, onUpdate, onDelete }: SortableFeatureItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: feature.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 group"
+    >
+      <button
+        type="button"
+        className="cursor-grab active:cursor-grabbing touch-none"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4 text-gray-400" />
+      </button>
+      <select
+        value={feature.icon || "✅"}
+        onChange={(e) => {
+          onUpdate(index, { ...feature, icon: e.target.value });
+        }}
+        className="w-16 text-center rounded-lg border border-gray-300 px-2 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+      >
+        <option value="✅">✅</option>
+        <option value="✓">✓</option>
+        <option value="⭐">⭐</option>
+        <option value="💡">💡</option>
+        <option value="🎯">🎯</option>
+        <option value="💰">💰</option>
+        <option value="🔥">🔥</option>
+        <option value="👍">👍</option>
+        <option value="🏆">🏆</option>
+        <option value="📌">📌</option>
+      </select>
+      <input
+        type="text"
+        value={feature.text}
+        onChange={(e) => {
+          onUpdate(index, { ...feature, text: e.target.value });
+        }}
+        className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        placeholder="특징 내용 입력"
+      />
+      <button
+        type="button"
+        onClick={() => onDelete(index)}
+        className="p-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
 
 export default function EditClientPage({
   params,
@@ -28,6 +121,42 @@ export default function EditClientPage({
   const [passwordSent, setPasswordSent] = useState(false);
   const [formFields, setFormFields] = useState<FormField[]>(DEFAULT_FORM_FIELDS);
   const [productFeatures, setProductFeatures] = useState<ProductFeature[]>([]);
+  const [generatingOg, setGeneratingOg] = useState(false);
+  const [ogImageUrl, setOgImageUrl] = useState<string | null>(null);
+
+  // 드래그 앤 드롭 센서 설정
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // 드래그 종료 핸들러
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setProductFeatures((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  // 서비스 특징 업데이트 핸들러
+  const handleFeatureUpdate = (index: number, feature: ProductFeature) => {
+    const updated = [...productFeatures];
+    updated[index] = feature;
+    setProductFeatures(updated);
+  };
+
+  // 서비스 특징 삭제 핸들러
+  const handleFeatureDelete = (index: number) => {
+    setProductFeatures(productFeatures.filter((_, i) => i !== index));
+  };
 
   const [formData, setFormData] = useState<Omit<Client, "id" | "createdAt">>({
     name: "",
@@ -76,12 +205,11 @@ export default function EditClientPage({
   };
 
   const sendPasswordToSlack = async () => {
-    if (!confirm("새 비밀번호를 생성하여 슬랙으로 전송하시겠습니까?")) {
-      return;
-    }
-
+    // UI 블로킹 방지를 위해 confirm 제거, 바로 실행
     setSendingPassword(true);
     setPasswordSent(false);
+    setError(null);
+
     try {
       const res = await fetch(`/api/portal/generate-password`, {
         method: "POST",
@@ -159,6 +287,8 @@ export default function EditClientPage({
       setFormFields(client.formFields || DEFAULT_FORM_FIELDS);
       // 상품 특징 로드
       setProductFeatures(client.productFeatures || []);
+      // OG 이미지 URL 로드
+      setOgImageUrl(client.ogImageUrl || null);
     } catch (err) {
       console.error(err);
       setError("클라이언트를 불러오는데 실패했습니다.");
@@ -199,6 +329,38 @@ export default function EditClientPage({
       setError("로고 업로드 중 오류가 발생했습니다.");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const generateOgImage = async () => {
+    if (!formData.slug) {
+      setError("슬러그가 필요합니다.");
+      return;
+    }
+
+    setGeneratingOg(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/og/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: formData.slug }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        setError(data.error || "OG 이미지 생성에 실패했습니다.");
+        return;
+      }
+
+      setOgImageUrl(data.data.ogImageUrl);
+    } catch (err) {
+      console.error(err);
+      setError("OG 이미지 생성 중 오류가 발생했습니다.");
+    } finally {
+      setGeneratingOg(false);
     }
   };
 
@@ -429,6 +591,37 @@ export default function EditClientPage({
                   </div>
                 </div>
               </div>
+
+              {/* OG 이미지 생성 */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900">OG 이미지</h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      소셜 미디어 공유 시 표시되는 이미지입니다.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={generateOgImage}
+                    disabled={generatingOg || !formData.slug}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  >
+                    <Image className="h-4 w-4" />
+                    {generatingOg ? "생성 중..." : "OG 이미지 생성"}
+                  </button>
+                </div>
+                {ogImageUrl && (
+                  <div className="mt-4">
+                    <img
+                      src={ogImageUrl}
+                      alt="OG 이미지 미리보기"
+                      className="w-full max-w-md rounded-lg border border-gray-200 shadow-sm"
+                    />
+                    <p className="mt-2 text-xs text-gray-500 break-all">{ogImageUrl}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -436,46 +629,30 @@ export default function EditClientPage({
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">서비스 특징</h2>
             <p className="text-sm text-gray-500 mb-4">
-              랜딩 페이지에 표시될 서비스 특징/혜택을 설정합니다.
+              랜딩 페이지에 표시될 서비스 특징/혜택을 설정합니다. 드래그하여 순서를 변경할 수 있습니다.
             </p>
 
             <div className="space-y-3">
-              {productFeatures.map((feature, index) => (
-                <div key={feature.id} className="flex items-center gap-3 group">
-                  <GripVertical className="h-4 w-4 text-gray-400 cursor-move" />
-                  <input
-                    type="text"
-                    value={feature.icon || "✓"}
-                    onChange={(e) => {
-                      const updated = [...productFeatures];
-                      updated[index] = { ...feature, icon: e.target.value };
-                      setProductFeatures(updated);
-                    }}
-                    className="w-12 text-center rounded-lg border border-gray-300 px-2 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    placeholder="✓"
-                  />
-                  <input
-                    type="text"
-                    value={feature.text}
-                    onChange={(e) => {
-                      const updated = [...productFeatures];
-                      updated[index] = { ...feature, text: e.target.value };
-                      setProductFeatures(updated);
-                    }}
-                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    placeholder="특징 내용 입력"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProductFeatures(productFeatures.filter((_, i) => i !== index));
-                    }}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={productFeatures.map((f) => f.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {productFeatures.map((feature, index) => (
+                    <SortableFeatureItem
+                      key={feature.id}
+                      feature={feature}
+                      index={index}
+                      onUpdate={handleFeatureUpdate}
+                      onDelete={handleFeatureDelete}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
 
               {productFeatures.length === 0 && (
                 <p className="text-sm text-gray-400 text-center py-4">
@@ -558,41 +735,6 @@ export default function EditClientPage({
               랜딩 페이지에서 수집할 정보를 설정합니다. 필드를 추가/제거하고 순서를 변경할 수 있습니다.
             </p>
             <FormFieldsEditor fields={formFields} onChange={setFormFields} />
-          </div>
-
-          {/* 카카오 설정 */}
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">카카오 로그인 설정</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="kakaoClientId" className="block text-sm font-medium text-gray-700 mb-1">
-                  카카오 REST API 키
-                </label>
-                <input
-                  type="text"
-                  id="kakaoClientId"
-                  name="kakaoClientId"
-                  value={formData.kakaoClientId}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="kakaoClientSecret" className="block text-sm font-medium text-gray-700 mb-1">
-                  카카오 Client Secret
-                </label>
-                <input
-                  type="password"
-                  id="kakaoClientSecret"
-                  name="kakaoClientSecret"
-                  value={formData.kakaoClientSecret}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-            </div>
           </div>
 
           {/* 슬랙 설정 */}

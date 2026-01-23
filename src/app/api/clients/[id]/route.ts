@@ -89,6 +89,10 @@ export async function PUT(
     return NextResponse.json({ success: true, data: client });
   } catch (error) {
     console.error("Failed to update client:", error);
+    // 에러 상세 정보 로깅
+    if (error instanceof Error) {
+      console.error("Error details:", error.message, error.stack);
+    }
     return NextResponse.json(
       { success: false, error: "클라이언트 수정에 실패했습니다." },
       { status: 500 }

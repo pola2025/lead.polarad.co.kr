@@ -384,43 +384,6 @@ export default function NewClientPage() {
             </div>
           </div>
 
-          {/* 카카오 설정 */}
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">카카오 로그인 설정</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="kakaoClientId" className="block text-sm font-medium text-gray-700 mb-1">
-                  카카오 REST API 키
-                </label>
-                <input
-                  type="text"
-                  id="kakaoClientId"
-                  name="kakaoClientId"
-                  value={formData.kakaoClientId}
-                  onChange={handleChange}
-                  placeholder="카카오 개발자 앱의 REST API 키"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="kakaoClientSecret" className="block text-sm font-medium text-gray-700 mb-1">
-                  카카오 Client Secret
-                </label>
-                <input
-                  type="password"
-                  id="kakaoClientSecret"
-                  name="kakaoClientSecret"
-                  value={formData.kakaoClientSecret}
-                  onChange={handleChange}
-                  placeholder="카카오 개발자 앱의 Client Secret"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-            </div>
-          </div>
-
           {/* 텔레그램 설정 */}
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">텔레그램 알림 설정</h2>

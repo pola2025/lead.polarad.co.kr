@@ -37,7 +37,8 @@ function getPublicUrl(): string {
 export async function uploadToR2(
   file: Buffer,
   fileName: string,
-  contentType: string
+  contentType: string,
+  folder: string = "polarlead/logos"
 ): Promise<string> {
   const client = getR2Client();
   const bucket = getBucketName();
@@ -47,7 +48,7 @@ export async function uploadToR2(
   const timestamp = Date.now();
   const ext = fileName.split(".").pop();
   const baseName = fileName.replace(/\.[^/.]+$/, "");
-  const key = `polarlead/logos/${baseName}-${timestamp}.${ext}`;
+  const key = `${folder}/${baseName}-${timestamp}.${ext}`;
 
   await client.send(
     new PutObjectCommand({

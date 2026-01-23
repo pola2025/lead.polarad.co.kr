@@ -24,6 +24,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? "https://lead.polarad.co.kr"
     : "http://localhost:3000";
 
+  // OG 이미지: ogImageUrl이 있으면 사용, 없으면 동적 API 사용
+  const ogImageUrl = client.ogImageUrl || `${baseUrl}/api/og?slug=${slug}`;
+
   return {
     title,
     description,
@@ -34,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: `${baseUrl}/l/${slug}`,
       images: [
         {
-          url: `${baseUrl}/api/og?slug=${slug}`,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: title,
@@ -45,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title,
       description,
-      images: [`${baseUrl}/api/og?slug=${slug}`],
+      images: [ogImageUrl],
     },
   };
 }

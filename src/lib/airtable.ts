@@ -295,6 +295,8 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     operatingEndTime: record.get("operatingEndTime") as string | undefined,
     // 에어테이블 공유 URL
     airtableShareUrl: record.get("airtableShareUrl") as string | undefined,
+    // OG 이미지 URL
+    ogImageUrl: record.get("ogImageUrl") as string | undefined,
     createdAt: record.get("createdAt") as string,
   };
 }
@@ -425,6 +427,9 @@ export async function updateClient(
 
   // 에어테이블 공유 URL
   if (data.airtableShareUrl !== undefined) updateData.airtableShareUrl = data.airtableShareUrl || null;
+
+  // OG 이미지 URL
+  if (data.ogImageUrl !== undefined) updateData.ogImageUrl = data.ogImageUrl || null;
 
   const record = await getClientsTable().update(id, updateData);
 
