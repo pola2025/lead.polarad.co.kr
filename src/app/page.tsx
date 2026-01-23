@@ -11,6 +11,11 @@ import {
   ArrowUp,
   ArrowDown,
   ExternalLink,
+  X,
+  Phone,
+  Mail,
+  Calendar,
+  Building2,
 } from "lucide-react";
 import type { Lead, Client } from "@/types";
 
@@ -28,7 +33,9 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
   const [activeClients, setActiveClients] = useState<Client[]>([]);
+  const [allClients, setAllClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -86,6 +93,7 @@ export default function DashboardPage() {
 
         // 활성 클라이언트
         setActiveClients(clients.filter((c) => c.status === "active").slice(0, 5));
+        setAllClients(clients);
       }
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
@@ -247,7 +255,11 @@ export default function DashboardPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {recentLeads.map((lead) => (
-                          <tr key={lead.id} className="hover:bg-gray-50">
+                          <tr
+                            key={lead.id}
+                            className="hover:bg-gray-50 cursor-pointer"
+                            onClick={() => setSelectedLead(lead)}
+                          >
                             <td className="px-3 md:px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
                               {lead.name}
                             </td>
@@ -363,6 +375,156 @@ export default function DashboardPage() {
           </>
         )}
       </main>
+
+      {/* 리드 상세 모달 */}
+      {selectedLead && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setSelectedLead(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 헤더 */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">리드 상세</h3>
+              <button
+                onClick={() => setSelectedLead(null)}
+                className="p-1 rounded-lg hover:bg-gray-100 text-gray-500"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* 콘텐츠 */}
+            <div className="p-4 space-y-4">
+              {/* 기본 정보 */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-primary-600 font-semibold text-lg">
+                    {selectedLead.name?.charAt(0) || "?"}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-lg">
+                      {selectedLead.name || "-"}
+                    </p>
+                    <span
+                      className={`badge ${
+                        selectedLead.status === "new" || selectedLead.status === "kakao_login"
+                          ? "badge-new"
+                          : selectedLead.status === "contacted"
+                          ? "badge-contacted"
+                          : selectedLead.status === "converted"
+                          ? "badge-converted"
+                          : "badge-blacklist"
+                      }`}
+                    >
+                      {selectedLead.status === "new"
+                        ? "신규"
+                        : selectedLead.status === "kakao_login"
+                        ? "카카오로그인"
+                        : selectedLead.status === "contacted"
+                        ? "연락완료"
+                        : selectedLead.status === "converted"
+                        ? "전환"
+                        : "블랙리스트"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 연락처 정보 */}
+                <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                  {selectedLead.phone && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      <a
+                        href={`tel:${selectedLead.phone}`}
+                        className="text-primary-600 hover:underline"
+                      >
+                        {selectedLead.phone}
+                      </a>
+                    </div>
+                  )}
+                  {selectedLead.email && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-gray-400" />
+                      <a
+                        href={`mailto:${selectedLead.email}`}
+                        className="text-primary-600 hover:underline"
+                      >
+                        {selectedLead.email}
+                      </a>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">
+                      {new Date(selectedLead.createdAt).toLocaleString("ko-KR")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Building2 className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">
+                      {allClients.find((c) => c.id === selectedLead.clientId)?.name || "알 수 없음"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 추가 정보 */}
+              {(selectedLead.businessName || selectedLead.industry || selectedLead.address || selectedLead.birthdate || selectedLead.memo) && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">추가 정보</p>
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                    {selectedLead.businessName && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">사업자명</span>
+                        <span className="text-gray-900 font-medium">{selectedLead.businessName}</span>
+                      </div>
+                    )}
+                    {selectedLead.industry && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">업종</span>
+                        <span className="text-gray-900 font-medium">{selectedLead.industry}</span>
+                      </div>
+                    )}
+                    {selectedLead.address && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">주소</span>
+                        <span className="text-gray-900 font-medium">{selectedLead.address}</span>
+                      </div>
+                    )}
+                    {selectedLead.birthdate && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">생년월일</span>
+                        <span className="text-gray-900 font-medium">{selectedLead.birthdate}</span>
+                      </div>
+                    )}
+                    {selectedLead.memo && (
+                      <div className="text-sm">
+                        <span className="text-gray-500 block mb-1">메모</span>
+                        <span className="text-gray-900">{selectedLead.memo}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 푸터 */}
+            <div className="p-4 border-t border-gray-200">
+              <Link
+                href="/leads"
+                className="block w-full text-center py-2 px-4 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
+                onClick={() => setSelectedLead(null)}
+              >
+                리드 관리에서 보기
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -896,9 +896,9 @@ export default function PortalDashboardPage() {
                           </span>
                         </div>
                         {/* 정보 */}
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           {lead.name && (
-                            <p className="text-sm font-medium text-gray-900 truncate">{lead.name}</p>
+                            <p className="text-sm font-medium text-gray-900">{lead.name}</p>
                           )}
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-gray-600">
                             {lead.phone && (
@@ -914,8 +914,27 @@ export default function PortalDashboardPage() {
                               </span>
                             )}
                           </div>
-                          {lead.kakaoId && (
-                            <p className="text-[11px] text-yellow-600 truncate">카카오: {lead.kakaoId}</p>
+                          {/* 추가 정보 */}
+                          <div className="text-[12px] text-gray-500 space-y-0.5">
+                            {lead.businessName && (
+                              <p>상호: {lead.businessName}{lead.industry && ` (${lead.industry})`}</p>
+                            )}
+                            {lead.address && (
+                              <p>주소: {lead.address}</p>
+                            )}
+                            {lead.birthdate && (
+                              <p>생년월일: {lead.birthdate}</p>
+                            )}
+                            {lead.kakaoId && (
+                              <p className="text-yellow-600">카카오: {lead.kakaoId}</p>
+                            )}
+                          </div>
+                          {/* 문의사항/메모 */}
+                          {lead.memo && (
+                            <div className="mt-2 p-2 bg-gray-50 rounded-lg">
+                              <p className="text-[11px] text-gray-400 mb-0.5">문의사항</p>
+                              <p className="text-[13px] text-gray-700 whitespace-pre-wrap">{lead.memo}</p>
+                            </div>
                           )}
                         </div>
                       </div>
