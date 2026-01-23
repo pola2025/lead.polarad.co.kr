@@ -222,16 +222,18 @@ export default function LandingClient({ client }: LandingClientProps) {
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">서비스 특징</h2>
-            <ul className="space-y-3 flex flex-col items-center">
-              {features.map((feature) => (
-                <li key={feature.id} className="flex items-center gap-3">
-                  <span className="flex-shrink-0 text-lg">
-                    {feature.icon === "✓" || !feature.icon ? "✓" : feature.icon}
-                  </span>
-                  <span className="text-gray-700">{feature.text}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="flex justify-center">
+              <ul className="space-y-3 inline-block">
+                {features.map((feature) => (
+                  <li key={feature.id} className="flex items-center gap-3">
+                    <span className="flex-shrink-0 text-lg">
+                      {feature.icon === "✓" || !feature.icon ? "✓" : feature.icon}
+                    </span>
+                    <span className="text-gray-700">{feature.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* 카카오 로그인 버튼 - 이메일 필드가 있을 때만 */}
