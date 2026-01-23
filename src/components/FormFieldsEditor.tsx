@@ -232,10 +232,10 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* 활성화된 필드 목록 */}
       <div>
-        <h3 className="text-sm font-medium text-gray-700 mb-3">활성화된 필드</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-2 sm:mb-3">활성화된 필드</h3>
         <div className="space-y-2">
           {enabledFields.map((field) => (
             <div
@@ -247,7 +247,7 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
               onDragEnter={(e) => handleDragEnter(e, field.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, field.id)}
-              className={`flex items-center gap-3 p-3 bg-white border rounded-lg transition-all ${
+              className={`flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white border rounded-lg transition-all ${
                 dragOverId === field.id
                   ? "border-blue-400 bg-blue-50 shadow-md"
                   : draggedId === field.id
@@ -256,30 +256,30 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
               }`}
             >
               {/* 드래그 핸들 */}
-              <div className="cursor-grab active:cursor-grabbing p-1 -m-1 hover:bg-gray-100 rounded">
-                <GripVertical className="h-5 w-5 text-gray-400" />
+              <div className="cursor-grab active:cursor-grabbing p-0.5 sm:p-1 -m-0.5 sm:-m-1 hover:bg-gray-100 rounded flex-shrink-0">
+                <GripVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
               </div>
 
               {/* 필드 정보 */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{field.label}</span>
-                  <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <span className="font-medium text-sm sm:text-base text-gray-900 truncate">{field.label}</span>
+                  <span className="hidden sm:inline text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap">
                     {FIELD_TYPE_NAMES[field.type]}
                   </span>
                   {field.condition && (
-                    <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] sm:text-xs text-blue-600 bg-blue-50 px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap">
                       조건부
                     </span>
                   )}
                 </div>
                 {field.placeholder && (
-                  <p className="text-xs text-gray-500 truncate">{field.placeholder}</p>
+                  <p className="text-[11px] sm:text-xs text-gray-500 truncate">{field.placeholder}</p>
                 )}
               </div>
 
               {/* 필수 여부 토글 */}
-              <label className="flex items-center gap-1.5 cursor-pointer">
+              <label className="flex items-center gap-1 sm:gap-1.5 cursor-pointer flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={field.required}
@@ -287,7 +287,7 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
                   disabled={PRESET_BASIC_FIELDS.some((p) => p.id === field.id)}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
                 />
-                <span className="text-xs text-gray-600">필수</span>
+                <span className="text-[11px] sm:text-xs text-gray-600 whitespace-nowrap">필수</span>
               </label>
 
               {/* 선다형 옵션 편집 버튼 */}
@@ -295,7 +295,7 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
                 <button
                   type="button"
                   onClick={() => setShowOptionsModal(field)}
-                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                  className="p-1 sm:p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded flex-shrink-0"
                   title="옵션 편집"
                 >
                   <Settings className="h-4 w-4" />
@@ -307,7 +307,7 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
                 <button
                   type="button"
                   onClick={() => deleteField(field.id)}
-                  className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                  className="p-1 sm:p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded flex-shrink-0"
                   title="삭제"
                 >
                   <Trash2 className="h-4 w-4" />

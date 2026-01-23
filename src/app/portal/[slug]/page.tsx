@@ -325,8 +325,8 @@ export default function PortalDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 lg:fixed lg:top-0 lg:left-0 lg:right-0 lg:z-30">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-bold text-gray-900">{client?.name}</h1>
             <p className="text-sm text-gray-500">랜딩 페이지 설정</p>
@@ -337,20 +337,96 @@ export default function PortalDashboardPage() {
               className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <Eye className="h-4 w-4" />
-              미리보기
+              <span className="hidden sm:inline">미리보기</span>
             </button>
             <button
               onClick={handleLogout}
               className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <LogOut className="h-4 w-4" />
-              로그아웃
+              <span className="hidden sm:inline">로그아웃</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 pb-24">
+      <div className="lg:flex lg:pt-[73px]">
+        {/* PC 사이드바 */}
+        <aside className="hidden lg:block lg:fixed lg:left-0 lg:top-[73px] lg:bottom-0 lg:w-56 bg-white border-r border-gray-200">
+          <nav className="p-4 space-y-1">
+            <button
+              onClick={() => setActiveTab("stats")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "stats"
+                  ? "bg-primary-50 text-primary-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <BarChart3 className="h-5 w-5" />
+              방문 통계
+            </button>
+            <button
+              onClick={() => setActiveTab("leads")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "leads"
+                  ? "bg-primary-50 text-primary-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <ClipboardList className="h-5 w-5" />
+              접수내역
+            </button>
+            <button
+              onClick={() => setActiveTab("fields")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "fields"
+                  ? "bg-primary-50 text-primary-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <Settings className="h-5 w-5" />
+              수집정보
+            </button>
+            <button
+              onClick={() => setActiveTab("messages")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "messages"
+                  ? "bg-primary-50 text-primary-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <MessageSquare className="h-5 w-5" />
+              메시지
+            </button>
+            <button
+              onClick={() => setActiveTab("notifications")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "notifications"
+                  ? "bg-primary-50 text-primary-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <Bell className="h-5 w-5" />
+              알림설정
+            </button>
+          </nav>
+
+          {/* 랜딩페이지 바로가기 */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+            <a
+              href={`/l/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg bg-gray-100 text-sm text-gray-700 hover:bg-gray-200 transition-colors"
+            >
+              <ExternalLink className="h-4 w-4" />
+              랜딩페이지 보기
+            </a>
+          </div>
+        </aside>
+
+        {/* 메인 콘텐츠 */}
+        <main className="flex-1 lg:ml-56 px-4 py-6 pb-24 lg:pb-8 lg:px-8 max-w-4xl mx-auto lg:mx-0">
         {/* 알림 */}
         {error && (
           <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
@@ -384,35 +460,35 @@ export default function PortalDashboardPage() {
             ) : analytics ? (
               <>
                 {/* 요약 카드 */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-white rounded-xl border border-gray-200 p-5">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <Users className="h-5 w-5 text-blue-600" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+                    <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                       </div>
                       <span className="text-sm text-gray-500">오늘 방문자</span>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.today.users.toLocaleString()}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{analytics.today.users.toLocaleString()}</p>
                     <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.today.pageviews.toLocaleString()}</p>
                   </div>
-                  <div className="bg-white rounded-xl border border-gray-200 p-5">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                        <TrendingUp className="h-5 w-5 text-green-600" />
+                  <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+                    <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                       </div>
                       <span className="text-sm text-gray-500">7일간</span>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.week.users.toLocaleString()}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{analytics.week.users.toLocaleString()}</p>
                     <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.week.pageviews.toLocaleString()}</p>
                   </div>
-                  <div className="bg-white rounded-xl border border-gray-200 p-5">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                        <MousePointerClick className="h-5 w-5 text-purple-600" />
+                  <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+                    <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <MousePointerClick className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                       </div>
                       <span className="text-sm text-gray-500">30일간</span>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900">{analytics.month.users.toLocaleString()}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{analytics.month.users.toLocaleString()}</p>
                     <p className="text-xs text-gray-400 mt-1">페이지뷰 {analytics.month.pageviews.toLocaleString()}</p>
                   </div>
                 </div>
@@ -485,13 +561,20 @@ export default function PortalDashboardPage() {
                 </div>
               </>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">통계 데이터를 불러올 수 없습니다.</p>
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BarChart3 className="h-8 w-8 text-amber-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">GA4 연동이 필요합니다</h3>
+                <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
+                  방문 통계를 확인하려면 Google Analytics 4 설정이 필요합니다.
+                  관리자에게 GA4 연동을 요청해주세요.
+                </p>
                 <button
                   onClick={fetchAnalytics}
-                  className="mt-4 text-sm text-primary-600 hover:underline"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
                 >
+                  <Loader2 className="h-4 w-4" />
                   다시 시도
                 </button>
               </div>
@@ -501,25 +584,25 @@ export default function PortalDashboardPage() {
 
         {/* 접수내역 관리 */}
         {activeTab === "leads" && (
-          <div className="space-y-4 pb-20">
+          <div className="space-y-4 pb-20 lg:pb-4">
             {/* 검색 및 필터 */}
-            <div className="flex gap-3 flex-wrap">
-              <div className="flex-1 min-w-[200px]">
+            <div className="flex gap-2 sm:gap-3">
+              <div className="flex-1">
                 <input
                   type="text"
-                  placeholder="이름, 전화번호, 이메일, 카카오ID 검색..."
+                  placeholder="검색..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as LeadStatus | "")}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
-                <option value="">전체 상태</option>
-                <option value="kakao_login">카카오만 (미접수)</option>
+                <option value="">전체</option>
+                <option value="kakao_login">카카오만</option>
                 <option value="new">신규</option>
                 <option value="contacted">연락완료</option>
                 <option value="converted">전환</option>
@@ -527,27 +610,27 @@ export default function PortalDashboardPage() {
               </select>
             </div>
 
-            {/* 통계 요약 */}
-            <div className="grid grid-cols-5 gap-2">
-              <div className="bg-yellow-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-yellow-700">{leads.filter(l => l.status === "kakao_login").length}</p>
-                <p className="text-xs text-yellow-600">카카오만</p>
+            {/* 통계 요약 - 모바일에서는 가로 스크롤 */}
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 sm:overflow-visible">
+              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-yellow-50 rounded-lg p-2 sm:p-3 text-center">
+                <p className="text-base sm:text-lg font-bold text-yellow-700">{leads.filter(l => l.status === "kakao_login").length}</p>
+                <p className="text-[10px] sm:text-xs text-yellow-600 whitespace-nowrap">카카오만</p>
               </div>
-              <div className="bg-blue-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-blue-700">{leads.filter(l => l.status === "new").length}</p>
-                <p className="text-xs text-blue-600">신규</p>
+              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-blue-50 rounded-lg p-2 sm:p-3 text-center">
+                <p className="text-base sm:text-lg font-bold text-blue-700">{leads.filter(l => l.status === "new").length}</p>
+                <p className="text-[10px] sm:text-xs text-blue-600 whitespace-nowrap">신규</p>
               </div>
-              <div className="bg-purple-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-purple-700">{leads.filter(l => l.status === "contacted").length}</p>
-                <p className="text-xs text-purple-600">연락완료</p>
+              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-purple-50 rounded-lg p-2 sm:p-3 text-center">
+                <p className="text-base sm:text-lg font-bold text-purple-700">{leads.filter(l => l.status === "contacted").length}</p>
+                <p className="text-[10px] sm:text-xs text-purple-600 whitespace-nowrap">연락완료</p>
               </div>
-              <div className="bg-green-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-green-700">{leads.filter(l => l.status === "converted").length}</p>
-                <p className="text-xs text-green-600">전환</p>
+              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-green-50 rounded-lg p-2 sm:p-3 text-center">
+                <p className="text-base sm:text-lg font-bold text-green-700">{leads.filter(l => l.status === "converted").length}</p>
+                <p className="text-[10px] sm:text-xs text-green-600 whitespace-nowrap">전환</p>
               </div>
-              <div className="bg-red-50 rounded-lg p-3 text-center">
-                <p className="text-lg font-bold text-red-700">{leads.filter(l => l.status === "spam").length}</p>
-                <p className="text-xs text-red-600">스팸</p>
+              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-red-50 rounded-lg p-2 sm:p-3 text-center">
+                <p className="text-base sm:text-lg font-bold text-red-700">{leads.filter(l => l.status === "spam").length}</p>
+                <p className="text-[10px] sm:text-xs text-red-600 whitespace-nowrap">스팸</p>
               </div>
             </div>
 
@@ -562,73 +645,79 @@ export default function PortalDashboardPage() {
                 <p className="text-gray-500">접수내역이 없습니다.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {filteredLeads.map((lead) => (
                   <div
                     key={lead.id}
-                    className="bg-white rounded-xl border border-gray-200 p-4"
+                    className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusLabels[lead.status].class}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        {/* 상태 + 날짜 */}
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${statusLabels[lead.status].class}`}>
                             {statusLabels[lead.status].label}
                           </span>
-                          <span className="text-xs text-gray-400">
-                            {new Date(lead.createdAt).toLocaleString("ko-KR")}
+                          <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                            {new Date(lead.createdAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
-                        <div className="space-y-1">
+                        {/* 정보 */}
+                        <div className="space-y-0.5">
                           {lead.name && (
-                            <p className="text-sm font-medium text-gray-900">{lead.name}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">{lead.name}</p>
                           )}
-                          {lead.phone && (
-                            <p className="text-sm text-gray-600 flex items-center gap-1">
-                              <Phone className="h-3 w-3" /> {lead.phone}
-                            </p>
-                          )}
-                          {lead.email && (
-                            <p className="text-sm text-gray-600 flex items-center gap-1">
-                              <Mail className="h-3 w-3" /> {lead.email}
-                            </p>
-                          )}
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-gray-600">
+                            {lead.phone && (
+                              <span className="flex items-center gap-1 whitespace-nowrap">
+                                <Phone className="h-3 w-3 flex-shrink-0" />
+                                <a href={`tel:${lead.phone}`} className="hover:underline">{lead.phone}</a>
+                              </span>
+                            )}
+                            {lead.email && (
+                              <span className="flex items-center gap-1 min-w-0">
+                                <Mail className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{lead.email}</span>
+                              </span>
+                            )}
+                          </div>
                           {lead.kakaoId && (
-                            <p className="text-xs text-yellow-600">카카오ID: {lead.kakaoId}</p>
+                            <p className="text-[11px] text-yellow-600 truncate">카카오: {lead.kakaoId}</p>
                           )}
                         </div>
                       </div>
-                      <div className="relative">
+                      <div className="relative flex-shrink-0">
                         <button
                           onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
-                          className="p-2 hover:bg-gray-100 rounded-lg"
+                          className="p-2 hover:bg-gray-100 rounded-lg -mr-1"
                         >
                           <MoreVertical className="h-4 w-4 text-gray-400" />
                         </button>
                         {openMenu === lead.id && (
-                          <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                          <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                             <button
                               onClick={() => handleUpdateLeadStatus(lead.id, "new")}
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                             >
-                              신규로 변경
+                              신규
                             </button>
                             <button
                               onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                             >
-                              연락완료로 변경
+                              연락완료
                             </button>
                             <button
                               onClick={() => handleUpdateLeadStatus(lead.id, "converted")}
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                             >
-                              전환으로 변경
+                              전환
                             </button>
                             <button
                               onClick={() => handleUpdateLeadStatus(lead.id, "spam")}
-                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                              className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                             >
-                              스팸으로 변경
+                              스팸
                             </button>
                           </div>
                         )}
@@ -643,11 +732,11 @@ export default function PortalDashboardPage() {
 
         {/* 수집 정보 설정 */}
         {activeTab === "fields" && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-4">
               수집할 정보 선택 및 순서 설정
             </h2>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
               활성화할 필드를 선택하고, 드래그하여 순서를 변경하세요.
             </p>
             <FormFieldsEditor fields={formFields} onChange={setFormFields} />
@@ -998,7 +1087,8 @@ export default function PortalDashboardPage() {
             {saving ? "저장 중..." : "설정 저장"}
           </button>
         </div>
-      </main>
+        </main>
+      </div>
 
       {/* 미리보기 모달 - 3단계 고객 여정 시뮬레이션 */}
       {showPreview && (
@@ -1247,9 +1337,9 @@ export default function PortalDashboardPage() {
         </div>
       )}
 
-      {/* 하단 네비게이션 바 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
-        <div className="max-w-4xl mx-auto flex">
+      {/* 하단 네비게이션 바 (모바일 전용) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
+        <div className="flex">
           <button
             onClick={() => setActiveTab("stats")}
             className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
