@@ -938,48 +938,59 @@ export default function PortalDashboardPage() {
                           )}
                         </div>
                       </div>
-                      <div className="relative flex-shrink-0">
-                        <button
-                          onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
-                          className="p-2 hover:bg-gray-100 rounded-lg -mr-1"
-                        >
-                          <MoreVertical className="h-4 w-4 text-gray-400" />
-                        </button>
-                        {openMenu === lead.id && (
-                          <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                            <button
-                              onClick={() => handleUpdateLeadStatus(lead.id, "new")}
-                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                            >
-                              신규
-                            </button>
+                      {/* 빠른 상태 변경 버튼 */}
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0 ml-2">
+                        {/* 상태 버튼들 */}
+                        <div className="flex gap-1.5">
+                          {lead.status !== "contacted" && (
                             <button
                               onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}
-                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                              className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors whitespace-nowrap"
                             >
-                              연락완료
+                              📞 연락완료
                             </button>
+                          )}
+                          {lead.status !== "converted" && (
                             <button
                               onClick={() => handleUpdateLeadStatus(lead.id, "converted")}
-                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                              className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors whitespace-nowrap"
                             >
-                              전환
+                              ✅ 전환
                             </button>
-                            <div className="border-t border-gray-100 my-1"></div>
-                            <button
-                              onClick={() => handleUpdateLeadStatus(lead.id, "blacklist")}
-                              className="w-full px-3 py-2 text-left text-sm text-orange-600 hover:bg-orange-50"
-                            >
-                              블랙리스트
-                            </button>
-                            <button
-                              onClick={() => handleDeleteLead(lead.id)}
-                              className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                            >
-                              삭제
-                            </button>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                        {/* 더보기 메뉴 */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                          {openMenu === lead.id && (
+                            <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                              <button
+                                onClick={() => handleUpdateLeadStatus(lead.id, "new")}
+                                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                              >
+                                신규로 변경
+                              </button>
+                              <div className="border-t border-gray-100 my-1"></div>
+                              <button
+                                onClick={() => handleUpdateLeadStatus(lead.id, "blacklist")}
+                                className="w-full px-3 py-2 text-left text-sm text-orange-600 hover:bg-orange-50"
+                              >
+                                블랙리스트
+                              </button>
+                              <button
+                                onClick={() => handleDeleteLead(lead.id)}
+                                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

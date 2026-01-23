@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getClientBySlug, createLead } from "@/lib/airtable";
+import { getClientBySlug, createLead, findKakaoLoginLead } from "@/lib/airtable";
 
 /**
  * 카카오 OAuth 콜백 API
@@ -97,23 +97,30 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. 에어테이블에 리드 생성 (kakao_login 상태)
-    // 카카오 로그인만 해도 리드 정보 기록
+    // 카카오 로그인만 해도 리드 정보 기록 (단, 중복 방지)
     try {
       const client = await getClientBySlug(state);
-      if (client && client.leadsTableId && client.status === "active") {
-        // IP 주소 가져오기
-        const forwarded = request.headers.get("x-forwarded-for");
-        const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
-        const userAgent = request.headers.get("user-agent") || "unknown";
+      if (client && client.leadsTableId && client.status === "active" && kakaoId) {
+        // 이미 같은 kakaoId로 kakao_login 상태의 리드가 있는지 확인
+        const existingLead = await findKakaoLoginLead(client.leadsTableId, kakaoId, client.id);
 
-        await createLead(client.leadsTableId, client.id, {
-          kakaoId: kakaoId,
-          email: email,
-          status: "kakao_login",
-          ipAddress: ip,
-          userAgent: userAgent.substring(0, 500),
-        });
-        console.log(`[Kakao] Lead created for user ${kakaoId} (kakao_login status)`);
+        if (existingLead) {
+          console.log(`[Kakao] Lead already exists for user ${kakaoId}, skipping creation`);
+        } else {
+          // IP 주소 가져오기
+          const forwarded = request.headers.get("x-forwarded-for");
+          const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+          const userAgent = request.headers.get("user-agent") || "unknown";
+
+          await createLead(client.leadsTableId, client.id, {
+            kakaoId: kakaoId,
+            email: email,
+            status: "kakao_login",
+            ipAddress: ip,
+            userAgent: userAgent.substring(0, 500),
+          });
+          console.log(`[Kakao] Lead created for user ${kakaoId} (kakao_login status)`);
+        }
       }
     } catch (leadError) {
       // 리드 생성 실패해도 로그인은 진행
