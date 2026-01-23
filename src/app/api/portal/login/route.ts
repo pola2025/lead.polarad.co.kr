@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     // 쿠키에 포털 세션 저장
     const cookieStore = await cookies();
-    cookieStore.set(`portal_${slug}`, client.id, {
+    cookieStore.set(`portal_auth_${slug}`, client.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

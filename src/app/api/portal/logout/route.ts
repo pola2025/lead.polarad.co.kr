@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     // 쿠키 삭제
     const cookieStore = await cookies();
-    cookieStore.delete(`portal_${slug}`);
+    cookieStore.delete(`portal_auth_${slug}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {

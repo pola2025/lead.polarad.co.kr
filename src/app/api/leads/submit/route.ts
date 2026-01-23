@@ -213,9 +213,9 @@ export async function POST(request: NextRequest) {
     if (client.telegramChatId) {
       sendTelegramNotification(client.telegramChatId, {
         clientName: client.name,
+        clientSlug: client.slug,
         leadName: normalizedName,
         phone: normalizedPhone,
-        airtableShareUrl: client.airtableShareUrl,
       }).catch((err) => {
         console.error("Telegram notification failed:", err);
       });
@@ -290,9 +290,9 @@ async function sendTelegramNotification(
   chatId: string,
   data: {
     clientName: string;
+    clientSlug: string;
     leadName: string;
     phone: string;
-    airtableShareUrl?: string;
   }
 ) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -304,19 +304,19 @@ async function sendTelegramNotification(
     normalizedChatId = `-${chatId}`;
   }
 
-  let message = `🔔 새로운 리드 접수
+  // 포털 URL 생성
+  const portalUrl = `https://lead.polarad.co.kr/portal/${data.clientSlug}`;
+
+  const message = `🔔 새로운 리드 접수
 
 📋 클라이언트: ${data.clientName}
 👤 이름: ${data.leadName}
 📞 연락처: ${data.phone}
-🕐 시간: ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}`;
+🕐 시간: ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
 
-  // 접수내역 확인 링크 추가
-  if (data.airtableShareUrl) {
-    message += `\n\n[접수내역확인](${data.airtableShareUrl})
+[접수내역확인](${portalUrl})
 
 -Polarad lead System-`;
-  }
 
   await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: "POST",
