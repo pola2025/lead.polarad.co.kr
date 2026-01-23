@@ -68,7 +68,7 @@ export default function DashboardPage() {
         ).length;
 
         const convertedLeads = leads.filter((l) => l.status === "converted").length;
-        const validLeads = leads.filter((l) => l.status !== "spam").length;
+        const validLeads = leads.filter((l) => l.status !== "blacklist").length;
         const conversionRate = validLeads > 0 ? (convertedLeads / validLeads) * 100 : 0;
 
         setStats({
@@ -263,7 +263,7 @@ export default function DashboardPage() {
                                     ? "badge-contacted"
                                     : lead.status === "converted"
                                     ? "badge-converted"
-                                    : "badge-spam"
+                                    : "badge-blacklist"
                                 }`}
                               >
                                 {lead.status === "new"
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                                   ? "연락완료"
                                   : lead.status === "converted"
                                   ? "전환"
-                                  : "스팸"}
+                                  : "블랙리스트"}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-500">

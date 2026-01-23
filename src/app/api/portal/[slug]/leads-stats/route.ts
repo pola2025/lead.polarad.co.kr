@@ -104,9 +104,9 @@ export async function GET(
       return createdAt >= rangeStart && createdAt <= rangeEnd;
     });
 
-    // 접수 완료 필터 (status !== 'kakao_login' && status !== 'spam')
+    // 접수 완료 필터 (status !== 'kakao_login' && status !== 'blacklist')
     const isSubmitted = (l: Lead) =>
-      l.status !== 'kakao_login' && l.status !== 'spam';
+      l.status !== 'kakao_login' && l.status !== 'blacklist';
 
     // 일별 집계 (선택된 기간)
     const dailyMap = new Map<string, { leads: number; submissions: number }>();

@@ -20,7 +20,7 @@ const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
   new: { label: "신규", class: "badge-new" },
   contacted: { label: "연락완료", class: "badge-contacted" },
   converted: { label: "전환", class: "badge-converted" },
-  spam: { label: "스팸", class: "badge-spam" },
+  blacklist: { label: "블랙리스트", class: "badge-blacklist" },
 };
 
 export default function LeadsPage() {
@@ -113,7 +113,7 @@ export default function LeadsPage() {
       });
 
       // 상태를 스팸으로 변경
-      await handleStatusChange(lead, "spam");
+      await handleStatusChange(lead, "blacklist");
       alert("블랙리스트에 추가되었습니다.");
     } catch (error) {
       console.error("Failed to add to blacklist:", error);
@@ -181,7 +181,7 @@ export default function LeadsPage() {
               <option value="new">신규</option>
               <option value="contacted">연락완료</option>
               <option value="converted">전환</option>
-              <option value="spam">스팸</option>
+              <option value="blacklist">블랙리스트</option>
             </select>
           </div>
         </div>
@@ -243,7 +243,7 @@ export default function LeadsPage() {
                             <div className="border-b border-gray-100 px-4 py-2">
                               <p className="text-xs text-gray-500 mb-2">상태 변경</p>
                               <div className="flex flex-wrap gap-1">
-                                {(["new", "contacted", "converted", "spam"] as LeadStatus[]).map(
+                                {(["new", "contacted", "converted", "blacklist"] as LeadStatus[]).map(
                                   (status) => (
                                     <button
                                       key={status}
@@ -370,7 +370,7 @@ export default function LeadsPage() {
                               <div className="border-b border-gray-100 px-4 py-2">
                                 <p className="text-xs text-gray-500 mb-2">상태 변경</p>
                                 <div className="flex flex-wrap gap-1">
-                                  {(["new", "contacted", "converted", "spam"] as LeadStatus[]).map(
+                                  {(["new", "contacted", "converted", "blacklist"] as LeadStatus[]).map(
                                     (status) => (
                                       <button
                                         key={status}

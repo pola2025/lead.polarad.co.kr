@@ -78,7 +78,7 @@ const LEADS_TABLE_FIELDS: LeadsTableField[] = [
         { name: "new", color: "blueLight2" },
         { name: "contacted", color: "purpleLight2" },
         { name: "converted", color: "greenLight2" },
-        { name: "spam", color: "redLight2" },
+        { name: "blacklist", color: "redLight2" },
       ],
     },
   },

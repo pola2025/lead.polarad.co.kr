@@ -32,7 +32,7 @@ const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
   new: { label: "신규", class: "bg-blue-100 text-blue-800" },
   contacted: { label: "연락완료", class: "bg-purple-100 text-purple-800" },
   converted: { label: "전환", class: "bg-green-100 text-green-800" },
-  spam: { label: "스팸", class: "bg-red-100 text-red-800" },
+  blacklist: { label: "블랙리스트", class: "bg-red-100 text-red-800" },
 };
 import { formatOperatingHours } from "@/lib/operating-hours";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
@@ -330,6 +330,25 @@ export default function PortalDashboardPage() {
       }
     } catch (err) {
       console.error("Failed to update lead status:", err);
+    }
+  };
+
+  // 리드 삭제
+  const handleDeleteLead = async (leadId: string) => {
+    if (!confirm("정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/portal/${slug}/leads/${leadId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setLeads(leads.filter((l) => l.id !== leadId));
+        setOpenMenu(null);
+      }
+    } catch (err) {
+      console.error("Failed to delete lead:", err);
     }
   };
 
@@ -820,7 +839,7 @@ export default function PortalDashboardPage() {
                 <option value="new">신규</option>
                 <option value="contacted">연락완료</option>
                 <option value="converted">전환</option>
-                <option value="spam">스팸</option>
+                <option value="blacklist">블랙리스트</option>
               </select>
             </div>
 
@@ -843,8 +862,8 @@ export default function PortalDashboardPage() {
                 <p className="text-[10px] sm:text-xs text-green-600 whitespace-nowrap">전환</p>
               </div>
               <div className="flex-shrink-0 w-[72px] sm:w-auto bg-red-50 rounded-lg p-2 sm:p-3 text-center">
-                <p className="text-base sm:text-lg font-bold text-red-700">{leads.filter(l => l.status === "spam").length}</p>
-                <p className="text-[10px] sm:text-xs text-red-600 whitespace-nowrap">스팸</p>
+                <p className="text-base sm:text-lg font-bold text-red-700">{leads.filter(l => l.status === "blacklist").length}</p>
+                <p className="text-[10px] sm:text-xs text-red-600 whitespace-nowrap">블랙</p>
               </div>
             </div>
 
@@ -908,7 +927,7 @@ export default function PortalDashboardPage() {
                           <MoreVertical className="h-4 w-4 text-gray-400" />
                         </button>
                         {openMenu === lead.id && (
-                          <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                          <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                             <button
                               onClick={() => handleUpdateLeadStatus(lead.id, "new")}
                               className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
@@ -927,11 +946,18 @@ export default function PortalDashboardPage() {
                             >
                               전환
                             </button>
+                            <div className="border-t border-gray-100 my-1"></div>
                             <button
-                              onClick={() => handleUpdateLeadStatus(lead.id, "spam")}
+                              onClick={() => handleUpdateLeadStatus(lead.id, "blacklist")}
+                              className="w-full px-3 py-2 text-left text-sm text-orange-600 hover:bg-orange-50"
+                            >
+                              블랙리스트
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLead(lead.id)}
                               className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                             >
-                              스팸
+                              삭제
                             </button>
                           </div>
                         )}

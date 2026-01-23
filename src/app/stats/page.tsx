@@ -19,7 +19,7 @@ interface Stats {
   newLeads: number;
   contactedLeads: number;
   convertedLeads: number;
-  spamLeads: number;
+  blacklistLeads: number;
   conversionRate: number;
   leadsByClient: { clientId: string; clientName: string; count: number }[];
   leadsByDate: { date: string; count: number }[];
@@ -67,10 +67,10 @@ export default function StatsPage() {
         const newLeads = leads.filter((l) => l.status === "new").length;
         const contactedLeads = leads.filter((l) => l.status === "contacted").length;
         const convertedLeads = leads.filter((l) => l.status === "converted").length;
-        const spamLeads = leads.filter((l) => l.status === "spam").length;
+        const blacklistLeads = leads.filter((l) => l.status === "blacklist").length;
 
         // 전환율
-        const validLeads = leads.filter((l) => l.status !== "spam").length;
+        const validLeads = leads.filter((l) => l.status !== "blacklist").length;
         const conversionRate = validLeads > 0 ? (convertedLeads / validLeads) * 100 : 0;
 
         // 클라이언트별 카운트
@@ -117,7 +117,7 @@ export default function StatsPage() {
           newLeads,
           contactedLeads,
           convertedLeads,
-          spamLeads,
+          blacklistLeads,
           conversionRate,
           leadsByClient: leadsByClient.sort((a, b) => b.count - a.count),
           leadsByDate,
@@ -227,7 +227,7 @@ export default function StatsPage() {
                   </div>
                 </div>
                 <div className="mt-2 md:mt-4 text-xs md:text-sm text-gray-500 break-keep">
-                  {stats.convertedLeads}건 / {stats.totalLeads - stats.spamLeads}건
+                  {stats.convertedLeads}건 / {stats.totalLeads - stats.blacklistLeads}건
                 </div>
               </div>
 
@@ -247,8 +247,8 @@ export default function StatsPage() {
                     <span>{stats.convertedLeads}</span>
                   </p>
                   <p className="flex items-center gap-1">
-                    <span className="badge badge-spam">스팸</span>
-                    <span>{stats.spamLeads}</span>
+                    <span className="badge badge-blacklist">블랙리스트</span>
+                    <span>{stats.blacklistLeads}</span>
                   </p>
                 </div>
               </div>
