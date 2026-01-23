@@ -88,7 +88,7 @@ export const PRESET_OPTIONAL_FIELDS: FormField[] = [
 // 전체 기본 필드 (기존 호환용)
 export const DEFAULT_FORM_FIELDS: FormField[] = [
   ...PRESET_BASIC_FIELDS,
-  { id: "email", type: "email", label: "이메일", placeholder: "example@email.com", required: false, enabled: false, order: 2 },
+  { id: "email", type: "email", label: "이메일", placeholder: "example@email.com", required: true, enabled: true, order: 2 },
   { id: "businessName", type: "text", label: "회사/사업자명", placeholder: "회사명 입력", required: false, enabled: false, order: 3 },
   { id: "address", type: "text", label: "주소", placeholder: "주소를 입력하세요", required: false, enabled: false, order: 4 },
   { id: "birthdate", type: "date", label: "생년월일", placeholder: "1990-01-01", required: false, enabled: false, order: 5 },

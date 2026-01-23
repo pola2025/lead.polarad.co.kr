@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
-import { getClientById, getGA4Settings, getLeadsByClientId } from "@/lib/airtable";
+import { getClientById, getGA4Settings, getLeadsByClient } from "@/lib/airtable";
 
 // GA4 클라이언트 초기화
 function getAnalyticsClient(clientEmail: string, privateKeyOrJson: string) {
@@ -260,7 +260,7 @@ export async function GET(
     const monthlyPageviews = dailyData.reduce((sum, d) => sum + d.pageviews, 0);
 
     // 리드 통계 (퍼널)
-    const leads = await getLeadsByClientId(id);
+    const leads = await getLeadsByClient(id);
     const logins = leads.filter((l) => l.status === "kakao_login" || l.kakaoId).length;
     const submissions = leads.filter((l) => l.status !== "kakao_login" && l.name).length;
 
