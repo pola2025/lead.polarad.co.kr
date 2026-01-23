@@ -260,7 +260,7 @@ export async function GET(
     const monthlyPageviews = dailyData.reduce((sum, d) => sum + d.pageviews, 0);
 
     // 리드 통계 (퍼널)
-    const leads = await getLeadsByClient(id);
+    const leads = client.leadsTableId ? await getLeadsByClient(id, client.leadsTableId) : [];
     const logins = leads.filter((l) => l.status === "kakao_login" || l.kakaoId).length;
     const submissions = leads.filter((l) => l.status !== "kakao_login" && l.name).length;
 
