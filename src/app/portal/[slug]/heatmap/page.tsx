@@ -244,28 +244,28 @@ export default function HeatmapPage() {
             <div className="lg:col-span-3">
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 {loading ? (
-                  <div className="aspect-[9/16] md:aspect-video flex items-center justify-center">
+                  <div className="h-[80vh] flex items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  <div className="relative aspect-[9/16] md:aspect-video">
-                    {/* 랜딩페이지 iframe */}
-                    <iframe
-                      src={landingUrl}
-                      className="absolute inset-0 w-full h-full border-0"
-                      title="Landing Page Preview"
-                      onLoad={() => setIframeLoaded(true)}
-                    />
+                  <div className="relative h-[80vh] overflow-y-auto">
+                    {/* 랜딩페이지 iframe - 전체 높이 표시 */}
+                    <div className="relative" style={{ height: '200vh' }}>
+                      <iframe
+                        src={landingUrl}
+                        className="absolute inset-0 w-full h-full border-0"
+                        title="Landing Page Preview"
+                        onLoad={() => setIframeLoaded(true)}
+                        style={{ pointerEvents: 'none' }}
+                      />
 
-                    {/* 히트맵 오버레이 */}
-                    <div
-                      ref={heatmapContainerRef}
-                      className="absolute inset-0 pointer-events-none"
-                      style={{ zIndex: 10 }}
-                    />
-
-                    {/* 인터랙션 차단 레이어 */}
-                    <div className="absolute inset-0" style={{ zIndex: 5 }} />
+                      {/* 히트맵 오버레이 */}
+                      <div
+                        ref={heatmapContainerRef}
+                        className="absolute inset-0 pointer-events-none"
+                        style={{ zIndex: 10 }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
