@@ -119,6 +119,7 @@ export default function PortalDashboardPage() {
   const [filterStatus, setFilterStatus] = useState<LeadStatus | "">("");
   const [searchTerm, setSearchTerm] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
 
   // 폼 필드 상태
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -317,6 +318,7 @@ export default function PortalDashboardPage() {
 
   // 리드 상태 업데이트
   const handleUpdateLeadStatus = async (leadId: string, newStatus: LeadStatus) => {
+    setUpdatingLeadId(leadId);
     try {
       const res = await fetch(`/api/portal/${slug}/leads/${leadId}`, {
         method: "PUT",
@@ -330,6 +332,8 @@ export default function PortalDashboardPage() {
       }
     } catch (err) {
       console.error("Failed to update lead status:", err);
+    } finally {
+      setUpdatingLeadId(null);
     }
   };
 
@@ -942,29 +946,38 @@ export default function PortalDashboardPage() {
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-2">
                         {/* 상태 버튼들 */}
                         <div className="flex flex-wrap justify-end gap-1.5">
-                          {(lead.status === "contacted" || lead.status === "converted") && (
-                            <button
-                              onClick={() => handleUpdateLeadStatus(lead.id, "new")}
-                              className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap"
-                            >
-                              ↩️ 신규
-                            </button>
-                          )}
-                          {lead.status !== "contacted" && (
-                            <button
-                              onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}
-                              className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors whitespace-nowrap"
-                            >
-                              📞 연락완료
-                            </button>
-                          )}
-                          {lead.status !== "converted" && (
-                            <button
-                              onClick={() => handleUpdateLeadStatus(lead.id, "converted")}
-                              className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors whitespace-nowrap"
-                            >
-                              ✅ 전환
-                            </button>
+                          {updatingLeadId === lead.id ? (
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              <span>변경중...</span>
+                            </div>
+                          ) : (
+                            <>
+                              {(lead.status === "contacted" || lead.status === "converted") && (
+                                <button
+                                  onClick={() => handleUpdateLeadStatus(lead.id, "new")}
+                                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap"
+                                >
+                                  ↩️ 신규
+                                </button>
+                              )}
+                              {lead.status !== "contacted" && (
+                                <button
+                                  onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}
+                                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors whitespace-nowrap"
+                                >
+                                  📞 연락완료
+                                </button>
+                              )}
+                              {lead.status !== "converted" && (
+                                <button
+                                  onClick={() => handleUpdateLeadStatus(lead.id, "converted")}
+                                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors whitespace-nowrap"
+                                >
+                                  ✅ 전환
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                         <p className="text-[11px] text-gray-400 sm:hidden">버튼 클릭시 상태 적용</p>
