@@ -16,9 +16,23 @@ import {
   Users,
   MousePointerClick,
   TrendingUp,
+  ClipboardList,
+  Phone,
+  Mail,
+  MoreVertical,
+  ShieldBan,
 } from "lucide-react";
-import type { FormField } from "@/types";
+import type { FormField, Lead, LeadStatus } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
+
+// 상태 레이블 (관리자와 동일)
+const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
+  kakao_login: { label: "카카오만", class: "bg-yellow-100 text-yellow-800" },
+  new: { label: "신규", class: "bg-blue-100 text-blue-800" },
+  contacted: { label: "연락완료", class: "bg-purple-100 text-purple-800" },
+  converted: { label: "전환", class: "bg-green-100 text-green-800" },
+  spam: { label: "스팸", class: "bg-red-100 text-red-800" },
+};
 import { formatOperatingHours } from "@/lib/operating-hours";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
 
@@ -64,10 +78,17 @@ export default function PortalDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [activeTab, setActiveTab] = useState<"stats" | "fields" | "messages" | "notifications">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "leads" | "fields" | "messages" | "notifications">("stats");
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+
+  // 접수내역 관련 상태
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<LeadStatus | "">("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   // 폼 필드 상태
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -154,6 +175,21 @@ export default function PortalDashboardPage() {
     }
   }, [slug]);
 
+  const fetchLeads = useCallback(async () => {
+    setLeadsLoading(true);
+    try {
+      const res = await fetch(`/api/portal/${slug}/leads`);
+      const data = await res.json();
+      if (data.success) {
+        setLeads(data.data);
+      }
+    } catch (err) {
+      console.error("Leads fetch error:", err);
+    } finally {
+      setLeadsLoading(false);
+    }
+  }, [slug]);
+
   useEffect(() => {
     fetchClient();
   }, [fetchClient]);
@@ -161,8 +197,10 @@ export default function PortalDashboardPage() {
   useEffect(() => {
     if (activeTab === "stats") {
       fetchAnalytics();
+    } else if (activeTab === "leads") {
+      fetchLeads();
     }
-  }, [activeTab, fetchAnalytics]);
+  }, [activeTab, fetchAnalytics, fetchLeads]);
 
   const handleLogout = async () => {
     try {
@@ -223,6 +261,36 @@ export default function PortalDashboardPage() {
     }
   };
 
+  // 리드 상태 업데이트
+  const handleUpdateLeadStatus = async (leadId: string, newStatus: LeadStatus) => {
+    try {
+      const res = await fetch(`/api/portal/${slug}/leads/${leadId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setLeads(leads.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)));
+        setOpenMenu(null);
+      }
+    } catch (err) {
+      console.error("Failed to update lead status:", err);
+    }
+  };
+
+  // 필터링된 리드 목록
+  const filteredLeads = leads.filter((lead) => {
+    const matchesStatus = !filterStatus || lead.status === filterStatus;
+    const matchesSearch =
+      !searchTerm ||
+      lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.phone?.includes(searchTerm) ||
+      lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.kakaoId?.includes(searchTerm);
+    return matchesStatus && matchesSearch;
+  });
+
   // 활성화된 필드만 정렬해서 반환 (미리보기용)
   const sortedEnabledFields = formFields
     .filter((f) => f.enabled)
@@ -282,7 +350,7 @@ export default function PortalDashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8 pb-24">
         {/* 알림 */}
         {error && (
           <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
@@ -295,52 +363,15 @@ export default function PortalDashboardPage() {
           </div>
         )}
 
-        {/* 탭 */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setActiveTab("stats")}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "stats"
-                ? "bg-primary-600 text-white"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            <BarChart3 className="h-4 w-4" />
-            방문 통계
-          </button>
-          <button
-            onClick={() => setActiveTab("fields")}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "fields"
-                ? "bg-primary-600 text-white"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            <Settings className="h-4 w-4" />
-            수집 정보 설정
-          </button>
-          <button
-            onClick={() => setActiveTab("messages")}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "messages"
-                ? "bg-primary-600 text-white"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            <MessageSquare className="h-4 w-4" />
-            응답 메시지 설정
-          </button>
-          <button
-            onClick={() => setActiveTab("notifications")}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "notifications"
-                ? "bg-primary-600 text-white"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            <Bell className="h-4 w-4" />
-            고객 알림 설정
-          </button>
+        {/* 탭 제목 */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {activeTab === "stats" && "방문 통계"}
+            {activeTab === "leads" && "접수내역 관리"}
+            {activeTab === "fields" && "수집 정보 설정"}
+            {activeTab === "messages" && "응답 메시지 설정"}
+            {activeTab === "notifications" && "고객 알림 설정"}
+          </h2>
         </div>
 
         {/* 방문 통계 */}
@@ -463,6 +494,148 @@ export default function PortalDashboardPage() {
                 >
                   다시 시도
                 </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 접수내역 관리 */}
+        {activeTab === "leads" && (
+          <div className="space-y-4 pb-20">
+            {/* 검색 및 필터 */}
+            <div className="flex gap-3 flex-wrap">
+              <div className="flex-1 min-w-[200px]">
+                <input
+                  type="text"
+                  placeholder="이름, 전화번호, 이메일, 카카오ID 검색..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as LeadStatus | "")}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              >
+                <option value="">전체 상태</option>
+                <option value="kakao_login">카카오만 (미접수)</option>
+                <option value="new">신규</option>
+                <option value="contacted">연락완료</option>
+                <option value="converted">전환</option>
+                <option value="spam">스팸</option>
+              </select>
+            </div>
+
+            {/* 통계 요약 */}
+            <div className="grid grid-cols-5 gap-2">
+              <div className="bg-yellow-50 rounded-lg p-3 text-center">
+                <p className="text-lg font-bold text-yellow-700">{leads.filter(l => l.status === "kakao_login").length}</p>
+                <p className="text-xs text-yellow-600">카카오만</p>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-3 text-center">
+                <p className="text-lg font-bold text-blue-700">{leads.filter(l => l.status === "new").length}</p>
+                <p className="text-xs text-blue-600">신규</p>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-3 text-center">
+                <p className="text-lg font-bold text-purple-700">{leads.filter(l => l.status === "contacted").length}</p>
+                <p className="text-xs text-purple-600">연락완료</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-3 text-center">
+                <p className="text-lg font-bold text-green-700">{leads.filter(l => l.status === "converted").length}</p>
+                <p className="text-xs text-green-600">전환</p>
+              </div>
+              <div className="bg-red-50 rounded-lg p-3 text-center">
+                <p className="text-lg font-bold text-red-700">{leads.filter(l => l.status === "spam").length}</p>
+                <p className="text-xs text-red-600">스팸</p>
+              </div>
+            </div>
+
+            {/* 리드 목록 */}
+            {leadsLoading ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              </div>
+            ) : filteredLeads.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <ClipboardList className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">접수내역이 없습니다.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredLeads.map((lead) => (
+                  <div
+                    key={lead.id}
+                    className="bg-white rounded-xl border border-gray-200 p-4"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusLabels[lead.status].class}`}>
+                            {statusLabels[lead.status].label}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {new Date(lead.createdAt).toLocaleString("ko-KR")}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          {lead.name && (
+                            <p className="text-sm font-medium text-gray-900">{lead.name}</p>
+                          )}
+                          {lead.phone && (
+                            <p className="text-sm text-gray-600 flex items-center gap-1">
+                              <Phone className="h-3 w-3" /> {lead.phone}
+                            </p>
+                          )}
+                          {lead.email && (
+                            <p className="text-sm text-gray-600 flex items-center gap-1">
+                              <Mail className="h-3 w-3" /> {lead.email}
+                            </p>
+                          )}
+                          {lead.kakaoId && (
+                            <p className="text-xs text-yellow-600">카카오ID: {lead.kakaoId}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
+                          className="p-2 hover:bg-gray-100 rounded-lg"
+                        >
+                          <MoreVertical className="h-4 w-4 text-gray-400" />
+                        </button>
+                        {openMenu === lead.id && (
+                          <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                            <button
+                              onClick={() => handleUpdateLeadStatus(lead.id, "new")}
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              신규로 변경
+                            </button>
+                            <button
+                              onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              연락완료로 변경
+                            </button>
+                            <button
+                              onClick={() => handleUpdateLeadStatus(lead.id, "converted")}
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              전환으로 변경
+                            </button>
+                            <button
+                              onClick={() => handleUpdateLeadStatus(lead.id, "spam")}
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                            >
+                              스팸으로 변경
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -1073,6 +1246,67 @@ export default function PortalDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* 하단 네비게이션 바 */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
+        <div className="max-w-4xl mx-auto flex">
+          <button
+            onClick={() => setActiveTab("stats")}
+            className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
+              activeTab === "stats"
+                ? "text-primary-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <BarChart3 className="h-5 w-5" />
+            통계
+          </button>
+          <button
+            onClick={() => setActiveTab("leads")}
+            className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
+              activeTab === "leads"
+                ? "text-primary-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <ClipboardList className="h-5 w-5" />
+            접수내역
+          </button>
+          <button
+            onClick={() => setActiveTab("fields")}
+            className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
+              activeTab === "fields"
+                ? "text-primary-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <Settings className="h-5 w-5" />
+            수집정보
+          </button>
+          <button
+            onClick={() => setActiveTab("messages")}
+            className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
+              activeTab === "messages"
+                ? "text-primary-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <MessageSquare className="h-5 w-5" />
+            메시지
+          </button>
+          <button
+            onClick={() => setActiveTab("notifications")}
+            className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
+              activeTab === "notifications"
+                ? "text-primary-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <Bell className="h-5 w-5" />
+            알림
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }
