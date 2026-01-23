@@ -751,7 +751,7 @@ export default function PortalDashboardPage() {
                       </svg>
                       카카오로 시작하기
                     </button>
-                    <p className="text-sm text-gray-600 text-center font-medium">카카오 로그인 후에 상담접수가 가능합니다.</p>
+                    <p className="text-base text-gray-700 text-center font-medium">카카오 로그인 후에 상담접수가 가능합니다.</p>
                   </div>
                 ) : (
                   <button
