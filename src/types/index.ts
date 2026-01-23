@@ -7,6 +7,94 @@ export type LeadStatus = "new" | "contacted" | "converted" | "spam";
 // 블랙리스트 타입
 export type BlacklistType = "phone" | "kakaoId" | "ip" | "keyword";
 
+// 폼 필드 입력 타입
+export type FormFieldInputType = "text" | "phone" | "email" | "textarea" | "number" | "date" | "select" | "radio" | "checkbox";
+
+// 선택 옵션 (select, radio, checkbox용)
+export interface FormFieldOption {
+  value: string;
+  label: string;
+  triggersFields?: string[];  // 이 옵션 선택 시 표시할 필드 ID 목록
+}
+
+// 조건부 표시 설정
+export interface FormFieldCondition {
+  dependsOn: string;           // 의존하는 필드 ID
+  showWhen: string | string[]; // 해당 값일 때 표시
+}
+
+// 상품 특징/혜택 항목
+export interface ProductFeature {
+  id: string;
+  icon?: string;    // 이모지 또는 체크 아이콘 (기본: ✓)
+  text: string;     // 특징 텍스트
+}
+
+// 폼 필드 설정
+export interface FormField {
+  id: string;
+  type: FormFieldInputType;
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  enabled: boolean;
+  order: number;
+  options?: FormFieldOption[];      // select, radio, checkbox용
+  condition?: FormFieldCondition;   // 조건부 표시
+}
+
+// ==================== 프리셋 필드 (자주 쓰는 필드) ====================
+
+// 기본 필드 (항상 표시)
+export const PRESET_BASIC_FIELDS: FormField[] = [
+  { id: "name", type: "text", label: "이름", placeholder: "홍길동", required: true, enabled: true, order: 0 },
+  { id: "phone", type: "phone", label: "연락처", placeholder: "010-1234-5678", required: true, enabled: true, order: 1 },
+];
+
+// 선택 가능한 프리셋 필드
+export const PRESET_OPTIONAL_FIELDS: FormField[] = [
+  { id: "email", type: "email", label: "이메일", placeholder: "example@email.com", required: false, enabled: false, order: 10 },
+  { id: "businessName", type: "text", label: "회사/사업자명", placeholder: "회사명 입력", required: false, enabled: false, order: 11 },
+  { id: "businessNumber", type: "text", label: "사업자등록번호", placeholder: "000-00-00000", required: false, enabled: false, order: 12 },
+  { id: "address", type: "text", label: "주소", placeholder: "주소를 입력하세요", required: false, enabled: false, order: 13 },
+  { id: "birthdate", type: "date", label: "생년월일", placeholder: "1990-01-01", required: false, enabled: false, order: 14 },
+  { id: "gender", type: "radio", label: "성별", required: false, enabled: false, order: 15, options: [
+    { value: "male", label: "남성" },
+    { value: "female", label: "여성" },
+  ]},
+  { id: "age", type: "select", label: "연령대", required: false, enabled: false, order: 16, options: [
+    { value: "20s", label: "20대" },
+    { value: "30s", label: "30대" },
+    { value: "40s", label: "40대" },
+    { value: "50s", label: "50대" },
+    { value: "60+", label: "60대 이상" },
+  ]},
+  { id: "budget", type: "select", label: "예산", required: false, enabled: false, order: 17, options: [
+    { value: "under-100", label: "100만원 미만" },
+    { value: "100-500", label: "100~500만원" },
+    { value: "500-1000", label: "500~1000만원" },
+    { value: "1000+", label: "1000만원 이상" },
+  ]},
+  { id: "referral", type: "select", label: "유입 경로", required: false, enabled: false, order: 18, options: [
+    { value: "search", label: "검색" },
+    { value: "sns", label: "SNS" },
+    { value: "ad", label: "광고" },
+    { value: "referral", label: "지인 추천" },
+    { value: "other", label: "기타" },
+  ]},
+  { id: "memo", type: "textarea", label: "문의사항", placeholder: "문의 내용을 입력하세요", required: false, enabled: false, order: 99 },
+];
+
+// 전체 기본 필드 (기존 호환용)
+export const DEFAULT_FORM_FIELDS: FormField[] = [
+  ...PRESET_BASIC_FIELDS,
+  { id: "email", type: "email", label: "이메일", placeholder: "example@email.com", required: false, enabled: false, order: 2 },
+  { id: "businessName", type: "text", label: "회사/사업자명", placeholder: "회사명 입력", required: false, enabled: false, order: 3 },
+  { id: "address", type: "text", label: "주소", placeholder: "주소를 입력하세요", required: false, enabled: false, order: 4 },
+  { id: "birthdate", type: "date", label: "생년월일", placeholder: "1990-01-01", required: false, enabled: false, order: 5 },
+  { id: "memo", type: "textarea", label: "문의사항", placeholder: "문의 내용을 입력하세요", required: false, enabled: false, order: 6 },
+];
+
 // 클라이언트
 export interface Client {
   id: string;
@@ -16,6 +104,7 @@ export interface Client {
   kakaoClientId?: string;
   kakaoClientSecret?: string;
   telegramChatId?: string;
+  slackChannelId?: string; // 클라이언트별 슬랙 채널 ID
   landingTitle?: string;
   landingDescription?: string;
   primaryColor?: string;
@@ -27,6 +116,27 @@ export interface Client {
   ctaButtonText?: string; // CTA 버튼 텍스트 (기본: "상담 신청하기")
   thankYouTitle?: string; // 완료 페이지 제목 (기본: "신청이 완료되었습니다")
   thankYouMessage?: string; // 완료 페이지 메시지
+  // 폼 필드 설정 (JSON 문자열로 저장)
+  formFields?: FormField[];
+  // 상품 특징/혜택 리스트
+  productFeatures?: ProductFeature[];
+  // 고객 알림 설정
+  smsEnabled?: boolean; // SMS 알림 활성화
+  smsTemplate?: string; // SMS 템플릿 ({name}, {clientName}, {date} 변수 사용)
+  emailEnabled?: boolean; // 이메일 알림 활성화
+  emailSubject?: string; // 이메일 제목
+  emailTemplate?: string; // 이메일 본문 템플릿
+  // NCP SENS 설정 (클라이언트별)
+  ncpAccessKey?: string;
+  ncpSecretKey?: string;
+  ncpServiceId?: string;
+  ncpSenderPhone?: string;
+  // 운영시간 설정
+  operatingDays?: 'weekdays' | 'everyday'; // 주중 또는 연중무휴
+  operatingStartTime?: string; // 시작시간 (HH:mm)
+  operatingEndTime?: string; // 종료시간 (HH:mm)
+  // 에어테이블 공유 URL (텔레그램 알림용)
+  airtableShareUrl?: string;
   createdAt: string;
 }
 
@@ -41,6 +151,8 @@ export interface Lead {
   businessName?: string;
   industry?: string;
   kakaoId?: string;
+  address?: string;
+  birthdate?: string;
   status: LeadStatus;
   memo?: string;
   ipAddress?: string;

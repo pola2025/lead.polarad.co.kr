@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientBySlug } from "@/lib/airtable";
+import { DEFAULT_FORM_FIELDS } from "@/types";
 
 export async function GET(
   request: NextRequest,
@@ -24,6 +25,11 @@ export async function GET(
       );
     }
 
+    // 활성화된 폼 필드만 반환 (순서대로 정렬)
+    const formFields = (client.formFields || DEFAULT_FORM_FIELDS)
+      .filter((f) => f.enabled)
+      .sort((a, b) => a.order - b.order);
+
     // 민감한 정보 제거
     const publicClient = {
       id: client.id,
@@ -36,6 +42,7 @@ export async function GET(
       ctaButtonText: client.ctaButtonText,
       thankYouTitle: client.thankYouTitle,
       thankYouMessage: client.thankYouMessage,
+      formFields: formFields,
     };
 
     return NextResponse.json({ success: true, data: publicClient });

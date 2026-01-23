@@ -6,7 +6,11 @@ import type {
   ClientStatus,
   LeadStatus,
   BlacklistType,
+  FormField,
+  ProductFeature,
 } from "@/types";
+import { DEFAULT_FORM_FIELDS } from "@/types";
+import { escapeAirtableFormula } from "@/lib/client";
 
 // Airtable Lazy Initialization (빌드 시 API 키 없이도 빌드 가능)
 let _base: ReturnType<Airtable["base"]> | null = null;
@@ -63,6 +67,8 @@ const LEADS_TABLE_FIELDS: LeadsTableField[] = [
   { name: "businessName", type: "singleLineText" },
   { name: "industry", type: "singleLineText" },
   { name: "kakaoId", type: "singleLineText" },
+  { name: "address", type: "singleLineText" },
+  { name: "birthdate", type: "singleLineText" },
   {
     name: "status",
     type: "singleSelect",
@@ -126,9 +132,131 @@ export async function deleteLeadsTable(tableId: string): Promise<void> {
   }
 }
 
+// Leads 테이블에 커스텀 필드 추가
+export async function addFieldToLeadsTable(
+  tableId: string,
+  fieldName: string,
+  fieldType: "singleLineText" | "multilineText" = "singleLineText"
+): Promise<{ success: boolean; fieldId?: string; error?: string }> {
+  try {
+    const response = await fetch(
+      `https://api.airtable.com/v0/meta/bases/${getBaseId()}/tables/${tableId}/fields`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getApiKey()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: fieldName,
+          type: fieldType,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      // 이미 필드가 존재하는 경우 무시
+      if (error.error?.type === "DUPLICATE_FIELD_NAME") {
+        console.log(`필드 ${fieldName} 이미 존재`);
+        return { success: true };
+      }
+      console.error("필드 추가 실패:", error);
+      return { success: false, error: error.error?.message || "필드 추가 실패" };
+    }
+
+    const result = await response.json();
+    console.log(`✅ 필드 추가 성공: ${fieldName}`);
+    return { success: true, fieldId: result.id };
+  } catch (error) {
+    console.error("필드 추가 오류:", error);
+    return { success: false, error: "필드 추가 중 오류 발생" };
+  }
+}
+
+// Leads 테이블에서 필드 삭제 (주의: 데이터도 함께 삭제됨)
+export async function deleteFieldFromLeadsTable(
+  tableId: string,
+  fieldName: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // 먼저 테이블 스키마를 조회하여 필드 ID 찾기
+    const schemaResponse = await fetch(
+      `https://api.airtable.com/v0/meta/bases/${getBaseId()}/tables`,
+      {
+        headers: {
+          Authorization: `Bearer ${getApiKey()}`,
+        },
+      }
+    );
+
+    if (!schemaResponse.ok) {
+      return { success: false, error: "테이블 스키마 조회 실패" };
+    }
+
+    const schema = await schemaResponse.json();
+    const table = schema.tables.find((t: { id: string }) => t.id === tableId);
+    if (!table) {
+      return { success: false, error: "테이블을 찾을 수 없음" };
+    }
+
+    const field = table.fields.find((f: { name: string }) => f.name === fieldName);
+    if (!field) {
+      // 필드가 없으면 성공으로 처리
+      console.log(`필드 ${fieldName} 이미 없음`);
+      return { success: true };
+    }
+
+    // 필드 삭제
+    const deleteResponse = await fetch(
+      `https://api.airtable.com/v0/meta/bases/${getBaseId()}/tables/${tableId}/fields/${field.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${getApiKey()}`,
+        },
+      }
+    );
+
+    if (!deleteResponse.ok) {
+      const error = await deleteResponse.json();
+      console.error("필드 삭제 실패:", error);
+      return { success: false, error: error.error?.message || "필드 삭제 실패" };
+    }
+
+    console.log(`✅ 필드 삭제 성공: ${fieldName}`);
+    return { success: true };
+  } catch (error) {
+    console.error("필드 삭제 오류:", error);
+    return { success: false, error: "필드 삭제 중 오류 발생" };
+  }
+}
+
 // ==================== 클라이언트 ====================
 
 function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
+  // formFields JSON 파싱
+  const formFieldsRaw = record.get("formFields") as string | undefined;
+  let formFields: FormField[] | undefined;
+  if (formFieldsRaw) {
+    try {
+      formFields = JSON.parse(formFieldsRaw);
+    } catch {
+      formFields = undefined;
+    }
+  }
+
+  // productFeatures JSON 파싱
+  const productFeaturesRaw = record.get("productFeatures") as string | undefined;
+  let productFeatures: ProductFeature[] | undefined;
+  if (productFeaturesRaw) {
+    try {
+      productFeatures = JSON.parse(productFeaturesRaw);
+    } catch {
+      productFeatures = undefined;
+    }
+  }
+
   return {
     id: record.id,
     name: record.get("name") as string,
@@ -137,6 +265,7 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     kakaoClientId: record.get("kakaoClientId") as string | undefined,
     kakaoClientSecret: record.get("kakaoClientSecret") as string | undefined,
     telegramChatId: record.get("telegramChatId") as string | undefined,
+    slackChannelId: record.get("slackChannelId") as string | undefined,
     landingTitle: record.get("landingTitle") as string | undefined,
     landingDescription: record.get("landingDescription") as string | undefined,
     primaryColor: record.get("primaryColor") as string | undefined,
@@ -147,6 +276,25 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     ctaButtonText: record.get("ctaButtonText") as string | undefined,
     thankYouTitle: record.get("thankYouTitle") as string | undefined,
     thankYouMessage: record.get("thankYouMessage") as string | undefined,
+    formFields: formFields,
+    productFeatures: productFeatures,
+    // 고객 알림 설정
+    smsEnabled: record.get("smsEnabled") as boolean | undefined,
+    smsTemplate: record.get("smsTemplate") as string | undefined,
+    emailEnabled: record.get("emailEnabled") as boolean | undefined,
+    emailSubject: record.get("emailSubject") as string | undefined,
+    emailTemplate: record.get("emailTemplate") as string | undefined,
+    // NCP SENS 설정
+    ncpAccessKey: record.get("ncpAccessKey") as string | undefined,
+    ncpSecretKey: record.get("ncpSecretKey") as string | undefined,
+    ncpServiceId: record.get("ncpServiceId") as string | undefined,
+    ncpSenderPhone: record.get("ncpSenderPhone") as string | undefined,
+    // 운영시간 설정
+    operatingDays: record.get("operatingDays") as 'weekdays' | 'everyday' | undefined,
+    operatingStartTime: record.get("operatingStartTime") as string | undefined,
+    operatingEndTime: record.get("operatingEndTime") as string | undefined,
+    // 에어테이블 공유 URL
+    airtableShareUrl: record.get("airtableShareUrl") as string | undefined,
     createdAt: record.get("createdAt") as string,
   };
 }
@@ -171,9 +319,10 @@ export async function getClientById(id: string): Promise<Client | null> {
 }
 
 export async function getClientBySlug(slug: string): Promise<Client | null> {
+  const escapedSlug = escapeAirtableFormula(slug);
   const records = await getClientsTable()
     .select({
-      filterByFormula: `{slug} = "${slug}"`,
+      filterByFormula: `{slug} = "${escapedSlug}"`,
       maxRecords: 1,
     })
     .all();
@@ -188,7 +337,10 @@ export async function createClient(
   // 1. 클라이언트 전용 Leads 테이블 생성
   const leadsTableId = await createLeadsTableForClient(data.slug);
 
-  // 2. 클라이언트 레코드 생성 (leadsTableId 포함)
+  // 2. 기본 폼 필드 설정 (이름, 전화번호만 활성화)
+  const formFields = data.formFields || DEFAULT_FORM_FIELDS;
+
+  // 3. 클라이언트 레코드 생성 (leadsTableId 포함)
   const record = await getClientsTable().create({
     name: data.name,
     slug: data.slug,
@@ -196,6 +348,7 @@ export async function createClient(
     kakaoClientId: data.kakaoClientId,
     kakaoClientSecret: data.kakaoClientSecret,
     telegramChatId: data.telegramChatId,
+    slackChannelId: data.slackChannelId,
     landingTitle: data.landingTitle,
     landingDescription: data.landingDescription,
     primaryColor: data.primaryColor,
@@ -205,6 +358,7 @@ export async function createClient(
     ctaButtonText: data.ctaButtonText,
     thankYouTitle: data.thankYouTitle,
     thankYouMessage: data.thankYouMessage,
+    formFields: JSON.stringify(formFields),
     leadsTableId: leadsTableId,
     createdAt: new Date().toISOString(),
   });
@@ -228,6 +382,7 @@ export async function updateClient(
   if (data.kakaoClientId !== undefined) updateData.kakaoClientId = data.kakaoClientId || null;
   if (data.kakaoClientSecret !== undefined) updateData.kakaoClientSecret = data.kakaoClientSecret || null;
   if (data.telegramChatId !== undefined) updateData.telegramChatId = data.telegramChatId || null;
+  if (data.slackChannelId !== undefined) updateData.slackChannelId = data.slackChannelId || null;
   if (data.landingTitle !== undefined) updateData.landingTitle = data.landingTitle || null;
   if (data.landingDescription !== undefined) updateData.landingDescription = data.landingDescription || null;
   if (data.primaryColor !== undefined) updateData.primaryColor = data.primaryColor || null;
@@ -236,9 +391,40 @@ export async function updateClient(
   if (data.thankYouTitle !== undefined) updateData.thankYouTitle = data.thankYouTitle || null;
   if (data.thankYouMessage !== undefined) updateData.thankYouMessage = data.thankYouMessage || null;
 
+  // 폼 필드 설정 (JSON으로 저장)
+  if (data.formFields !== undefined) {
+    updateData.formFields = data.formFields ? JSON.stringify(data.formFields) : null;
+  }
+
+  // 상품 특징 (JSON으로 저장)
+  if (data.productFeatures !== undefined) {
+    updateData.productFeatures = data.productFeatures ? JSON.stringify(data.productFeatures) : null;
+  }
+
   // 날짜 필드 (빈 문자열은 null로 변환)
   if (data.contractStart !== undefined) updateData.contractStart = data.contractStart || null;
   if (data.contractEnd !== undefined) updateData.contractEnd = data.contractEnd || null;
+
+  // 고객 알림 설정
+  if (data.smsEnabled !== undefined) updateData.smsEnabled = data.smsEnabled;
+  if (data.smsTemplate !== undefined) updateData.smsTemplate = data.smsTemplate || null;
+  if (data.emailEnabled !== undefined) updateData.emailEnabled = data.emailEnabled;
+  if (data.emailSubject !== undefined) updateData.emailSubject = data.emailSubject || null;
+  if (data.emailTemplate !== undefined) updateData.emailTemplate = data.emailTemplate || null;
+
+  // NCP SENS 설정
+  if (data.ncpAccessKey !== undefined) updateData.ncpAccessKey = data.ncpAccessKey || null;
+  if (data.ncpSecretKey !== undefined) updateData.ncpSecretKey = data.ncpSecretKey || null;
+  if (data.ncpServiceId !== undefined) updateData.ncpServiceId = data.ncpServiceId || null;
+  if (data.ncpSenderPhone !== undefined) updateData.ncpSenderPhone = data.ncpSenderPhone || null;
+
+  // 운영시간 설정
+  if (data.operatingDays !== undefined) updateData.operatingDays = data.operatingDays || null;
+  if (data.operatingStartTime !== undefined) updateData.operatingStartTime = data.operatingStartTime || null;
+  if (data.operatingEndTime !== undefined) updateData.operatingEndTime = data.operatingEndTime || null;
+
+  // 에어테이블 공유 URL
+  if (data.airtableShareUrl !== undefined) updateData.airtableShareUrl = data.airtableShareUrl || null;
 
   const record = await getClientsTable().update(id, updateData);
 
@@ -270,6 +456,8 @@ function parseLeadRecord(record: Airtable.Record<Airtable.FieldSet>, clientId: s
     businessName: record.get("businessName") as string | undefined,
     industry: record.get("industry") as string | undefined,
     kakaoId: record.get("kakaoId") as string | undefined,
+    address: record.get("address") as string | undefined,
+    birthdate: record.get("birthdate") as string | undefined,
     status: (record.get("status") as LeadStatus) || "new",
     memo: record.get("memo") as string | undefined,
     ipAddress: record.get("ipAddress") as string | undefined,
@@ -365,21 +553,35 @@ export async function findLeadById(leadId: string): Promise<{ lead: Lead; client
 export async function createLead(
   leadsTableId: string,
   clientId: string,
-  data: Omit<Lead, "id" | "createdAt" | "clientId">
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: Record<string, any>
 ): Promise<Lead> {
-  const record = await getClientLeadsTable(leadsTableId).create({
+  // 기본 필드
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createData: Record<string, any> = {
     name: data.name,
     phone: data.phone,
     email: data.email,
     businessName: data.businessName,
     industry: data.industry,
     kakaoId: data.kakaoId,
+    address: data.address,
+    birthdate: data.birthdate,
     status: data.status || "new",
     memo: data.memo,
     ipAddress: data.ipAddress,
     userAgent: data.userAgent,
     createdAt: new Date().toISOString(),
-  });
+  };
+
+  // 커스텀 필드 추가 (custom_로 시작하는 필드)
+  for (const key of Object.keys(data)) {
+    if (key.startsWith('custom_') && data[key]) {
+      createData[key] = data[key];
+    }
+  }
+
+  const record = await getClientLeadsTable(leadsTableId).create(createData);
 
   return parseLeadRecord(record, clientId);
 }
@@ -414,8 +616,9 @@ export async function deleteLead(leadId: string, leadsTableId: string): Promise<
 // ==================== 블랙리스트 ====================
 
 export async function getBlacklist(clientId?: string): Promise<Blacklist[]> {
+  const escapedClientId = clientId ? escapeAirtableFormula(clientId) : '';
   const filterByFormula = clientId
-    ? `OR({clientId} = BLANK(), {clientId} = "${clientId}")`
+    ? `OR({clientId} = BLANK(), {clientId} = "${escapedClientId}")`
     : "";
 
   const records = await getBlacklistTable()

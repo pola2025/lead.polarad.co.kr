@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이메일 미리보기 - 폴라애드</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #1f2937;
+    }
+    .preview-title {
+      max-width: 600px;
+      margin: 0 auto 20px auto;
+      color: white;
+      font-size: 14px;
+    }
+    .preview-title h2 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+    .preview-title p {
+      margin: 0;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <!-- 미리보기 타이틀 -->
+  <div class="preview-title">
+    <h2>📧 이메일 미리보기</h2>
+    <p>제목: [폴라애드] 상담 신청이 접수되었습니다</p>
+  </div>
+
+  <!-- 실제 이메일 내용 -->
+  <div style="margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f9fafb; border-radius: 16px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+      <tr>
+        <td>
+          <!-- 헤더: 로고 + 접수완료 -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 16px 16px 0 0; padding: 32px;">
+            <tr>
+              <td align="center">
+                <!-- 로고 (있는 경우) -->
+                <img src="https://pub-c05cdcc4848e4106a77456409f3eb065.r2.dev/polarlead/logos/polamkt-1737520994612.png" alt="폴라애드" style="max-height: 48px; max-width: 200px; margin-bottom: 16px;">
+
+                <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 16px auto; line-height: 56px; text-align: center;">
+                  <span style="font-size: 28px; color: white;">✓</span>
+                </div>
+                <h1 style="color: white; font-size: 24px; font-weight: 700; margin: 0;">접수 완료</h1>
+              </td>
+            </tr>
+          </table>
+
+          <!-- 본문 -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: white; border-radius: 0 0 16px 16px; padding: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <tr>
+              <td>
+                <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin: 0 0 16px 0;">
+                  안녕하세요, 임혜진님!
+                </h2>
+                <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
+                  상담 신청이 정상적으로 접수되었습니다.<br>
+                  빠른 시일 내에 담당자가 연락드리겠습니다.
+                </p>
+
+                <!-- 접수 내용 -->
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                  <tr>
+                    <td>
+                      <p style="color: #3b82f6; font-size: 14px; font-weight: 600; margin: 0 0 12px 0;">📋 접수 내용</p>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td style="color: #6b7280; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb; width: 100px;">이름</td>
+                          <td style="color: #1f2937; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">임혜진</td>
+                        </tr>
+                        <tr>
+                          <td style="color: #6b7280; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb; width: 100px;">연락처</td>
+                          <td style="color: #1f2937; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">01066246615</td>
+                        </tr>
+                        <tr>
+                          <td style="color: #6b7280; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb; width: 100px;">이메일</td>
+                          <td style="color: #1f2937; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">imagime2002@naver.com</td>
+                        </tr>
+                        <tr>
+                          <td style="color: #6b7280; font-size: 14px; padding: 8px 0; width: 100px;">접수일시</td>
+                          <td style="color: #1f2937; font-size: 14px; padding: 8px 0;">2026. 1. 22. 오후 4:30:00</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+                  본 메일은 발신 전용이며, 문의사항은 담당자 연락 시 말씀해주세요.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- 푸터 -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 24px;">
+            <tr>
+              <td align="center">
+                <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                  © 2026 폴라애드. All rights reserved.<br>
+                  Powered by PolarLead
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- SMS 미리보기 -->
+  <div style="max-width: 600px; margin: 40px auto; padding: 20px; background: #374151; border-radius: 12px; color: white;">
+    <h3 style="margin: 0 0 16px 0;">📱 SMS 미리보기</h3>
+    <div style="background: #1f2937; padding: 16px; border-radius: 8px; font-family: sans-serif; font-size: 14px; line-height: 1.6;">
+      [폴라애드] 임혜진님, 상담 신청이 접수되었습니다. 빠른 시일 내에 연락드리겠습니다. 감사합니다.
+    </div>
+
+    <h4 style="margin: 24px 0 8px 0; color: #9ca3af; font-size: 12px;">커스텀 템플릿 사용 시:</h4>
+    <div style="background: #1f2937; padding: 16px; border-radius: 8px; font-family: sans-serif; font-size: 14px; line-height: 1.6;">
+      안녕하세요 임혜진님!<br>
+      폴라애드 상담 신청이 완료되었습니다.<br>
+      접수일: 2026. 1. 22.<br>
+      담당자가 곧 연락드리겠습니다.
+    </div>
+    <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;">
+      사용 가능 변수: {name}, {clientName}, {date}
+    </p>
+  </div>
+
+  <!-- 로고 없는 케이스 -->
+  <div class="preview-title" style="margin-top: 40px;">
+    <h2>📧 로고 없는 케이스</h2>
+    <p>로고가 설정되지 않은 클라이언트의 경우</p>
+  </div>
+
+  <div style="margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f9fafb; border-radius: 16px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+      <tr>
+        <td>
+          <!-- 헤더: 회사명 텍스트 -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px 16px 0 0; padding: 32px;">
+            <tr>
+              <td align="center">
+                <!-- 로고 없으면 회사명 표시 -->
+                <h2 style="color: white; font-size: 20px; font-weight: 700; margin: 0 0 16px 0;">ABC 컨설팅</h2>
+
+                <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 16px auto; line-height: 56px; text-align: center;">
+                  <span style="font-size: 28px; color: white;">✓</span>
+                </div>
+                <h1 style="color: white; font-size: 24px; font-weight: 700; margin: 0;">접수 완료</h1>
+              </td>
+            </tr>
+          </table>
+
+          <!-- 본문 -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: white; border-radius: 0 0 16px 16px; padding: 32px;">
+            <tr>
+              <td>
+                <h2 style="color: #1f2937; font-size: 20px; font-weight: 600; margin: 0 0 16px 0;">
+                  안녕하세요, 홍길동님!
+                </h2>
+                <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
+                  상담 신청이 정상적으로 접수되었습니다.<br>
+                  빠른 시일 내에 담당자가 연락드리겠습니다.
+                </p>
+
+                <!-- 접수 내용 -->
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                  <tr>
+                    <td>
+                      <p style="color: #10b981; font-size: 14px; font-weight: 600; margin: 0 0 12px 0;">📋 접수 내용</p>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                          <td style="color: #6b7280; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb; width: 100px;">이름</td>
+                          <td style="color: #1f2937; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">홍길동</td>
+                        </tr>
+                        <tr>
+                          <td style="color: #6b7280; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb; width: 100px;">연락처</td>
+                          <td style="color: #1f2937; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">01012345678</td>
+                        </tr>
+                        <tr>
+                          <td style="color: #6b7280; font-size: 14px; padding: 8px 0; width: 100px;">접수일시</td>
+                          <td style="color: #1f2937; font-size: 14px; padding: 8px 0;">2026. 1. 22. 오후 4:30:00</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+                  본 메일은 발신 전용이며, 문의사항은 담당자 연락 시 말씀해주세요.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- 푸터 -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 24px;">
+            <tr>
+              <td align="center">
+                <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                  © 2026 ABC 컨설팅. All rights reserved.<br>
+                  Powered by PolarLead
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

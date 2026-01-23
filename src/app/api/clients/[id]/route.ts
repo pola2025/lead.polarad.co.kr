@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientById, updateClient, deleteClient } from "@/lib/airtable";
+import { sendClientUpdatedNotification } from "@/lib/slack";
 
 export async function GET(
   request: NextRequest,
@@ -26,6 +27,25 @@ export async function GET(
   }
 }
 
+// 변경 항목 레이블
+const FIELD_LABELS: Record<string, string> = {
+  name: "클라이언트명",
+  slug: "슬러그",
+  status: "상태",
+  landingTitle: "랜딩 제목",
+  landingDescription: "랜딩 설명",
+  primaryColor: "테마 색상",
+  logoUrl: "로고",
+  ctaButtonText: "CTA 버튼",
+  thankYouTitle: "완료 제목",
+  thankYouMessage: "완료 메시지",
+  formFields: "폼 필드",
+  productFeatures: "상품 특징",
+  telegramChatId: "텔레그램 ID",
+  contractStart: "계약 시작일",
+  contractEnd: "계약 종료일",
+};
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -45,7 +65,27 @@ export async function PUT(
       );
     }
 
+    // 기존 데이터 조회 (변경 감지용)
+    const oldClient = await getClientById(id);
+
     const client = await updateClient(id, body);
+
+    // 변경된 항목 감지
+    const changes: string[] = [];
+    if (oldClient) {
+      for (const key of Object.keys(body)) {
+        const label = FIELD_LABELS[key];
+        if (label) {
+          changes.push(label);
+        }
+      }
+    }
+
+    // 슬랙 알림 (비동기 - 실패해도 수정은 성공)
+    sendClientUpdatedNotification(client, changes).catch((err) => {
+      console.error("[Slack] 클라이언트 수정 알림 실패:", err);
+    });
+
     return NextResponse.json({ success: true, data: client });
   } catch (error) {
     console.error("Failed to update client:", error);

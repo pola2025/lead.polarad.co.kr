@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
-import { Plus, Search, MoreVertical, ExternalLink, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, ExternalLink, Trash2, Key } from "lucide-react";
 import type { Client } from "@/types";
 
 const statusLabels: Record<string, { label: string; class: string }> = {
@@ -13,10 +14,10 @@ const statusLabels: Record<string, { label: string; class: string }> = {
 };
 
 export default function ClientsPage() {
+  const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   useEffect(() => {
     fetchClients();
@@ -138,13 +139,16 @@ export default function ClientsPage() {
                   <th>슬러그</th>
                   <th>상태</th>
                   <th>계약기간</th>
-                  <th>등록일</th>
-                  <th className="w-12"></th>
+                  <th className="text-right">액션</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredClients.map((client) => (
-                  <tr key={client.id}>
+                  <tr
+                    key={client.id}
+                    onClick={() => router.push(`/clients/${client.id}`)}
+                    className="cursor-pointer hover:bg-gray-50 transition-colors"
+                  >
                     <td>
                       <div className="flex items-center gap-3">
                         {client.logoUrl ? (
@@ -183,7 +187,10 @@ export default function ClientsPage() {
                     </td>
                     <td>
                       <button
-                        onClick={() => handleToggleStatus(client)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleStatus(client);
+                        }}
                         className={`badge ${statusLabels[client.status]?.class || "badge-pending"}`}
                       >
                         {statusLabels[client.status]?.label || "대기"}
@@ -200,47 +207,37 @@ export default function ClientsPage() {
                       )}
                     </td>
                     <td>
-                      <span className="text-xs text-gray-500">
-                        {new Date(client.createdAt).toLocaleDateString("ko-KR")}
-                      </span>
-                    </td>
-                    <td className="overflow-visible">
-                      <div className="relative">
-                        <button
-                          onClick={() =>
-                            setOpenMenu(openMenu === client.id ? null : client.id)
-                          }
-                          className="rounded p-1 hover:bg-gray-100"
+                      <div className="flex items-center justify-end gap-1">
+                        <a
+                          href={`/l/${client.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-2 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                          title="랜딩 페이지"
                         >
-                          <MoreVertical className="h-4 w-4 text-gray-500" />
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                        <a
+                          href={`/portal/${client.slug}/login`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-2 rounded-lg text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                          title="클라이언트 포털"
+                        >
+                          <Key className="h-4 w-4" />
+                        </a>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(client.id);
+                          }}
+                          className="p-2 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          title="삭제"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
-                        {openMenu === client.id && (
-                          <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                            <a
-                              href={`/l/${client.slug}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              랜딩 페이지 보기
-                            </a>
-                            <Link
-                              href={`/clients/${client.id}`}
-                              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Edit className="h-4 w-4" />
-                              수정
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(client.id)}
-                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              삭제
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </td>
                   </tr>

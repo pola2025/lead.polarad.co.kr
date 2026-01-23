@@ -21,6 +21,7 @@ export default function NewClientPage() {
     kakaoClientId: "",
     kakaoClientSecret: "",
     telegramChatId: "",
+    slackChannelId: "",
     landingTitle: "",
     landingDescription: "",
     primaryColor: "#3b82f6",
@@ -190,7 +191,7 @@ export default function NewClientPage() {
                     id="slug"
                     name="slug"
                     required
-                    pattern="^[a-z0-9-]+$"
+                    pattern="^[a-z0-9\-]+$"
                     value={formData.slug}
                     onChange={handleChange}
                     placeholder="coffee-shop-a"
@@ -439,6 +440,30 @@ export default function NewClientPage() {
               />
               <p className="mt-1 text-xs text-gray-500">
                 @userinfobot에게 메시지를 보내 채팅 ID를 확인할 수 있습니다.
+              </p>
+            </div>
+          </div>
+
+          {/* 슬랙 설정 */}
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">슬랙 알림 설정</h2>
+
+            <div>
+              <label htmlFor="slackChannelId" className="block text-sm font-medium text-gray-700 mb-1">
+                슬랙 채널 ID
+              </label>
+              <input
+                type="text"
+                id="slackChannelId"
+                name="slackChannelId"
+                value={formData.slackChannelId}
+                onChange={handleChange}
+                placeholder="예: C0A5H99LGBU"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                포털 비밀번호 및 설정 변경 알림을 받을 슬랙 채널 ID입니다.
+                채널 우클릭 → 채널 세부정보 보기 → 하단에서 채널 ID를 확인하세요.
               </p>
             </div>
           </div>

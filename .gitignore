@@ -29,6 +29,10 @@ yarn-error.log*
 .env*.local
 .env
 
+# Session handoff (민감 정보 포함 가능)
+NEXT_SESSION_REQUEST.md
+SESSION_*.md
+
 # Vercel
 .vercel
 
@@ -38,3 +42,7 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md

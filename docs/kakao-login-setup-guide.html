@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카카오 로그인 설정 가이드 - PolarLead</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .step-card { transition: all 0.2s; }
+    .step-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    .checked { background: #dcfce7 !important; border-color: #22c55e !important; }
+    .copy-btn:active { transform: scale(0.95); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- 헤더 -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full text-sm font-medium mb-4">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c5.514 0 10 3.592 10 8.007 0 4.917-4.486 8.008-10 8.008-1.006 0-1.98-.104-2.908-.296l-3.91 2.577.96-3.596C3.67 16.457 2 14.018 2 11.007 2 6.592 6.486 3 12 3z"/></svg>
+        카카오 로그인 설정 가이드
+      </div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">PolarLead 카카오 로그인 연동</h1>
+      <p class="text-gray-600">아래 단계를 순서대로 진행하세요. 완료한 항목은 체크해주세요.</p>
+    </div>
+
+    <!-- 진행률 -->
+    <div class="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-200">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-700">진행률</span>
+        <span id="progress-text" class="text-sm font-bold text-blue-600">0 / 6 완료</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-3">
+        <div id="progress-bar" class="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- 필수 정보 입력 -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+      <h2 class="text-lg font-semibold text-blue-900 mb-4">📝 PolarLead 설정 정보</h2>
+      <div class="grid gap-4">
+        <div>
+          <label class="block text-sm font-medium text-blue-800 mb-1">서비스 도메인</label>
+          <div class="flex gap-2">
+            <input type="text" id="domain" value="lead.polarad.co.kr" class="flex-1 px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <button onclick="updateAllValues()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">적용</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-blue-800 mb-1">Redirect URI (자동 생성)</label>
+          <div class="flex gap-2">
+            <input type="text" id="redirect-uri" readonly class="flex-1 px-4 py-2 bg-white border border-blue-300 rounded-lg text-gray-700">
+            <button onclick="copyToClipboard('redirect-uri')" class="copy-btn px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: 앱 생성 -->
+    <div class="step-card bg-white rounded-xl p-6 mb-4 shadow-sm border border-gray-200" data-step="1">
+      <div class="flex items-start gap-4">
+        <label class="flex-shrink-0 mt-1">
+          <input type="checkbox" class="step-checkbox w-6 h-6 rounded-md border-2 border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" onchange="updateProgress()">
+        </label>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">STEP 1</span>
+            <h3 class="text-lg font-semibold text-gray-900">애플리케이션 생성</h3>
+          </div>
+          <p class="text-gray-600 mb-4">카카오 개발자 사이트에서 새 앱을 만듭니다.</p>
+
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <ol class="space-y-3 text-sm">
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <span><a href="https://developers.kakao.com" target="_blank" class="text-blue-600 hover:underline font-medium">developers.kakao.com</a> 접속 후 로그인</span>
+              </li>
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                <span>상단 <strong>[내 애플리케이션]</strong> 클릭</span>
+              </li>
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                <span><strong>[애플리케이션 추가하기]</strong> 버튼 클릭</span>
+              </li>
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                <span>앱 이름: <code class="bg-gray-200 px-2 py-0.5 rounded">PolarLead</code> 입력 후 저장</span>
+              </li>
+            </ol>
+          </div>
+
+          <a href="https://developers.kakao.com/console/app" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            카카오 개발자 콘솔 열기
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: 플랫폼 등록 -->
+    <div class="step-card bg-white rounded-xl p-6 mb-4 shadow-sm border border-gray-200" data-step="2">
+      <div class="flex items-start gap-4">
+        <label class="flex-shrink-0 mt-1">
+          <input type="checkbox" class="step-checkbox w-6 h-6 rounded-md border-2 border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" onchange="updateProgress()">
+        </label>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">STEP 2</span>
+            <h3 class="text-lg font-semibold text-gray-900">Web 플랫폼 등록</h3>
+          </div>
+          <p class="text-gray-600 mb-4">웹 서비스 도메인을 등록합니다.</p>
+
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <p class="text-sm text-gray-600 mb-3"><strong>경로:</strong> 앱 선택 → 앱 설정 → 플랫폼</p>
+            <ol class="space-y-3 text-sm">
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <span><strong>[Web 플랫폼 등록]</strong> 클릭</span>
+              </li>
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                <span>사이트 도메인 입력:</span>
+              </li>
+            </ol>
+            <div class="mt-3 flex gap-2">
+              <input type="text" id="site-domain" readonly class="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-mono">
+              <button onclick="copyToClipboard('site-domain')" class="copy-btn px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 text-sm">복사</button>
+            </div>
+            <p class="text-xs text-amber-600 mt-2">⚠️ https:// 없이 도메인만 입력하세요!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: 카카오 로그인 활성화 -->
+    <div class="step-card bg-white rounded-xl p-6 mb-4 shadow-sm border border-gray-200" data-step="3">
+      <div class="flex items-start gap-4">
+        <label class="flex-shrink-0 mt-1">
+          <input type="checkbox" class="step-checkbox w-6 h-6 rounded-md border-2 border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" onchange="updateProgress()">
+        </label>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">STEP 3</span>
+            <h3 class="text-lg font-semibold text-gray-900">카카오 로그인 활성화</h3>
+            <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded">필수</span>
+          </div>
+          <p class="text-gray-600 mb-4">카카오 로그인 기능을 켭니다.</p>
+
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <p class="text-sm text-gray-600 mb-3"><strong>경로:</strong> 앱 선택 → 제품 설정 → 카카오 로그인</p>
+            <ol class="space-y-3 text-sm">
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <span><strong>활성화 설정</strong>의 상태를 <strong class="text-green-600">ON</strong>으로 변경</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <p class="text-sm text-red-700">⚠️ OFF 상태면 로그인 시 <code class="bg-red-100 px-1 rounded">KOE004</code> 에러 발생!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Redirect URI 등록 -->
+    <div class="step-card bg-white rounded-xl p-6 mb-4 shadow-sm border border-gray-200" data-step="4">
+      <div class="flex items-start gap-4">
+        <label class="flex-shrink-0 mt-1">
+          <input type="checkbox" class="step-checkbox w-6 h-6 rounded-md border-2 border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" onchange="updateProgress()">
+        </label>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">STEP 4</span>
+            <h3 class="text-lg font-semibold text-gray-900">Redirect URI 등록</h3>
+            <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded">필수</span>
+          </div>
+          <p class="text-gray-600 mb-4">로그인 후 돌아올 주소를 등록합니다.</p>
+
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <p class="text-sm text-gray-600 mb-3"><strong>경로:</strong> 카카오 로그인 → Redirect URI</p>
+            <ol class="space-y-3 text-sm">
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <span><strong>[Redirect URI 등록]</strong> 클릭</span>
+              </li>
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                <span>아래 URI 복사하여 붙여넣기:</span>
+              </li>
+            </ol>
+            <div class="mt-3 flex gap-2">
+              <input type="text" id="redirect-uri-copy" readonly class="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-mono">
+              <button onclick="copyToClipboard('redirect-uri-copy')" class="copy-btn px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 text-sm">복사</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: 동의항목 설정 -->
+    <div class="step-card bg-white rounded-xl p-6 mb-4 shadow-sm border border-gray-200" data-step="5">
+      <div class="flex items-start gap-4">
+        <label class="flex-shrink-0 mt-1">
+          <input type="checkbox" class="step-checkbox w-6 h-6 rounded-md border-2 border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" onchange="updateProgress()">
+        </label>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">STEP 5</span>
+            <h3 class="text-lg font-semibold text-gray-900">동의항목 설정</h3>
+            <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded">필수</span>
+          </div>
+          <p class="text-gray-600 mb-4">사용자에게 요청할 정보 권한을 설정합니다.</p>
+
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <p class="text-sm text-gray-600 mb-3"><strong>경로:</strong> 카카오 로그인 → 동의항목</p>
+
+            <div class="space-y-2">
+              <p class="text-sm font-medium text-gray-700 mb-2">아래 항목을 <strong>필수 동의</strong> 또는 <strong>선택 동의</strong>로 설정:</p>
+
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div class="bg-white p-3 rounded border border-gray-200">
+                  <span class="font-medium">닉네임</span>
+                  <span class="text-green-600 text-xs ml-2">✓ 바로 사용</span>
+                </div>
+                <div class="bg-white p-3 rounded border border-gray-200">
+                  <span class="font-medium">프로필 사진</span>
+                  <span class="text-green-600 text-xs ml-2">✓ 바로 사용</span>
+                </div>
+                <div class="bg-white p-3 rounded border border-amber-300">
+                  <span class="font-medium">카카오계정(이메일)</span>
+                  <span class="text-amber-600 text-xs ml-2">⚠️ 검수 필요</span>
+                </div>
+                <div class="bg-white p-3 rounded border border-amber-300">
+                  <span class="font-medium">이름</span>
+                  <span class="text-amber-600 text-xs ml-2">⚠️ 검수 필요</span>
+                </div>
+                <div class="bg-white p-3 rounded border border-amber-300">
+                  <span class="font-medium">전화번호</span>
+                  <span class="text-amber-600 text-xs ml-2">⚠️ 검수 필요</span>
+                </div>
+                <div class="bg-white p-3 rounded border border-amber-300">
+                  <span class="font-medium">생년월일</span>
+                  <span class="text-amber-600 text-xs ml-2">⚠️ 검수 필요</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p class="text-sm text-amber-800">💡 <strong>이름, 전화번호, 이메일</strong>은 비즈앱 검수 후 사용 가능합니다. (3~5일 소요)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6: OpenID Connect 활성화 -->
+    <div class="step-card bg-white rounded-xl p-6 mb-4 shadow-sm border border-gray-200" data-step="6">
+      <div class="flex items-start gap-4">
+        <label class="flex-shrink-0 mt-1">
+          <input type="checkbox" class="step-checkbox w-6 h-6 rounded-md border-2 border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" onchange="updateProgress()">
+        </label>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">STEP 6</span>
+            <h3 class="text-lg font-semibold text-gray-900">OpenID Connect 활성화</h3>
+            <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded">선택</span>
+          </div>
+          <p class="text-gray-600 mb-4">ID 토큰을 함께 받으려면 활성화합니다.</p>
+
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <p class="text-sm text-gray-600 mb-3"><strong>경로:</strong> 카카오 로그인 → OpenID Connect</p>
+            <ol class="space-y-3 text-sm">
+              <li class="flex gap-2">
+                <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <span><strong>OpenID Connect 활성화 설정</strong>을 <strong class="text-green-600">ON</strong>으로 변경</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p class="text-sm text-blue-700">💡 OIDC 활성화 시 액세스 토큰과 함께 ID 토큰(JWT)을 받아 사용자 정보를 바로 확인할 수 있습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 앱 키 정보 -->
+    <div class="bg-green-50 border border-green-200 rounded-xl p-6 mb-6">
+      <h2 class="text-lg font-semibold text-green-900 mb-4">🔑 앱 키 확인 (설정 완료 후)</h2>
+      <p class="text-sm text-green-800 mb-4"><strong>경로:</strong> 앱 선택 → 앱 키</p>
+
+      <div class="grid gap-3">
+        <div class="bg-white p-4 rounded-lg border border-green-200">
+          <label class="block text-xs font-medium text-green-700 mb-1">REST API 키 (서버에서 사용)</label>
+          <input type="text" id="rest-api-key" placeholder="여기에 REST API 키 붙여넣기" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono">
+        </div>
+        <div class="bg-white p-4 rounded-lg border border-green-200">
+          <label class="block text-xs font-medium text-green-700 mb-1">JavaScript 키 (프론트에서 사용)</label>
+          <input type="text" id="js-key" placeholder="여기에 JavaScript 키 붙여넣기" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono">
+        </div>
+      </div>
+
+      <button onclick="generateEnvCode()" class="mt-4 w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
+        .env.local 코드 생성
+      </button>
+
+      <div id="env-output" class="hidden mt-4">
+        <label class="block text-xs font-medium text-green-700 mb-1">.env.local에 추가할 코드:</label>
+        <div class="relative">
+          <pre id="env-code" class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto"></pre>
+          <button onclick="copyToClipboard('env-code')" class="absolute top-2 right-2 px-2 py-1 bg-gray-700 text-white rounded text-xs hover:bg-gray-600">복사</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 완료 -->
+    <div id="completion-message" class="hidden bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-center text-white">
+      <div class="text-4xl mb-3">🎉</div>
+      <h2 class="text-xl font-bold mb-2">설정 완료!</h2>
+      <p>카카오 로그인 연동 준비가 완료되었습니다.</p>
+    </div>
+
+    <!-- 푸터 -->
+    <div class="text-center text-sm text-gray-400 mt-8">
+      <p>© 2026 PolarLead. 카카오 로그인 설정 가이드</p>
+      <a href="https://developers.kakao.com/docs/latest/ko/kakaologin/prerequisite" target="_blank" class="text-blue-500 hover:underline">카카오 공식 문서 보기</a>
+    </div>
+  </div>
+
+  <script>
+    // 초기화
+    function init() {
+      updateAllValues();
+      loadSavedState();
+    }
+
+    // 도메인 기반 값 업데이트
+    function updateAllValues() {
+      const domain = document.getElementById('domain').value.trim();
+      const redirectUri = `https://${domain}/api/auth/kakao/callback`;
+
+      document.getElementById('redirect-uri').value = redirectUri;
+      document.getElementById('site-domain').value = domain;
+      document.getElementById('redirect-uri-copy').value = redirectUri;
+
+      localStorage.setItem('kakao-domain', domain);
+    }
+
+    // 클립보드 복사
+    function copyToClipboard(elementId) {
+      const element = document.getElementById(elementId);
+      const text = element.tagName === 'PRE' ? element.textContent : element.value;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = element.nextElementSibling || element.parentElement.querySelector('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✓ 복사됨';
+        btn.classList.add('bg-green-100', 'text-green-700');
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.classList.remove('bg-green-100', 'text-green-700');
+        }, 1500);
+      });
+    }
+
+    // 진행률 업데이트
+    function updateProgress() {
+      const checkboxes = document.querySelectorAll('.step-checkbox');
+      const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+      const total = checkboxes.length;
+      const percentage = (checked / total) * 100;
+
+      document.getElementById('progress-bar').style.width = percentage + '%';
+      document.getElementById('progress-text').textContent = `${checked} / ${total} 완료`;
+
+      // 카드 스타일 업데이트
+      checkboxes.forEach((cb, index) => {
+        const card = cb.closest('.step-card');
+        if (cb.checked) {
+          card.classList.add('checked');
+        } else {
+          card.classList.remove('checked');
+        }
+      });
+
+      // 완료 메시지
+      if (checked === total) {
+        document.getElementById('completion-message').classList.remove('hidden');
+      } else {
+        document.getElementById('completion-message').classList.add('hidden');
+      }
+
+      // 상태 저장
+      saveState();
+    }
+
+    // .env 코드 생성
+    function generateEnvCode() {
+      const restApiKey = document.getElementById('rest-api-key').value.trim();
+      const jsKey = document.getElementById('js-key').value.trim();
+      const redirectUri = document.getElementById('redirect-uri').value;
+
+      if (!restApiKey) {
+        alert('REST API 키를 입력해주세요.');
+        return;
+      }
+
+      const envCode = `# Kakao Login
+KAKAO_CLIENT_ID=${restApiKey}
+KAKAO_CLIENT_SECRET=
+KAKAO_REDIRECT_URI=${redirectUri}
+NEXT_PUBLIC_KAKAO_JS_KEY=${jsKey}`;
+
+      document.getElementById('env-code').textContent = envCode;
+      document.getElementById('env-output').classList.remove('hidden');
+    }
+
+    // 상태 저장
+    function saveState() {
+      const checkboxes = document.querySelectorAll('.step-checkbox');
+      const state = Array.from(checkboxes).map(cb => cb.checked);
+      localStorage.setItem('kakao-setup-state', JSON.stringify(state));
+    }
+
+    // 상태 불러오기
+    function loadSavedState() {
+      const saved = localStorage.getItem('kakao-setup-state');
+      const savedDomain = localStorage.getItem('kakao-domain');
+
+      if (savedDomain) {
+        document.getElementById('domain').value = savedDomain;
+        updateAllValues();
+      }
+
+      if (saved) {
+        const state = JSON.parse(saved);
+        const checkboxes = document.querySelectorAll('.step-checkbox');
+        checkboxes.forEach((cb, index) => {
+          if (state[index]) cb.checked = true;
+        });
+        updateProgress();
+      }
+    }
+
+    // 페이지 로드 시 초기화
+    init();
+  </script>
+</body>
+</html>

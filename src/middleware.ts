@@ -30,12 +30,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 토큰 유효성 검증 (동기 버전 - KV 모드에서는 API에서 재검증)
-  if (!validateTokenSync(token)) {
-    // 유효하지 않은 토큰 - 로그인 페이지로 리다이렉트
+  // 개발 환경에서는 토큰 존재 여부만 확인 (메모리 저장소 동기화 문제)
+  // 프로덕션에서는 KV를 사용하므로 API에서 재검증
+  if (process.env.NODE_ENV === 'production' && !validateTokenSync(token)) {
     const loginUrl = new URL('/login', request.url);
     const response = NextResponse.redirect(loginUrl);
-    // 무효한 쿠키 삭제
     response.cookies.delete('admin_token');
     return response;
   }

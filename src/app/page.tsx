@@ -315,9 +315,10 @@ export default function DashboardPage() {
                 ) : (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {activeClients.map((client) => (
-                      <div
+                      <Link
                         key={client.id}
-                        className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors"
+                        href={`/clients/${client.id}`}
+                        className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                       >
                         {client.logoUrl ? (
                           <img
@@ -343,15 +344,17 @@ export default function DashboardPage() {
                             {client.landingTitle || client.slug}
                           </p>
                         </div>
-                        <a
-                          href={`https://polarlead.mkt9834.workers.dev/${client.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <span
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.open(`https://polarlead.mkt9834.workers.dev/${client.slug}`, '_blank');
+                          }}
                           className="text-gray-400 hover:text-gray-600"
                         >
                           <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </div>
+                        </span>
+                      </Link>
                     ))}
                   </div>
                 )}
