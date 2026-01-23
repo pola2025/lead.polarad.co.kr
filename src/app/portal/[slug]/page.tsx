@@ -337,7 +337,7 @@ export default function PortalDashboardPage() {
               className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">미리보기</span>
+              랜딩미리보기
             </button>
             <button
               onClick={handleLogout}
