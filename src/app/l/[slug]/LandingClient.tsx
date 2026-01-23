@@ -267,7 +267,7 @@ export default function LandingClient({ client }: LandingClientProps) {
               <p className="font-medium text-gray-500">폴라애드</p>
               <p>대표: 이재호 | 사업자등록번호: 808-03-00327</p>
               <p>통신판매업: 제2025-서울금천-1908호</p>
-              <p>주소: 서울특별시 금천구 가산디지털2로 98, 롯데 IT 캐슬 2동 11층 1107</p>
+              <p>주소: 서울특별시 금천구 가산디지털2로 98,<br />롯데 IT 캐슬 2동 11층 1107</p>
               <p>전화: 032-345-9834 | 이메일: mkt@polarad.co.kr</p>
               <p className="pt-3">
                 <a href="/privacy" target="_blank" className="text-gray-500 hover:text-gray-600 underline">개인정보처리방침</a>

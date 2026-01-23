@@ -202,8 +202,21 @@ export default function LeadsPage() {
                           {lead.industry && <span className="text-gray-400">· {lead.industry}</span>}
                         </p>
                       )}
+                      {/* 추가 정보 */}
+                      <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                        {lead.address && <p>주소: {lead.address}</p>}
+                        {lead.birthdate && <p>생년월일: {lead.birthdate}</p>}
+                        {lead.kakaoId && <p className="text-yellow-600">카카오: {lead.kakaoId}</p>}
+                      </div>
+                      {/* 문의사항 */}
+                      {lead.memo && (
+                        <div className="mt-2 p-2.5 bg-blue-50 border border-blue-100 rounded-lg">
+                          <p className="text-[11px] text-blue-500 font-medium mb-1">💬 문의사항</p>
+                          <p className="text-sm text-gray-800 whitespace-pre-wrap">{lead.memo}</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       <button
                         onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
                         className="rounded p-2 hover:bg-gray-100"
@@ -286,6 +299,16 @@ export default function LeadsPage() {
                               {lead.email}
                             </p>
                           )}
+                          {lead.kakaoId && (
+                            <p className="text-xs text-yellow-600">카카오: {lead.kakaoId}</p>
+                          )}
+                          {/* 문의사항 표시 */}
+                          {lead.memo && (
+                            <div className="mt-1.5 p-2 bg-blue-50 border border-blue-100 rounded text-xs max-w-xs">
+                              <span className="text-blue-500 font-medium">💬 </span>
+                              <span className="text-gray-700 whitespace-pre-wrap">{lead.memo}</span>
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td>
@@ -307,6 +330,12 @@ export default function LeadsPage() {
                           </div>
                         ) : (
                           <span className="text-gray-400">-</span>
+                        )}
+                        {lead.address && (
+                          <p className="text-xs text-gray-500 mt-0.5">{lead.address}</p>
+                        )}
+                        {lead.birthdate && (
+                          <p className="text-xs text-gray-500">생년월일: {lead.birthdate}</p>
                         )}
                       </td>
                       <td>

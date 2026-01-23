@@ -931,9 +931,9 @@ export default function PortalDashboardPage() {
                           </div>
                           {/* 문의사항/메모 */}
                           {lead.memo && (
-                            <div className="mt-2 p-2 bg-gray-50 rounded-lg">
-                              <p className="text-[11px] text-gray-400 mb-0.5">문의사항</p>
-                              <p className="text-[13px] text-gray-700 whitespace-pre-wrap">{lead.memo}</p>
+                            <div className="mt-2 p-2.5 bg-blue-50 border border-blue-100 rounded-lg">
+                              <p className="text-[11px] text-blue-500 font-medium mb-1">💬 문의사항</p>
+                              <p className="text-[13px] text-gray-800 whitespace-pre-wrap">{lead.memo}</p>
                             </div>
                           )}
                         </div>
@@ -966,6 +966,12 @@ export default function PortalDashboardPage() {
                               전환
                             </button>
                             <div className="border-t border-gray-100 my-1"></div>
+                            <button
+                              onClick={() => handleUpdateLeadStatus(lead.id, "blacklist")}
+                              className="w-full px-3 py-2 text-left text-sm text-orange-600 hover:bg-orange-50"
+                            >
+                              블랙리스트
+                            </button>
                             <button
                               onClick={() => handleDeleteLead(lead.id)}
                               className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
