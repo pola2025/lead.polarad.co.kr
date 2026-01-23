@@ -38,6 +38,7 @@ export default function LandingClient({ client }: LandingClientProps) {
   const [step, setStep] = useState<Step>("intro");
   const [submitting, setSubmitting] = useState(false);
   const [kakaoEmail, setKakaoEmail] = useState<string | null>(null);
+  const [kakaoId, setKakaoId] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
   // 폼 데이터 초기화
@@ -51,9 +52,10 @@ export default function LandingClient({ client }: LandingClientProps) {
 
   const [formData, setFormData] = useState<Record<string, string>>(initialFormData);
 
-  // 카카오 이메일 자동 채우기
+  // 카카오 이메일/ID 자동 채우기
   useEffect(() => {
     const email = searchParams.get("kakao_email");
+    const kakaoIdParam = searchParams.get("kakao_id");
     const error = searchParams.get("kakao_error");
 
     if (error) {
@@ -65,6 +67,10 @@ export default function LandingClient({ client }: LandingClientProps) {
       setKakaoEmail(email);
       setFormData((prev) => ({ ...prev, email }));
       setStep("form"); // 이메일을 받았으면 바로 폼으로 이동
+    }
+
+    if (kakaoIdParam) {
+      setKakaoId(kakaoIdParam);
     }
   }, [searchParams]);
 
@@ -151,7 +157,7 @@ export default function LandingClient({ client }: LandingClientProps) {
       const res = await fetch(`/api/leads/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId: client.id, ...formData }),
+        body: JSON.stringify({ clientId: client.id, kakaoId, ...formData }),
       });
       const data = await res.json();
       if (!data.success) {
@@ -216,15 +222,12 @@ export default function LandingClient({ client }: LandingClientProps) {
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">서비스 특징</h2>
-            <ul className="space-y-3">
+            <ul className="space-y-3 flex flex-col items-center">
               {features.map((feature) => (
                 <li key={feature.id} className="flex items-center gap-3">
-                  <div
-                    className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-white text-sm"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    {feature.icon === "✓" || !feature.icon ? <Check className="w-4 h-4" /> : <span>{feature.icon}</span>}
-                  </div>
+                  <span className="flex-shrink-0 text-lg">
+                    {feature.icon === "✓" || !feature.icon ? "✓" : feature.icon}
+                  </span>
                   <span className="text-gray-700">{feature.text}</span>
                 </li>
               ))}
@@ -245,7 +248,7 @@ export default function LandingClient({ client }: LandingClientProps) {
                 </svg>
                 카카오로 시작하기
               </button>
-              <p className="text-xs text-gray-500 text-center mt-2">카카오 로그인 후에 상담진행이 가능합니다.</p>
+              <p className="text-sm text-gray-600 text-center mt-3 font-medium">카카오 로그인 후에 상담접수가 가능합니다.</p>
             </div>
           )}
 

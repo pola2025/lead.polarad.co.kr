@@ -85,6 +85,9 @@ export async function GET(request: NextRequest) {
 
     const userData = await userResponse.json();
     const email = userData.kakao_account?.email;
+    const kakaoId = userData.id?.toString(); // 카카오 고유 사용자 ID
+
+    console.log(`[Kakao] User ID: ${kakaoId}, Email: ${email}`);
 
     if (!email) {
       console.error("No email in user data:", userData);
@@ -105,9 +108,12 @@ export async function GET(request: NextRequest) {
       console.warn("Failed to unlink Kakao user:", unlinkError);
     }
 
-    // 4. 원래 페이지로 리다이렉트 (이메일을 쿼리 파라미터로 전달)
+    // 4. 원래 페이지로 리다이렉트 (이메일과 카카오ID를 쿼리 파라미터로 전달)
     const redirectUrl = new URL(`${baseUrl}/l/${state}`);
     redirectUrl.searchParams.set("kakao_email", email);
+    if (kakaoId) {
+      redirectUrl.searchParams.set("kakao_id", kakaoId);
+    }
 
     return NextResponse.redirect(redirectUrl.toString());
   } catch (error) {

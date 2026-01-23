@@ -193,6 +193,9 @@ export default function PortalDashboardPage() {
     .filter((f) => f.enabled)
     .sort((a, b) => a.order - b.order);
 
+  // 이메일 필드가 활성화되어 있는지 확인 (카카오 로그인 표시용)
+  const hasEmailField = sortedEnabledFields.some((f) => f.id === "email" || f.type === "email");
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -735,14 +738,30 @@ export default function PortalDashboardPage() {
                   {client?.landingDescription || "랜딩 페이지 설명이 여기에 표시됩니다."}
                 </p>
 
-                {/* CTA 버튼 */}
-                <button
-                  onClick={() => setPreviewStep(2)}
-                  className="w-full rounded-xl px-4 py-4 text-base font-medium text-white shadow-lg hover:shadow-xl transition-all"
-                  style={{ backgroundColor: client?.primaryColor || "#3b82f6" }}
-                >
-                  {messages.ctaButtonText || "상담 신청하기"} →
-                </button>
+                {/* 카카오 로그인 버튼 - 이메일 필드가 있을 때 */}
+                {hasEmailField ? (
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setPreviewStep(2)}
+                      className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                      style={{ backgroundColor: "#FEE500", color: "#000000" }}
+                    >
+                      <svg width="24" height="24" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="#000000" d="M128 36C70.562 36 24 72.713 24 118c0 29.279 19.466 54.97 48.748 69.477-1.593 5.494-10.237 35.344-10.581 37.689 0 0-.207 1.762.934 2.434s2.483.15 2.483.15c3.272-.457 37.943-24.811 43.944-29.03 5.995.849 12.168 1.28 18.472 1.28 57.438 0 104-36.713 104-82 0-45.287-46.562-82-104-82z"/>
+                      </svg>
+                      카카오로 시작하기
+                    </button>
+                    <p className="text-sm text-gray-600 text-center font-medium">카카오 로그인 후에 상담접수가 가능합니다.</p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setPreviewStep(2)}
+                    className="w-full rounded-xl px-4 py-4 text-base font-medium text-white shadow-lg hover:shadow-xl transition-all"
+                    style={{ backgroundColor: client?.primaryColor || "#3b82f6" }}
+                  >
+                    {messages.ctaButtonText || "상담 신청하기"} →
+                  </button>
+                )}
               </div>
             )}
 

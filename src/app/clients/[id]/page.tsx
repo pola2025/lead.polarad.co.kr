@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
-import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send, Image } from "lucide-react";
+import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send, Image, Loader2 } from "lucide-react";
 import Link from "next/link";
 import type { Client, FormField, ProductFeature } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
@@ -123,6 +123,7 @@ export default function EditClientPage({
   const [productFeatures, setProductFeatures] = useState<ProductFeature[]>([]);
   const [generatingOg, setGeneratingOg] = useState(false);
   const [ogImageUrl, setOgImageUrl] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // 드래그 앤 드롭 센서 설정
   const sensors = useSensors(
@@ -367,6 +368,7 @@ export default function EditClientPage({
     e.preventDefault();
     setSaving(true);
     setError("");
+    setSaveSuccess(false);
 
     try {
       const res = await fetch(`/api/clients/${id}`, {
@@ -382,7 +384,9 @@ export default function EditClientPage({
         return;
       }
 
-      router.push("/clients");
+      // 저장 성공 - 페이지에 머무르고 성공 메시지 표시
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error(err);
       setError("네트워크 오류가 발생했습니다.");
@@ -427,6 +431,13 @@ export default function EditClientPage({
           {error && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
               {error}
+            </div>
+          )}
+
+          {saveSuccess && (
+            <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-600 flex items-center gap-2">
+              <Check className="h-4 w-4" />
+              저장되었습니다.
             </div>
           )}
 
@@ -1278,8 +1289,17 @@ export default function EditClientPage({
               disabled={saving}
               className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
             >
-              <Save className="h-4 w-4" />
-              {saving ? "저장 중..." : "저장"}
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  저장 중입니다...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  저장
+                </>
+              )}
             </button>
           </div>
         </form>

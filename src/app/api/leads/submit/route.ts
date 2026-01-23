@@ -21,7 +21,7 @@ import type { FormField } from "@/types";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { clientId, name, phone, email, businessName, address, birthdate, memo } = body;
+    const { clientId, name, phone, email, businessName, address, birthdate, memo, kakaoId } = body;
 
     // 클라이언트 조회 (필드 검증 전에 먼저 조회해서 formFields 확인)
     const client = await getClientById(clientId);
@@ -159,9 +159,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 블랙리스트 체크 - 전화번호 또는 IP
+    // 블랙리스트 체크 - 전화번호, 카카오ID, 또는 IP
     const blacklisted = await isBlacklisted(clientId, {
       phone: normalizedPhone || undefined,
+      kakaoId: kakaoId || undefined,
       ip
     });
     if (blacklisted) {
@@ -181,6 +182,7 @@ export async function POST(request: NextRequest) {
       address: address || undefined,
       birthdate: birthdate || undefined,
       memo: memo || undefined,
+      kakaoId: kakaoId || undefined,
       status: "new",
       ipAddress: ip,
       userAgent: userAgent.substring(0, 500),
