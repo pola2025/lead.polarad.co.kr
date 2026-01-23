@@ -941,7 +941,15 @@ export default function PortalDashboardPage() {
                       {/* 빠른 상태 변경 버튼 */}
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-2">
                         {/* 상태 버튼들 */}
-                        <div className="flex gap-1.5">
+                        <div className="flex flex-wrap justify-end gap-1.5">
+                          {(lead.status === "contacted" || lead.status === "converted") && (
+                            <button
+                              onClick={() => handleUpdateLeadStatus(lead.id, "new")}
+                              className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap"
+                            >
+                              ↩️ 신규
+                            </button>
+                          )}
                           {lead.status !== "contacted" && (
                             <button
                               onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}
