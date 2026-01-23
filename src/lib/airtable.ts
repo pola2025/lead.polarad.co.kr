@@ -774,9 +774,11 @@ export async function saveHeatmapClick(data: Omit<HeatmapClick, "id" | "createdA
 export async function getHeatmapClicks(
   clientSlug: string,
   options?: {
-    period?: "7d" | "30d" | "90d";
+    period?: "7d" | "30d" | "90d" | "custom";
     deviceType?: 'mobile' | 'desktop' | 'tablet';
     limit?: number;
+    startDate?: string;
+    endDate?: string;
   }
 ): Promise<HeatmapClick[]> {
   try {
@@ -784,7 +786,13 @@ export async function getHeatmapClicks(
     const filterParts: string[] = [`{clientSlug} = "${escapedSlug}"`];
 
     // 기간 필터
-    if (options?.period) {
+    if (options?.period === "custom" && options.startDate && options.endDate) {
+      // 커스텀 기간
+      const start = new Date(options.startDate);
+      const end = new Date(options.endDate);
+      end.setHours(23, 59, 59, 999);
+      filterParts.push(`AND(IS_AFTER({createdAt}, "${start.toISOString()}"), IS_BEFORE({createdAt}, "${end.toISOString()}"))`);
+    } else if (options?.period && options.period !== "custom") {
       const days = options.period === "7d" ? 7 : options.period === "30d" ? 30 : 90;
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
@@ -830,8 +838,10 @@ export async function getHeatmapClicks(
 export async function getHeatmapAggregated(
   clientSlug: string,
   options?: {
-    period?: "7d" | "30d" | "90d";
+    period?: "7d" | "30d" | "90d" | "custom";
     deviceType?: 'mobile' | 'desktop' | 'tablet';
+    startDate?: string;
+    endDate?: string;
   }
 ): Promise<{
   points: { x: number; y: number; value: number }[];

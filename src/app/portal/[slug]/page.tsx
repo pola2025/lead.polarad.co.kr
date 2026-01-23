@@ -21,6 +21,7 @@ import {
   Mail,
   MoreVertical,
   ShieldBan,
+  Calendar,
 } from "lucide-react";
 import type { FormField, Lead, LeadStatus } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
@@ -104,7 +105,12 @@ export default function PortalDashboardPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [leadsStats, setLeadsStats] = useState<LeadsStatsData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [statsPeriod, setStatsPeriod] = useState<"7d" | "30d" | "90d">("30d");
+  const [statsPeriod, setStatsPeriod] = useState<"7d" | "30d" | "90d" | "custom">("30d");
+  const [customDateRange, setCustomDateRange] = useState<{ start: string; end: string }>({
+    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    end: new Date().toISOString().split("T")[0],
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [expandedDevice, setExpandedDevice] = useState<string | null>("mobile");
 
   // 접수내역 관련 상태
@@ -197,10 +203,15 @@ export default function PortalDashboardPage() {
   const fetchAnalytics = useCallback(async () => {
     setAnalyticsLoading(true);
     try {
+      // 기간 파라미터 구성
+      const periodParam = statsPeriod === "custom"
+        ? `period=custom&startDate=${customDateRange.start}&endDate=${customDateRange.end}`
+        : `period=${statsPeriod}`;
+
       // GA4 통계와 리드 통계를 병렬로 조회
       const [analyticsRes, leadsStatsRes] = await Promise.all([
-        fetch(`/api/portal/${slug}/analytics?period=${statsPeriod}`),
-        fetch(`/api/portal/${slug}/leads-stats?period=${statsPeriod}`),
+        fetch(`/api/portal/${slug}/analytics?${periodParam}`),
+        fetch(`/api/portal/${slug}/leads-stats?${periodParam}`),
       ]);
 
       const [analyticsData, leadsStatsData] = await Promise.all([
@@ -240,7 +251,10 @@ export default function PortalDashboardPage() {
     setHeatmapLoading(true);
     try {
       const deviceParam = heatmapDevice !== "all" ? `&device=${heatmapDevice}` : "";
-      const res = await fetch(`/api/portal/${slug}/heatmap?period=${statsPeriod}${deviceParam}`);
+      const periodParam = statsPeriod === "custom"
+        ? `period=custom&startDate=${customDateRange.start}&endDate=${customDateRange.end}`
+        : `period=${statsPeriod}`;
+      const res = await fetch(`/api/portal/${slug}/heatmap?${periodParam}${deviceParam}`);
       const data = await res.json();
       if (data.success) {
         setHeatmapData(data.data);
@@ -250,7 +264,7 @@ export default function PortalDashboardPage() {
     } finally {
       setHeatmapLoading(false);
     }
-  }, [slug, statsPeriod, heatmapDevice]);
+  }, [slug, statsPeriod, customDateRange, heatmapDevice]);
 
   useEffect(() => {
     fetchClient();
@@ -534,7 +548,7 @@ export default function PortalDashboardPage() {
               {(["7d", "30d", "90d"] as const).map((period) => (
                 <button
                   key={period}
-                  onClick={() => setStatsPeriod(period)}
+                  onClick={() => { setStatsPeriod(period); setShowDatePicker(false); }}
                   className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
                     statsPeriod === period
                       ? "bg-blue-500 text-white"
@@ -544,7 +558,45 @@ export default function PortalDashboardPage() {
                   {period === "7d" ? "7일" : period === "30d" ? "30일" : "90일"}
                 </button>
               ))}
+              <button
+                onClick={() => { setStatsPeriod("custom"); setShowDatePicker(!showDatePicker); }}
+                className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${
+                  statsPeriod === "custom"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <Calendar className="h-3 w-3" />
+                {statsPeriod === "custom"
+                  ? `${customDateRange.start} ~ ${customDateRange.end}`
+                  : "기간선택"}
+              </button>
             </div>
+
+            {/* 커스텀 날짜 선택 */}
+            {showDatePicker && (
+              <div className="flex items-center gap-2 bg-gray-50 p-3 rounded-lg">
+                <input
+                  type="date"
+                  value={customDateRange.start}
+                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
+                  className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <span className="text-gray-500 text-xs">~</span>
+                <input
+                  type="date"
+                  value={customDateRange.end}
+                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
+                  className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={() => { fetchAnalytics(); setShowDatePicker(false); }}
+                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  적용
+                </button>
+              </div>
+            )}
 
             {analyticsLoading ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 flex items-center justify-center">
@@ -565,7 +617,7 @@ export default function PortalDashboardPage() {
                     <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-4 text-white">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs opacity-80 mb-0.5">{statsPeriod === "7d" ? "7일" : statsPeriod === "30d" ? "30일" : "90일"} 전환율</p>
+                          <p className="text-xs opacity-80 mb-0.5">{statsPeriod === "7d" ? "7일" : statsPeriod === "30d" ? "30일" : statsPeriod === "90d" ? "90일" : "선택기간"} 전환율</p>
                           <p className="text-3xl font-bold">{conversionRate}%</p>
                           <p className="text-xs opacity-70 mt-1">{visitors.toLocaleString()} 방문 → {submissions.toLocaleString()} 접수</p>
                         </div>

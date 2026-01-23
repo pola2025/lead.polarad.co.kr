@@ -311,9 +311,11 @@ async function sendTelegramNotification(
 📞 연락처: ${data.phone}
 🕐 시간: ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}`;
 
-  // 에어테이블 공유 URL 추가
+  // 접수내역 확인 링크 추가
   if (data.airtableShareUrl) {
-    message += `\n\n📊 에어테이블: ${data.airtableShareUrl}`;
+    message += `\n\n[접수내역확인](${data.airtableShareUrl})
+
+-Polarad lead System-`;
   }
 
   await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -322,6 +324,7 @@ async function sendTelegramNotification(
     body: JSON.stringify({
       chat_id: normalizedChatId,
       text: message,
+      parse_mode: "Markdown",
       disable_web_page_preview: true,
     }),
   });

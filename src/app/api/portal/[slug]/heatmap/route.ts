@@ -30,13 +30,17 @@ export async function GET(
 
     // 쿼리 파라미터
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get("period") as "7d" | "30d" | "90d" | null;
+    const period = searchParams.get("period") as "7d" | "30d" | "90d" | "custom" | null;
     const deviceType = searchParams.get("device") as "mobile" | "desktop" | "tablet" | null;
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
 
     // 히트맵 데이터 조회
     const heatmapData = await getHeatmapAggregated(slug, {
       period: period || "7d",
       deviceType: deviceType || undefined,
+      startDate: period === "custom" && startDate ? startDate : undefined,
+      endDate: period === "custom" && endDate ? endDate : undefined,
     });
 
     return NextResponse.json({
