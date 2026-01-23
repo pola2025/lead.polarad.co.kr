@@ -250,7 +250,7 @@ export default function LandingClient({ client }: LandingClientProps) {
                 </svg>
                 카카오로 시작하기
               </button>
-              <p className="text-base text-gray-700 text-center mt-3 font-medium">카카오 로그인 후에 상담접수가 가능합니다.</p>
+              <p className="text-base text-gray-600 text-center mt-3">카카오 <span className="font-semibold text-gray-800">로그인 후 상담접수</span>가 가능합니다.</p>
             </div>
           )}
 
