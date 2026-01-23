@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import {
   Users,
@@ -9,6 +10,8 @@ import {
   Calendar,
   ArrowUp,
   ArrowDown,
+  BarChart3,
+  ExternalLink,
 } from "lucide-react";
 import type { Lead, Client } from "@/types";
 
@@ -25,8 +28,14 @@ interface Stats {
   leadsByDate: { date: string; count: number }[];
 }
 
+// KST 기준 날짜 문자열 생성 (YYYY-MM-DD 형식)
+function formatDateKST(date: Date): string {
+  return date.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+}
+
 export default function StatsPage() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
 
@@ -86,7 +95,7 @@ export default function StatsPage() {
           })
         );
 
-        // 일별 카운트 (최근 30일)
+        // 일별 카운트 (최근 30일) - KST 기준으로 날짜 비교
         const leadsByDateMap = new Map<string, number>();
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -94,16 +103,17 @@ export default function StatsPage() {
         leads
           .filter((l) => new Date(l.createdAt) >= thirtyDaysAgo)
           .forEach((l) => {
-            const date = new Date(l.createdAt).toISOString().split("T")[0];
-            leadsByDateMap.set(date, (leadsByDateMap.get(date) || 0) + 1);
+            // KST 기준으로 날짜 변환
+            const dateKST = formatDateKST(new Date(l.createdAt));
+            leadsByDateMap.set(dateKST, (leadsByDateMap.get(dateKST) || 0) + 1);
           });
 
-        // 최근 30일 날짜 채우기
+        // 최근 30일 날짜 채우기 - KST 기준
         const leadsByDate: { date: string; count: number }[] = [];
         for (let i = 29; i >= 0; i--) {
           const d = new Date();
           d.setDate(d.getDate() - i);
-          const dateStr = d.toISOString().split("T")[0];
+          const dateStr = formatDateKST(d);
           leadsByDate.push({
             date: dateStr,
             count: leadsByDateMap.get(dateStr) || 0,
@@ -122,6 +132,7 @@ export default function StatsPage() {
           leadsByClient: leadsByClient.sort((a, b) => b.count - a.count),
           leadsByDate,
         });
+        setClients(clients);
       }
     } catch (error) {
       console.error("Failed to fetch stats:", error);
@@ -301,9 +312,13 @@ export default function StatsPage() {
                           ? (item.count / stats.totalLeads) * 100
                           : 0;
                       return (
-                        <div key={item.clientId}>
+                        <Link
+                          key={item.clientId}
+                          href={`/clients/${item.clientId}/stats`}
+                          className="block hover:bg-gray-50 -mx-2 px-2 py-1 rounded-lg transition-colors"
+                        >
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="font-medium text-gray-700">
+                            <span className="font-medium text-gray-700 hover:text-primary-600">
                               {item.clientName}
                             </span>
                             <span className="text-gray-500">{item.count}건</span>
@@ -314,10 +329,78 @@ export default function StatsPage() {
                               style={{ width: `${percentage}%` }}
                             />
                           </div>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
+                )}
+              </div>
+            </div>
+
+            {/* 클라이언트 통계 바로가기 */}
+            <div className="mt-6 md:mt-8">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h2 className="text-base md:text-lg font-semibold text-gray-900 break-keep">
+                  클라이언트 통계 바로가기
+                </h2>
+                <Link
+                  href="/clients"
+                  className="text-sm text-primary-600 hover:text-primary-700 break-keep"
+                >
+                  전체 보기 →
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                {clients.length === 0 ? (
+                  <div className="col-span-full card flex flex-col items-center justify-center py-8 text-gray-500">
+                    <Users className="h-10 w-10 mb-3 text-gray-300" />
+                    <p>등록된 클라이언트가 없습니다.</p>
+                    <Link
+                      href="/clients/new"
+                      className="mt-3 text-sm text-primary-600 hover:text-primary-700"
+                    >
+                      클라이언트 등록하기 →
+                    </Link>
+                  </div>
+                ) : (
+                  clients.map((client) => {
+                    const leadCount = stats.leadsByClient.find(
+                      (l) => l.clientId === client.id
+                    )?.count || 0;
+                    return (
+                      <Link
+                        key={client.id}
+                        href={`/clients/${client.id}/stats`}
+                        className="card flex items-center gap-3 hover:border-primary-300 hover:shadow-md transition-all group"
+                      >
+                        {client.logoUrl ? (
+                          <img
+                            src={client.logoUrl}
+                            alt={client.name}
+                            className="h-10 w-10 rounded-lg object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div
+                            className="flex h-10 w-10 items-center justify-center rounded-lg text-white font-medium flex-shrink-0"
+                            style={{
+                              backgroundColor: client.primaryColor || "#3b82f6",
+                            }}
+                          >
+                            {client.name.charAt(0)}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate group-hover:text-primary-600 transition-colors">
+                            {client.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            리드 {leadCount}건
+                          </p>
+                        </div>
+                        <BarChart3 className="h-5 w-5 text-gray-400 group-hover:text-primary-500 transition-colors flex-shrink-0" />
+                      </Link>
+                    );
+                  })
                 )}
               </div>
             </div>
