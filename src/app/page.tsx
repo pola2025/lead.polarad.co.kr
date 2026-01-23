@@ -81,8 +81,8 @@ export default function DashboardPage() {
           blacklistCount: blacklist.length,
         });
 
-        // 최근 리드 5개
-        setRecentLeads(leads.slice(0, 5));
+        // 최근 리드 5개 (카카오 로그인만 한 리드 제외)
+        setRecentLeads(leads.filter((l) => l.status !== "kakao_login").slice(0, 5));
 
         // 활성 클라이언트
         setActiveClients(clients.filter((c) => c.status === "active").slice(0, 5));
