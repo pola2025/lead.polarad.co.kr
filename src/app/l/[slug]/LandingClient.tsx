@@ -39,6 +39,7 @@ export default function LandingClient({ client }: LandingClientProps) {
   const [submitting, setSubmitting] = useState(false);
   const [kakaoEmail, setKakaoEmail] = useState<string | null>(null);
   const [kakaoId, setKakaoId] = useState<string | null>(null);
+  const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const searchParams = useSearchParams();
 
   // 폼 데이터 초기화
@@ -136,6 +137,9 @@ export default function LandingClient({ client }: LandingClientProps) {
 
   // 폼 유효성
   const isFormValid = useMemo(() => {
+    // 개인정보 이용동의 필수
+    if (!privacyAgreed) return false;
+
     for (const field of visibleFields) {
       if (!field.required) continue;
       const value = formData[field.id] || "";
@@ -146,7 +150,7 @@ export default function LandingClient({ client }: LandingClientProps) {
       if (!["checkbox"].includes(field.type) && !value.trim()) return false;
     }
     return true;
-  }, [formData, visibleFields]);
+  }, [formData, visibleFields, privacyAgreed]);
 
   // 제출
   const handleSubmit = async (e: React.FormEvent) => {
@@ -430,6 +434,29 @@ export default function LandingClient({ client }: LandingClientProps) {
             </div>
           ))}
 
+          {/* 개인정보 이용동의 */}
+          <div className="pt-2">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={privacyAgreed}
+                onChange={(e) => setPrivacyAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-700"
+                >
+                  개인정보 이용약관
+                </a>
+                에 동의합니다. <span className="text-red-500">*</span>
+              </span>
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={submitting || !isFormValid}
@@ -446,7 +473,7 @@ export default function LandingClient({ client }: LandingClientProps) {
             )}
           </button>
 
-          <p className="text-xs text-gray-400 text-center">개인정보는 상담 목적으로만 사용됩니다.</p>
+          <p className="text-xs text-gray-500 text-center">본 접수정보는 상담접수에만 이용되며 상담 후 폐기됩니다.</p>
         </form>
       </div>
     </div>
