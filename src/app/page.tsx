@@ -257,22 +257,22 @@ export default function DashboardPage() {
                             <td className="px-3 md:px-4 py-3">
                               <span
                                 className={`badge ${
-                                  lead.status === "new"
+                                  lead.status === "new" || lead.status === "kakao_login"
                                     ? "badge-new"
                                     : lead.status === "contacted"
                                     ? "badge-contacted"
                                     : lead.status === "converted"
                                     ? "badge-converted"
-                                    : "badge-blacklist"
+                                    : "badge-new"
                                 }`}
                               >
-                                {lead.status === "new"
+                                {lead.status === "new" || lead.status === "kakao_login"
                                   ? "신규"
                                   : lead.status === "contacted"
                                   ? "연락완료"
                                   : lead.status === "converted"
                                   ? "전환"
-                                  : "블랙리스트"}
+                                  : "신규"}
                               </span>
                             </td>
                             <td className="px-3 md:px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
