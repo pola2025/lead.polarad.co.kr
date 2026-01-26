@@ -50,26 +50,13 @@ export default function LandingClient({ client }: LandingClientProps) {
   const [kakaoEmail, setKakaoEmail] = useState<string | null>(null);
   const [kakaoId, setKakaoId] = useState<string | null>(null);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
-  const [showFooter, setShowFooter] = useState(false);
+  const [showFooter] = useState(true);
   const searchParams = useSearchParams();
 
   // UTM 파라미터 (광고 추적)
   const utmSource = searchParams.get("utm_source") || undefined;
   const utmAd = searchParams.get("utm_ad") || undefined;
 
-  // 스크롤 감지 - 맨 아래 도달 시 푸터 표시
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const isNearBottom = window.innerHeight + currentScrollY >= document.body.scrollHeight - 150;
-
-      // 맨 아래 근처이면 푸터 표시
-      setShowFooter(isNearBottom);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // 폼 데이터 초기화
   const initialFormData = useMemo(() => {
@@ -295,12 +282,8 @@ export default function LandingClient({ client }: LandingClientProps) {
         </div>
       </div>
 
-      {/* 사업자 정보 푸터 - 스크롤 업 시 표시 */}
-      <footer
-        className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 transition-transform duration-300 z-50 ${
-          showFooter ? "translate-y-0" : "translate-y-full"
-        }`}
-      >
+      {/* 사업자 정보 푸터 */}
+      <footer className="bg-gray-50 border-t border-gray-200 px-4 py-4">
         <div className="max-w-lg mx-auto text-[10px] text-gray-400 space-y-0.5">
           <p className="font-medium text-gray-500">{client.footerCompanyName || "폴라애드"}</p>
           <p>대표: {client.footerCeo || "이재호"} | 사업자: {client.footerBusinessNumber || "808-03-00327"}</p>
