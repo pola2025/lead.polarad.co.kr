@@ -86,6 +86,11 @@ const LEADS_TABLE_FIELDS: LeadsTableField[] = [
   { name: "ipAddress", type: "singleLineText" },
   { name: "userAgent", type: "singleLineText" },
   { name: "createdAt", type: "dateTime", options: { dateFormat: { name: "iso" }, timeFormat: { name: "24hour" }, timeZone: "Asia/Seoul" } },
+  // UTM 추적 (광고 출처)
+  { name: "utmSource", type: "singleLineText" },
+  { name: "utmAd", type: "singleLineText" },
+  // 커스텀 필드 (JSON 형식으로 저장)
+  { name: "customFieldsData", type: "multilineText" },
 ];
 
 export async function createLeadsTableForClient(clientSlug: string): Promise<string> {
