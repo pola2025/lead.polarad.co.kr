@@ -57,18 +57,14 @@ export default function LandingClient({ client }: LandingClientProps) {
   const utmSource = searchParams.get("utm_source") || undefined;
   const utmAd = searchParams.get("utm_ad") || undefined;
 
-  // 스크롤 방향 감지 - 위로 스크롤하면 푸터 표시
+  // 스크롤 감지 - 맨 아래 도달 시 푸터 표시
   useEffect(() => {
-    let lastScrollY = window.scrollY;
-
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      const isScrollingUp = currentScrollY < lastScrollY;
-      const isNearBottom = window.innerHeight + currentScrollY >= document.body.scrollHeight - 100;
+      const isNearBottom = window.innerHeight + currentScrollY >= document.body.scrollHeight - 150;
 
-      // 위로 스크롤하거나 맨 아래 근처이면 푸터 표시
-      setShowFooter(isScrollingUp || isNearBottom);
-      lastScrollY = currentScrollY;
+      // 맨 아래 근처이면 푸터 표시
+      setShowFooter(isNearBottom);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
