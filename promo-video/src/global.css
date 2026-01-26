@@ -1,0 +1,11 @@
+/* Google Fonts - Noto Sans KR */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=block');
+
+/* 폰트 프리로드용 숨김 요소 */
+body::before {
+  content: '가나다라마바사아자차카타파하';
+  font-family: 'Noto Sans KR', sans-serif;
+  position: absolute;
+  left: -9999px;
+  visibility: hidden;
+}

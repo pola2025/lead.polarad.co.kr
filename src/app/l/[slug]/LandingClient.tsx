@@ -235,16 +235,16 @@ export default function LandingClient({ client }: LandingClientProps) {
             </p>
           )}
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">서비스 특징</h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-3 sm:p-6 mb-4 sm:mb-6">
+            <h2 className="text-xs sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-4 text-center">서비스 특징</h2>
             <div className="flex justify-center">
-              <ul className="space-y-3 inline-block">
+              <ul className="space-y-1.5 sm:space-y-3 inline-block">
                 {features.map((feature) => (
-                  <li key={feature.id} className="flex items-center gap-3">
-                    <span className="flex-shrink-0 text-lg">
+                  <li key={feature.id} className="flex items-center gap-1.5 sm:gap-3">
+                    <span className="flex-shrink-0 text-xs sm:text-lg">
                       {feature.icon === "✓" || !feature.icon ? "✓" : feature.icon}
                     </span>
-                    <span className="text-gray-700">{feature.text}</span>
+                    <span className="text-[11px] sm:text-base text-gray-700">{feature.text}</span>
                   </li>
                 ))}
               </ul>
