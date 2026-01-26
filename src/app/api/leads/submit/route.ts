@@ -358,7 +358,7 @@ async function sendTelegramNotification(
 ━━━━━━━━━━━━━━━
 🕐 ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
 
-[👉 접수내역 확인하기](${portalUrl})`;
+👉 ${portalUrl}`;
 
   await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: "POST",
