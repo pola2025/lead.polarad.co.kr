@@ -844,6 +844,40 @@ export default function PortalDashboardPage() {
                     <p className="text-gray-400 text-sm text-center py-4">유입 데이터가 없습니다</p>
                   )}
                 </div>
+
+                {/* 광고별 접수 통계 */}
+                {leadsStats?.adStats && leadsStats.adStats.length > 0 && (
+                  <div className="bg-white rounded-xl border border-gray-200 p-4">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">📢 광고별 접수 현황</h3>
+                    <div className="space-y-2.5">
+                      {leadsStats.adStats.slice(0, 5).map((ad, idx) => {
+                        const maxLeads = leadsStats.adStats![0]?.leads || 1;
+                        const width = (ad.leads / maxLeads) * 100;
+                        const conversionRate = ad.leads > 0 ? Math.round((ad.submissions / ad.leads) * 100) : 0;
+                        return (
+                          <div key={idx} className="flex items-center gap-2">
+                            <span className="w-5 text-xs text-gray-400">{idx + 1}</span>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs text-gray-700 truncate max-w-[140px]" title={ad.ad !== '-' ? ad.ad : ad.source}>
+                                  {ad.ad !== '-' ? ad.ad : ad.source}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-gray-900">{ad.submissions}건</span>
+                                  <span className="text-[10px] text-gray-400">({conversionRate}%)</span>
+                                </div>
+                              </div>
+                              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-purple-500 rounded-full" style={{ width: `${width}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-2 text-center">Meta 광고 URL에 utm_ad 매개변수 필요</p>
+                  </div>
+                )}
               </>
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">

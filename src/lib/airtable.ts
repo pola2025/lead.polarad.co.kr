@@ -470,15 +470,14 @@ export async function deleteClient(id: string): Promise<void> {
 // ==================== 리드 (클라이언트별 테이블) ====================
 
 function parseLeadRecord(record: Airtable.Record<Airtable.FieldSet>, clientId: string): Lead {
-  // 커스텀 필드 추출 (custom_로 시작하는 필드)
-  const customFields: Record<string, string> = {};
-  const fields = record.fields;
-  for (const key of Object.keys(fields)) {
-    if (key.startsWith('custom_')) {
-      const value = fields[key];
-      if (value !== undefined && value !== null && value !== '') {
-        customFields[key] = String(value);
-      }
+  // 커스텀 필드 추출 (customFieldsData JSON 필드에서 파싱)
+  let customFields: Record<string, string> = {};
+  const customFieldsData = record.get("customFieldsData") as string | undefined;
+  if (customFieldsData) {
+    try {
+      customFields = JSON.parse(customFieldsData);
+    } catch {
+      // JSON 파싱 실패 시 빈 객체 유지
     }
   }
 
@@ -637,11 +636,15 @@ export async function createLead(
     utmAd: data.utmAd,
   };
 
-  // 커스텀 필드 추가 (custom_로 시작하는 필드)
+  // 커스텀 필드를 JSON으로 저장 (개별 컬럼이 아닌 customFieldsData 필드에)
+  const customFields: Record<string, string> = {};
   for (const key of Object.keys(data)) {
     if (key.startsWith('custom_') && data[key]) {
-      createData[key] = data[key];
+      customFields[key] = String(data[key]);
     }
+  }
+  if (Object.keys(customFields).length > 0) {
+    createData.customFieldsData = JSON.stringify(customFields);
   }
 
   const record = await getClientLeadsTable(leadsTableId).create(createData);
@@ -677,11 +680,15 @@ export async function updateLead(
   if (data.utmSource !== undefined) updateData.utmSource = data.utmSource;
   if (data.utmAd !== undefined) updateData.utmAd = data.utmAd;
 
-  // 커스텀 필드 (custom_로 시작하는 필드)
+  // 커스텀 필드를 JSON으로 저장 (개별 컬럼이 아닌 customFieldsData 필드에)
+  const customFields: Record<string, string> = {};
   for (const key of Object.keys(data)) {
     if (key.startsWith('custom_') && data[key] !== undefined) {
-      updateData[key] = data[key];
+      customFields[key] = String(data[key]);
     }
+  }
+  if (Object.keys(customFields).length > 0) {
+    updateData.customFieldsData = JSON.stringify(customFields);
   }
 
   const record = await getClientLeadsTable(leadsTableId).update(leadId, updateData);
