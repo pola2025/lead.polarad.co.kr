@@ -12,7 +12,7 @@ import { getClientBySlug, createLead, findKakaoLoginLead } from "@/lib/airtable"
  */
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
-  const state = request.nextUrl.searchParams.get("state"); // slug
+  const stateParam = request.nextUrl.searchParams.get("state");
   const error = request.nextUrl.searchParams.get("error");
 
   // 프로덕션/개발 환경에 따른 base URL 설정
@@ -20,14 +20,32 @@ export async function GET(request: NextRequest) {
     ? "https://lead.polarad.co.kr"
     : "http://localhost:3000";
 
+  // state 파싱 (base64 JSON 또는 기존 slug 형식 호환)
+  let slug = "";
+  let utmSource: string | null = null;
+  let utmAd: string | null = null;
+
+  if (stateParam) {
+    try {
+      const decoded = Buffer.from(stateParam, "base64").toString("utf8");
+      const stateData = JSON.parse(decoded);
+      slug = stateData.slug || "";
+      utmSource = stateData.utmSource || null;
+      utmAd = stateData.utmAd || null;
+    } catch {
+      // 기존 형식 (slug만 있는 경우) 호환
+      slug = stateParam;
+    }
+  }
+
   // 에러 처리 (사용자가 취소한 경우 등)
   if (error) {
     console.error("Kakao OAuth error:", error);
-    const redirectUrl = state ? `${baseUrl}/l/${state}?kakao_error=${error}` : baseUrl;
+    const redirectUrl = slug ? `${baseUrl}/l/${slug}?kakao_error=${error}` : baseUrl;
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (!code || !state) {
+  if (!code || !slug) {
     console.error("Missing code or state");
     return NextResponse.redirect(`${baseUrl}?error=missing_params`);
   }
@@ -36,7 +54,7 @@ export async function GET(request: NextRequest) {
   const clientSecret = process.env.KAKAO_CLIENT_SECRET;
   if (!clientId) {
     console.error("KAKAO_CLIENT_ID is not set");
-    return NextResponse.redirect(`${baseUrl}/l/${state}?kakao_error=config_error`);
+    return NextResponse.redirect(`${baseUrl}/l/${slug}?kakao_error=config_error`);
   }
 
   const redirectUri = `${baseUrl}/api/auth/kakao/callback`;
@@ -60,7 +78,7 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.text();
       console.error("Token request failed:", errorData);
-      return NextResponse.redirect(`${baseUrl}/l/${state}?kakao_error=token_failed`);
+      return NextResponse.redirect(`${baseUrl}/l/${slug}?kakao_error=token_failed`);
     }
 
     const tokenData = await tokenResponse.json();
@@ -68,7 +86,7 @@ export async function GET(request: NextRequest) {
 
     if (!accessToken) {
       console.error("No access token received");
-      return NextResponse.redirect(`${baseUrl}/l/${state}?kakao_error=no_token`);
+      return NextResponse.redirect(`${baseUrl}/l/${slug}?kakao_error=no_token`);
     }
 
     // 2. 사용자 정보 조회
@@ -82,7 +100,7 @@ export async function GET(request: NextRequest) {
     if (!userResponse.ok) {
       const errorData = await userResponse.text();
       console.error("User info request failed:", errorData);
-      return NextResponse.redirect(`${baseUrl}/l/${state}?kakao_error=user_info_failed`);
+      return NextResponse.redirect(`${baseUrl}/l/${slug}?kakao_error=user_info_failed`);
     }
 
     const userData = await userResponse.json();
@@ -93,13 +111,13 @@ export async function GET(request: NextRequest) {
 
     if (!email) {
       console.error("No email in user data:", userData);
-      return NextResponse.redirect(`${baseUrl}/l/${state}?kakao_error=no_email`);
+      return NextResponse.redirect(`${baseUrl}/l/${slug}?kakao_error=no_email`);
     }
 
     // 3. 에어테이블에 리드 생성 (kakao_login 상태)
     // 카카오 로그인만 해도 리드 정보 기록 (단, 중복 방지)
     try {
-      const client = await getClientBySlug(state);
+      const client = await getClientBySlug(slug);
       if (client && client.leadsTableId && client.status === "active" && kakaoId) {
         // 이미 같은 kakaoId로 kakao_login 상태의 리드가 있는지 확인
         const existingLead = await findKakaoLoginLead(client.leadsTableId, kakaoId, client.id);
@@ -141,16 +159,23 @@ export async function GET(request: NextRequest) {
       console.warn("Failed to unlink Kakao user:", unlinkError);
     }
 
-    // 5. 원래 페이지로 리다이렉트 (이메일과 카카오ID를 쿼리 파라미터로 전달)
-    const redirectUrl = new URL(`${baseUrl}/l/${state}`);
+    // 5. 원래 페이지로 리다이렉트 (이메일, 카카오ID, UTM 정보를 쿼리 파라미터로 전달)
+    const redirectUrl = new URL(`${baseUrl}/l/${slug}`);
     redirectUrl.searchParams.set("kakao_email", email);
     if (kakaoId) {
       redirectUrl.searchParams.set("kakao_id", kakaoId);
+    }
+    // UTM 정보 유지
+    if (utmSource) {
+      redirectUrl.searchParams.set("utm_source", utmSource);
+    }
+    if (utmAd) {
+      redirectUrl.searchParams.set("utm_ad", utmAd);
     }
 
     return NextResponse.redirect(redirectUrl.toString());
   } catch (error) {
     console.error("Kakao OAuth callback error:", error);
-    return NextResponse.redirect(`${baseUrl}/l/${state}?kakao_error=unknown_error`);
+    return NextResponse.redirect(`${baseUrl}/l/${slug}?kakao_error=unknown_error`);
   }
 }

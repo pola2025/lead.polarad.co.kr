@@ -42,9 +42,12 @@ type Step = "intro" | "form" | "done";
 
 interface LandingClientProps {
   client: ClientData;
+  // 광고 링크에서 직접 전달받는 UTM 정보 (URL 파라미터보다 우선)
+  utmSource?: string;
+  utmAd?: string;
 }
 
-export default function LandingClient({ client }: LandingClientProps) {
+export default function LandingClient({ client, utmSource: propUtmSource, utmAd: propUtmAd }: LandingClientProps) {
   const [step, setStep] = useState<Step>("intro");
   const [submitting, setSubmitting] = useState(false);
   const [kakaoEmail, setKakaoEmail] = useState<string | null>(null);
@@ -53,9 +56,9 @@ export default function LandingClient({ client }: LandingClientProps) {
   const [showFooter] = useState(true);
   const searchParams = useSearchParams();
 
-  // UTM 파라미터 (광고 추적)
-  const utmSource = searchParams.get("utm_source") || undefined;
-  const utmAd = searchParams.get("utm_ad") || undefined;
+  // UTM 파라미터 (광고 추적) - props로 전달된 값 우선, 없으면 URL 파라미터
+  const utmSource = propUtmSource || searchParams.get("utm_source") || undefined;
+  const utmAd = propUtmAd || searchParams.get("utm_ad") || undefined;
 
 
   // 폼 데이터 초기화
@@ -129,9 +132,12 @@ export default function LandingClient({ client }: LandingClientProps) {
     return allFormFields.some((f) => f.id === "email" || f.type === "email");
   }, [allFormFields]);
 
-  // 카카오 로그인 핸들러
+  // 카카오 로그인 핸들러 (UTM 정보 포함)
   const handleKakaoLogin = () => {
-    window.location.href = `/api/auth/kakao?slug=${client.slug}`;
+    const params = new URLSearchParams({ slug: client.slug });
+    if (utmSource) params.set("utmSource", utmSource);
+    if (utmAd) params.set("utmAd", utmAd);
+    window.location.href = `/api/auth/kakao?${params.toString()}`;
   };
 
   // 입력 핸들러

@@ -340,13 +340,12 @@ async function sendTelegramNotification(
     additionalFieldsText = "\n" + additionalFieldsText;
   }
 
-  // UTM 정보 문자열 생성
+  // UTM 정보 문자열 생성 (광고명 우선 표시)
   let utmText = "";
-  if (data.utmSource || data.utmAd) {
-    const utmParts = [];
-    if (data.utmSource) utmParts.push(data.utmSource);
-    if (data.utmAd) utmParts.push(data.utmAd);
-    utmText = `\n📊 광고: ${utmParts.join(" / ")}`;
+  if (data.utmAd) {
+    utmText = `\n📊 유입광고: ${data.utmAd}`;
+  } else if (data.utmSource) {
+    utmText = `\n📊 유입광고: ${data.utmSource}`;
   }
 
   const message = `🔔 새로운 리드 접수

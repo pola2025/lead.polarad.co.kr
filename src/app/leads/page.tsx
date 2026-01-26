@@ -207,6 +207,9 @@ export default function LeadsPage() {
                         {lead.address && <p>주소: {lead.address}</p>}
                         {lead.birthdate && <p>생년월일: {lead.birthdate}</p>}
                         {lead.kakaoId && <p className="text-yellow-600">카카오: {lead.kakaoId}</p>}
+                        {(lead.utmSource || lead.utmAd) && (
+                          <p className="text-blue-600">📊 유입광고: {lead.utmAd || lead.utmSource}</p>
+                        )}
                       </div>
                       {/* 문의사항 */}
                       {lead.memo && (
@@ -301,6 +304,9 @@ export default function LeadsPage() {
                           )}
                           {lead.kakaoId && (
                             <p className="text-xs text-yellow-600">카카오: {lead.kakaoId}</p>
+                          )}
+                          {(lead.utmSource || lead.utmAd) && (
+                            <p className="text-xs text-blue-600">📊 유입광고: {lead.utmAd || lead.utmSource}</p>
                           )}
                           {/* 문의사항 표시 */}
                           {lead.memo && (

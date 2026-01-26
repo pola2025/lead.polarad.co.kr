@@ -4,9 +4,10 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
+import AdLinksManager from "@/components/AdLinksManager";
 import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send, Image, Loader2, BarChart3 } from "lucide-react";
 import Link from "next/link";
-import type { Client, FormField, ProductFeature } from "@/types";
+import type { Client, FormField, ProductFeature, AdLink } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
 import { Plus, Trash2, GripVertical, Clock, Building2 } from "lucide-react";
 import { formatOperatingHours } from "@/lib/operating-hours";
@@ -121,6 +122,7 @@ export default function EditClientPage({
   const [passwordSent, setPasswordSent] = useState(false);
   const [formFields, setFormFields] = useState<FormField[]>(DEFAULT_FORM_FIELDS);
   const [productFeatures, setProductFeatures] = useState<ProductFeature[]>([]);
+  const [adLinks, setAdLinks] = useState<AdLink[]>([]);
   const [generatingOg, setGeneratingOg] = useState(false);
   const [ogImageUrl, setOgImageUrl] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -299,6 +301,8 @@ export default function EditClientPage({
       setFormFields(client.formFields || DEFAULT_FORM_FIELDS);
       // 상품 특징 로드
       setProductFeatures(client.productFeatures || []);
+      // 광고 링크 로드
+      setAdLinks(client.adLinks || []);
       // OG 이미지 URL 로드
       setOgImageUrl(client.ogImageUrl || null);
     } catch (err) {
@@ -416,7 +420,7 @@ export default function EditClientPage({
       const res = await fetch(`/api/clients/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, formFields, productFeatures }),
+        body: JSON.stringify({ ...formData, formFields, productFeatures, adLinks }),
       });
 
       const data = await res.json();
@@ -904,6 +908,15 @@ export default function EditClientPage({
                 Meta 광고 관리자 → 광고 수정 → 추적 → URL 매개변수에 붙여넣으세요.
               </p>
             </div>
+          </div>
+
+          {/* 광고 추적 링크 */}
+          <div className="card">
+            <AdLinksManager
+              clientSlug={formData.slug}
+              adLinks={adLinks}
+              onUpdate={setAdLinks}
+            />
           </div>
 
           {/* NCP SENS 설정 */}

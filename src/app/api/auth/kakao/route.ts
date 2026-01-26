@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug");
+  const utmSource = request.nextUrl.searchParams.get("utmSource");
+  const utmAd = request.nextUrl.searchParams.get("utmAd");
 
   if (!slug) {
     return NextResponse.json({ error: "slug is required" }, { status: 400 });
@@ -27,12 +29,16 @@ export async function GET(request: NextRequest) {
 
   const redirectUri = `${baseUrl}/api/auth/kakao/callback`;
 
+  // state에 slug와 UTM 정보 포함 (JSON 형식)
+  const stateData = { slug, utmSource, utmAd };
+  const state = Buffer.from(JSON.stringify(stateData)).toString("base64");
+
   // 카카오 OAuth 인증 URL 생성
   const kakaoAuthUrl = new URL("https://kauth.kakao.com/oauth/authorize");
   kakaoAuthUrl.searchParams.set("client_id", clientId);
   kakaoAuthUrl.searchParams.set("redirect_uri", redirectUri);
   kakaoAuthUrl.searchParams.set("response_type", "code");
-  kakaoAuthUrl.searchParams.set("state", slug); // 원래 페이지로 돌아가기 위한 slug
+  kakaoAuthUrl.searchParams.set("state", state);
 
   return NextResponse.redirect(kakaoAuthUrl.toString());
 }

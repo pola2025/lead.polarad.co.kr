@@ -87,6 +87,9 @@ export async function POST(request: NextRequest) {
       memo: body.memo,
       ipAddress: body.ipAddress,
       userAgent: body.userAgent,
+      // UTM 추적 (광고 출처)
+      utmSource: body.utmSource,
+      utmAd: body.utmAd,
     });
 
     return NextResponse.json({ success: true, data: lead }, { status: 201 });

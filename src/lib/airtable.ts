@@ -8,6 +8,7 @@ import type {
   BlacklistType,
   FormField,
   ProductFeature,
+  AdLink,
 } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
 import { escapeAirtableFormula } from "@/lib/client";
@@ -263,6 +264,17 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     }
   }
 
+  // adLinks JSON 파싱
+  const adLinksRaw = record.get("adLinks") as string | undefined;
+  let adLinks: AdLink[] | undefined;
+  if (adLinksRaw) {
+    try {
+      adLinks = JSON.parse(adLinksRaw);
+    } catch {
+      adLinks = undefined;
+    }
+  }
+
   return {
     id: record.id,
     name: record.get("name") as string,
@@ -311,6 +323,8 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     footerAddress: record.get("footerAddress") as string | undefined,
     footerPhone: record.get("footerPhone") as string | undefined,
     footerEmail: record.get("footerEmail") as string | undefined,
+    // 광고 추적 링크
+    adLinks: adLinks,
     createdAt: record.get("createdAt") as string,
   };
 }
@@ -453,6 +467,11 @@ export async function updateClient(
   if (data.footerAddress !== undefined) updateData.footerAddress = data.footerAddress || null;
   if (data.footerPhone !== undefined) updateData.footerPhone = data.footerPhone || null;
   if (data.footerEmail !== undefined) updateData.footerEmail = data.footerEmail || null;
+
+  // 광고 추적 링크 (JSON으로 저장)
+  if (data.adLinks !== undefined) {
+    updateData.adLinks = data.adLinks && data.adLinks.length > 0 ? JSON.stringify(data.adLinks) : null;
+  }
 
   const record = await getClientsTable().update(id, updateData);
 

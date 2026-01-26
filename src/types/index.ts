@@ -174,7 +174,17 @@ export interface Client {
   footerAddress?: string; // 주소
   footerPhone?: string; // 전화번호
   footerEmail?: string; // 이메일
+  // 광고 추적 링크 (슬러그별 UTM 매핑)
+  adLinks?: AdLink[];
   createdAt: string;
+}
+
+// 광고 추적 링크
+export interface AdLink {
+  slug: string; // URL 슬러그 (예: meta-신규광고)
+  utmSource: string; // 광고 소스 (meta, naver, google 등)
+  utmAd: string; // 광고명
+  memo?: string; // 메모 (선택)
 }
 
 // 리드
