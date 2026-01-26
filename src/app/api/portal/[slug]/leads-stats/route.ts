@@ -26,6 +26,13 @@ interface LeadStatsResponse {
     leads: number;
     submissions: number;
   }[];
+  // 광고별 통계
+  adStats: {
+    source: string;     // utm_source (meta, google 등)
+    ad: string;         // utm_ad (광고명)
+    leads: number;      // 총 리드 수
+    submissions: number; // 접수 완료 수
+  }[];
 }
 
 export async function GET(
@@ -125,6 +132,29 @@ export async function GET(
       .map(([date, data]) => ({ date, ...data }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // 광고별 집계 (UTM 기반)
+    const adMap = new Map<string, { source: string; ad: string; leads: number; submissions: number }>();
+    rangeLeads.forEach(lead => {
+      // UTM 정보가 있는 리드만 집계
+      if (lead.utmSource || lead.utmAd) {
+        const key = `${lead.utmSource || 'direct'}|${lead.utmAd || '-'}`;
+        const current = adMap.get(key) || {
+          source: lead.utmSource || 'direct',
+          ad: lead.utmAd || '-',
+          leads: 0,
+          submissions: 0,
+        };
+        current.leads += 1;
+        if (isSubmitted(lead)) {
+          current.submissions += 1;
+        }
+        adMap.set(key, current);
+      }
+    });
+
+    const adStats = Array.from(adMap.values())
+      .sort((a, b) => b.leads - a.leads); // 리드 수 내림차순
+
     const data: LeadStatsResponse = {
       today: {
         leads: todayLeads.length,
@@ -143,6 +173,7 @@ export async function GET(
         submissions: rangeLeads.filter(isSubmitted).length,
       },
       daily,
+      adStats,
     };
 
     return NextResponse.json({ success: true, data });

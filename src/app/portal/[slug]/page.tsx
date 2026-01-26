@@ -72,6 +72,7 @@ interface LeadsStatsData {
   month: { leads: number; submissions: number };
   funnel: { logins: number; submissions: number };
   daily: { date: string; leads: number; submissions: number }[];
+  adStats?: { source: string; ad: string; leads: number; submissions: number }[];
 }
 
 interface ClientData {

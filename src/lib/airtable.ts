@@ -653,19 +653,36 @@ export async function updateLead(
   leadId: string,
   leadsTableId: string,
   clientId: string,
-  data: Partial<Omit<Lead, "id" | "createdAt" | "clientId">>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: Record<string, any>
 ): Promise<Lead> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateData: any = {};
 
+  // 기본 필드
   if (data.name) updateData.name = data.name;
   if (data.phone) updateData.phone = data.phone;
   if (data.email !== undefined) updateData.email = data.email;
   if (data.businessName !== undefined) updateData.businessName = data.businessName;
   if (data.industry !== undefined) updateData.industry = data.industry;
   if (data.kakaoId !== undefined) updateData.kakaoId = data.kakaoId;
+  if (data.address !== undefined) updateData.address = data.address;
+  if (data.birthdate !== undefined) updateData.birthdate = data.birthdate;
   if (data.status) updateData.status = data.status;
   if (data.memo !== undefined) updateData.memo = data.memo;
+  if (data.ipAddress !== undefined) updateData.ipAddress = data.ipAddress;
+  if (data.userAgent !== undefined) updateData.userAgent = data.userAgent;
+
+  // UTM 필드
+  if (data.utmSource !== undefined) updateData.utmSource = data.utmSource;
+  if (data.utmAd !== undefined) updateData.utmAd = data.utmAd;
+
+  // 커스텀 필드 (custom_로 시작하는 필드)
+  for (const key of Object.keys(data)) {
+    if (key.startsWith('custom_') && data[key] !== undefined) {
+      updateData[key] = data[key];
+    }
+  }
 
   const record = await getClientLeadsTable(leadsTableId).update(leadId, updateData);
 
