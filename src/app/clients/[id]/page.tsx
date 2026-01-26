@@ -875,6 +875,37 @@ export default function EditClientPage({
 
           </div>
 
+          {/* Meta 광고 추적 안내 */}
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Meta 광고 추적 설정</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Meta 광고 관리자에서 URL 매개변수를 설정하면 어떤 광고에서 리드가 발생했는지 추적할 수 있습니다.
+            </p>
+
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">URL 매개변수 (복사해서 사용)</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText("utm_source=meta&utm_ad={{ad.name}}");
+                    alert("복사되었습니다!");
+                  }}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                >
+                  <Copy className="h-3 w-3" />
+                  복사
+                </button>
+              </div>
+              <code className="block bg-white rounded px-3 py-2 text-sm text-gray-800 font-mono border border-gray-300">
+                utm_source=meta&utm_ad={"{{ad.name}}"}
+              </code>
+              <p className="mt-2 text-xs text-gray-500">
+                Meta 광고 관리자 → 광고 수정 → 추적 → URL 매개변수에 붙여넣으세요.
+              </p>
+            </div>
+          </div>
+
           {/* NCP SENS 설정 */}
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">NCP SENS 설정</h2>

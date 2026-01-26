@@ -21,7 +21,7 @@ import type { FormField } from "@/types";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { clientId, name, phone, email, businessName, address, birthdate, memo, kakaoId } = body;
+    const { clientId, name, phone, email, businessName, address, birthdate, memo, kakaoId, utmSource, utmAd } = body;
 
     // 클라이언트 조회 (필드 검증 전에 먼저 조회해서 formFields 확인)
     const client = await getClientById(clientId);
@@ -186,6 +186,9 @@ export async function POST(request: NextRequest) {
       status: "new",
       ipAddress: ip,
       userAgent: userAgent.substring(0, 500),
+      // UTM 추적 (광고 출처)
+      utmSource: utmSource || undefined,
+      utmAd: utmAd || undefined,
     };
 
     // 커스텀 필드 데이터 추가 (custom_로 시작하는 필드)
@@ -231,6 +234,8 @@ export async function POST(request: NextRequest) {
         leadName: normalizedName,
         phone: normalizedPhone,
         additionalFields: telegramLeadData,
+        utmSource,
+        utmAd,
       }).catch((err) => {
         console.error("Telegram notification failed:", err);
       });
@@ -310,6 +315,8 @@ async function sendTelegramNotification(
     leadName: string;
     phone: string;
     additionalFields?: { label: string; value: string }[];
+    utmSource?: string;
+    utmAd?: string;
   }
 ) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -333,12 +340,21 @@ async function sendTelegramNotification(
     additionalFieldsText = "\n" + additionalFieldsText;
   }
 
+  // UTM 정보 문자열 생성
+  let utmText = "";
+  if (data.utmSource || data.utmAd) {
+    const utmParts = [];
+    if (data.utmSource) utmParts.push(data.utmSource);
+    if (data.utmAd) utmParts.push(data.utmAd);
+    utmText = `\n📊 광고: ${utmParts.join(" / ")}`;
+  }
+
   const message = `🔔 새로운 리드 접수
 
 📋 ${data.clientName}
 ━━━━━━━━━━━━━━━
 👤 이름: ${data.leadName}
-📞 연락처: ${data.phone}${additionalFieldsText}
+📞 연락처: ${data.phone}${additionalFieldsText}${utmText}
 ━━━━━━━━━━━━━━━
 🕐 ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
 

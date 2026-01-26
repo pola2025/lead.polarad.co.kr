@@ -197,6 +197,9 @@ export interface Lead {
   createdAt: string;
   // 커스텀 필드 (custom_로 시작하는 필드들)
   customFields?: Record<string, string>;
+  // UTM 추적 (광고 출처)
+  utmSource?: string;  // meta, google, naver 등
+  utmAd?: string;      // 광고명 ({{ad.name}})
 }
 
 // 블랙리스트

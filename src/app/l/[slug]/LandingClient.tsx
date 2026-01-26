@@ -53,6 +53,10 @@ export default function LandingClient({ client }: LandingClientProps) {
   const [showFooter, setShowFooter] = useState(false);
   const searchParams = useSearchParams();
 
+  // UTM 파라미터 (광고 추적)
+  const utmSource = searchParams.get("utm_source") || undefined;
+  const utmAd = searchParams.get("utm_ad") || undefined;
+
   // 스크롤 방향 감지 - 위로 스크롤하면 푸터 표시
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -190,7 +194,7 @@ export default function LandingClient({ client }: LandingClientProps) {
       const res = await fetch(`/api/leads/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId: client.id, kakaoId, ...formData }),
+        body: JSON.stringify({ clientId: client.id, kakaoId, utmSource, utmAd, ...formData }),
       });
       const data = await res.json();
       if (!data.success) {

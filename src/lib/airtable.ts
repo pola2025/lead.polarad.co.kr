@@ -499,6 +499,9 @@ function parseLeadRecord(record: Airtable.Record<Airtable.FieldSet>, clientId: s
     userAgent: record.get("userAgent") as string | undefined,
     createdAt: record.get("createdAt") as string,
     customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
+    // UTM 추적 (광고 출처)
+    utmSource: record.get("utmSource") as string | undefined,
+    utmAd: record.get("utmAd") as string | undefined,
   };
 }
 
@@ -629,6 +632,9 @@ export async function createLead(
     ipAddress: data.ipAddress,
     userAgent: data.userAgent,
     createdAt: new Date().toISOString(),
+    // UTM 추적 (광고 출처)
+    utmSource: data.utmSource,
+    utmAd: data.utmAd,
   };
 
   // 커스텀 필드 추가 (custom_로 시작하는 필드)

@@ -992,6 +992,12 @@ export default function PortalDashboardPage() {
                                 ))}
                               </>
                             )}
+                            {/* UTM 광고 출처 */}
+                            {(lead.utmSource || lead.utmAd) && (
+                              <p className="text-blue-600">
+                                📊 광고: {[lead.utmSource, lead.utmAd].filter(Boolean).join(" / ")}
+                              </p>
+                            )}
                           </div>
                           {/* 문의사항/메모 */}
                           {lead.memo && (
