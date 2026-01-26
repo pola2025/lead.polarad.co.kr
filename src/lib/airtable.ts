@@ -294,12 +294,18 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     operatingDays: record.get("operatingDays") as 'weekdays' | 'everyday' | undefined,
     operatingStartTime: record.get("operatingStartTime") as string | undefined,
     operatingEndTime: record.get("operatingEndTime") as string | undefined,
-    // 에어테이블 공유 URL
-    airtableShareUrl: record.get("airtableShareUrl") as string | undefined,
     // OG 이미지 URL
     ogImageUrl: record.get("ogImageUrl") as string | undefined,
     // 포털 비밀번호
     portalPassword: record.get("portalPassword") as string | undefined,
+    // 푸터 사업자 정보
+    footerCompanyName: record.get("footerCompanyName") as string | undefined,
+    footerCeo: record.get("footerCeo") as string | undefined,
+    footerBusinessNumber: record.get("footerBusinessNumber") as string | undefined,
+    footerEcommerceNumber: record.get("footerEcommerceNumber") as string | undefined,
+    footerAddress: record.get("footerAddress") as string | undefined,
+    footerPhone: record.get("footerPhone") as string | undefined,
+    footerEmail: record.get("footerEmail") as string | undefined,
     createdAt: record.get("createdAt") as string,
   };
 }
@@ -428,14 +434,20 @@ export async function updateClient(
   if (data.operatingStartTime !== undefined) updateData.operatingStartTime = data.operatingStartTime || null;
   if (data.operatingEndTime !== undefined) updateData.operatingEndTime = data.operatingEndTime || null;
 
-  // 에어테이블 공유 URL
-  if (data.airtableShareUrl !== undefined) updateData.airtableShareUrl = data.airtableShareUrl || null;
-
   // OG 이미지 URL
   if (data.ogImageUrl !== undefined) updateData.ogImageUrl = data.ogImageUrl || null;
 
   // 포털 비밀번호
   if (data.portalPassword !== undefined) updateData.portalPassword = data.portalPassword || null;
+
+  // 푸터 사업자 정보
+  if (data.footerCompanyName !== undefined) updateData.footerCompanyName = data.footerCompanyName || null;
+  if (data.footerCeo !== undefined) updateData.footerCeo = data.footerCeo || null;
+  if (data.footerBusinessNumber !== undefined) updateData.footerBusinessNumber = data.footerBusinessNumber || null;
+  if (data.footerEcommerceNumber !== undefined) updateData.footerEcommerceNumber = data.footerEcommerceNumber || null;
+  if (data.footerAddress !== undefined) updateData.footerAddress = data.footerAddress || null;
+  if (data.footerPhone !== undefined) updateData.footerPhone = data.footerPhone || null;
+  if (data.footerEmail !== undefined) updateData.footerEmail = data.footerEmail || null;
 
   const record = await getClientsTable().update(id, updateData);
 

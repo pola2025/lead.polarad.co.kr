@@ -151,3 +151,28 @@ export function getStorageInfo(): { type: 'jwt' | 'kv' | 'memory'; connected: bo
     connected: true,
   };
 }
+
+// ============================================
+// 포털 인증 (클라이언트 포털용)
+// ============================================
+
+/**
+ * 포털 쿠키명 생성
+ * 모든 포털 API에서 이 함수를 사용해야 함
+ */
+export function getPortalCookieName(slug: string): string {
+  return `portal_auth_${slug}`;
+}
+
+/**
+ * 포털 쿠키 설정 옵션
+ */
+export function getPortalCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    maxAge: 60 * 60 * 24 * 7, // 7일
+    path: '/',
+  };
+}

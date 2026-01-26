@@ -8,7 +8,7 @@ import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send, Image
 import Link from "next/link";
 import type { Client, FormField, ProductFeature } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
-import { Plus, Trash2, GripVertical, Clock } from "lucide-react";
+import { Plus, Trash2, GripVertical, Clock, Building2 } from "lucide-react";
 import { formatOperatingHours } from "@/lib/operating-hours";
 import {
   DndContext,
@@ -191,8 +191,14 @@ export default function EditClientPage({
     operatingDays: "weekdays",
     operatingStartTime: "09:00",
     operatingEndTime: "18:00",
-    // 에어테이블 공유 URL
-    airtableShareUrl: "",
+    // 푸터 사업자 정보
+    footerCompanyName: "",
+    footerCeo: "",
+    footerBusinessNumber: "",
+    footerEcommerceNumber: "",
+    footerAddress: "",
+    footerPhone: "",
+    footerEmail: "",
   });
 
   const copyToClipboard = async (text: string, field: string) => {
@@ -279,8 +285,14 @@ export default function EditClientPage({
         operatingDays: client.operatingDays || "weekdays",
         operatingStartTime: client.operatingStartTime || "09:00",
         operatingEndTime: client.operatingEndTime || "18:00",
-        // 에어테이블 공유 URL
-        airtableShareUrl: client.airtableShareUrl || "",
+        // 푸터 사업자 정보
+        footerCompanyName: client.footerCompanyName || "",
+        footerCeo: client.footerCeo || "",
+        footerBusinessNumber: client.footerBusinessNumber || "",
+        footerEcommerceNumber: client.footerEcommerceNumber || "",
+        footerAddress: client.footerAddress || "",
+        footerPhone: client.footerPhone || "",
+        footerEmail: client.footerEmail || "",
       });
 
       // 폼 필드 로드
@@ -359,6 +371,36 @@ export default function EditClientPage({
     } catch (err) {
       console.error(err);
       setError("OG 이미지 생성 중 오류가 발생했습니다.");
+    } finally {
+      setGeneratingOg(false);
+    }
+  };
+
+  const deleteOgImage = async () => {
+    if (!formData.slug) return;
+    if (!confirm("OG 이미지를 삭제하시겠습니까?")) return;
+
+    setGeneratingOg(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/og/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: formData.slug }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        setError(data.error || "OG 이미지 삭제에 실패했습니다.");
+        return;
+      }
+
+      setOgImageUrl(null);
+    } catch (err) {
+      console.error(err);
+      setError("OG 이미지 삭제 중 오류가 발생했습니다.");
     } finally {
       setGeneratingOg(false);
     }
@@ -658,7 +700,17 @@ export default function EditClientPage({
                       alt="OG 이미지 미리보기"
                       className="w-full max-w-md rounded-lg border border-gray-200 shadow-sm"
                     />
-                    <p className="mt-2 text-xs text-gray-500 break-all">{ogImageUrl}</p>
+                    <div className="mt-2 flex items-center justify-between max-w-md">
+                      <p className="text-xs text-gray-500 break-all flex-1">{ogImageUrl}</p>
+                      <button
+                        type="button"
+                        onClick={deleteOgImage}
+                        disabled={generatingOg}
+                        className="ml-2 text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -821,23 +873,6 @@ export default function EditClientPage({
               </p>
             </div>
 
-            <div className="mt-4">
-              <label htmlFor="airtableShareUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                에어테이블 공유 URL
-              </label>
-              <input
-                type="url"
-                id="airtableShareUrl"
-                name="airtableShareUrl"
-                value={formData.airtableShareUrl}
-                onChange={handleChange}
-                placeholder="https://airtable.com/appXXX/shrYYY"
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                텔레그램 알림에 포함될 에어테이블 공유 링크입니다.
-              </p>
-            </div>
           </div>
 
           {/* NCP SENS 설정 */}
@@ -1019,6 +1054,116 @@ export default function EditClientPage({
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* 푸터 사업자 정보 */}
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <span className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                랜딩페이지 사업자 정보
+              </span>
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              랜딩페이지 하단에 표시될 사업자 정보입니다. 비워두면 폴라애드 정보가 표시됩니다.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  회사명/사업자명
+                </label>
+                <input
+                  type="text"
+                  name="footerCompanyName"
+                  value={formData.footerCompanyName}
+                  onChange={handleChange}
+                  placeholder="폴라애드"
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  대표자명
+                </label>
+                <input
+                  type="text"
+                  name="footerCeo"
+                  value={formData.footerCeo}
+                  onChange={handleChange}
+                  placeholder="이재호"
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  사업자등록번호
+                </label>
+                <input
+                  type="text"
+                  name="footerBusinessNumber"
+                  value={formData.footerBusinessNumber}
+                  onChange={handleChange}
+                  placeholder="808-03-00327"
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  통신판매업 번호
+                </label>
+                <input
+                  type="text"
+                  name="footerEcommerceNumber"
+                  value={formData.footerEcommerceNumber}
+                  onChange={handleChange}
+                  placeholder="제2025-서울금천-1908호"
+                  className="input-field"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  주소
+                </label>
+                <input
+                  type="text"
+                  name="footerAddress"
+                  value={formData.footerAddress}
+                  onChange={handleChange}
+                  placeholder="서울특별시 금천구 가산디지털2로 98, 롯데 IT 캐슬 2동 11층 1107"
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  전화번호
+                </label>
+                <input
+                  type="text"
+                  name="footerPhone"
+                  value={formData.footerPhone}
+                  onChange={handleChange}
+                  placeholder="032-345-9834"
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  이메일
+                </label>
+                <input
+                  type="email"
+                  name="footerEmail"
+                  value={formData.footerEmail}
+                  onChange={handleChange}
+                  placeholder="mkt@polarad.co.kr"
+                  className="input-field"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-4">
+              * 개인정보처리방침은 폴라애드에서 관리합니다.
+            </p>
           </div>
 
           {/* 고객 SMS/이메일 알림 설정 */}

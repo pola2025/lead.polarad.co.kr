@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getClientBySlug, getLeadsByClient } from "@/lib/airtable";
+import { getPortalCookieName } from "@/lib/auth";
 import type { Lead } from "@/types";
 
 interface LeadStatsResponse {
@@ -41,7 +42,7 @@ export async function GET(
 
   // 인증 확인
   const cookieStore = await cookies();
-  const authToken = cookieStore.get(`portal_${slug}`)?.value;
+  const authToken = cookieStore.get(getPortalCookieName(slug))?.value;
 
   if (!authToken) {
     return NextResponse.json(

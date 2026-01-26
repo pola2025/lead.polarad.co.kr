@@ -95,6 +95,33 @@ export const DEFAULT_FORM_FIELDS: FormField[] = [
   { id: "memo", type: "textarea", label: "문의사항", placeholder: "문의 내용을 입력하세요", required: false, enabled: false, order: 6 },
 ];
 
+// ==================== 업종별 폼 템플릿 ====================
+
+// 경영컨설팅 템플릿 (정책자금, 기업컨설팅 등)
+export const CONSULTING_FORM_TEMPLATE: FormField[] = [
+  { id: "name", type: "text", label: "이름", placeholder: "홍길동", required: true, enabled: true, order: 0 },
+  { id: "phone", type: "phone", label: "연락처", placeholder: "010-1234-5678", required: true, enabled: true, order: 1 },
+  { id: "email", type: "email", label: "이메일", placeholder: "example@email.com", required: true, enabled: true, order: 2 },
+  { id: "custom_industry", type: "text", label: "업종", placeholder: "업종을 작성해주세요", required: true, enabled: true, order: 3 },
+  { id: "custom_businessNumber", type: "text", label: "사업자등록번호", placeholder: "제조업일 경우 필수 작성", required: false, enabled: true, order: 4 },
+  { id: "custom_annualRevenue", type: "text", label: "직전년도매출", placeholder: "전년도매출을 작성해주세요", required: true, enabled: true, order: 5 },
+  { id: "custom_requiredFund", type: "text", label: "필요자금", placeholder: "필요하신 자금 규모", required: true, enabled: true, order: 6 },
+  { id: "custom_preferredTime", type: "text", label: "상담희망시간", placeholder: "원하시는 시간을 남겨주세요", required: true, enabled: true, order: 7 },
+  // 비활성화 상태의 선택 가능한 필드들
+  { id: "businessName", type: "text", label: "회사/사업자명", placeholder: "회사명 입력", required: false, enabled: false, order: 10 },
+  { id: "address", type: "text", label: "주소", placeholder: "주소를 입력하세요", required: false, enabled: false, order: 11 },
+  { id: "birthdate", type: "date", label: "생년월일", placeholder: "1990-01-01", required: false, enabled: false, order: 12 },
+  { id: "memo", type: "textarea", label: "문의사항", placeholder: "문의 내용을 입력하세요", required: false, enabled: false, order: 99 },
+];
+
+// 폼 템플릿 목록
+export const FORM_TEMPLATES = {
+  default: { name: "기본", fields: DEFAULT_FORM_FIELDS },
+  consulting: { name: "경영컨설팅", fields: CONSULTING_FORM_TEMPLATE },
+} as const;
+
+export type FormTemplateKey = keyof typeof FORM_TEMPLATES;
+
 // 클라이언트
 export interface Client {
   id: string;
@@ -135,12 +162,18 @@ export interface Client {
   operatingDays?: 'weekdays' | 'everyday'; // 주중 또는 연중무휴
   operatingStartTime?: string; // 시작시간 (HH:mm)
   operatingEndTime?: string; // 종료시간 (HH:mm)
-  // 에어테이블 공유 URL (텔레그램 알림용)
-  airtableShareUrl?: string;
   // OG 이미지 URL
   ogImageUrl?: string;
   // 포털 비밀번호 (해시 저장)
   portalPassword?: string;
+  // 푸터 사업자 정보
+  footerCompanyName?: string; // 회사명/사업자명
+  footerCeo?: string; // 대표자명
+  footerBusinessNumber?: string; // 사업자등록번호
+  footerEcommerceNumber?: string; // 통신판매업 번호
+  footerAddress?: string; // 주소
+  footerPhone?: string; // 전화번호
+  footerEmail?: string; // 이메일
   createdAt: string;
 }
 

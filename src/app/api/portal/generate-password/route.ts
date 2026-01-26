@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendSlackMessage, createSlackChannel, generatePassword } from '@/lib/slack';
+import { sendSlackMessage, generatePassword } from '@/lib/slack';
 import { getClientBySlug, updateClient } from '@/lib/airtable';
 
 export async function POST(request: NextRequest) {
@@ -22,13 +22,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // slackChannelId가 없으면 채널 자동 생성
-    let channelId: string | undefined = client.slackChannelId;
+    // slackChannelId 확인 (관리자가 클라이언트 생성 시 입력한 채널)
+    const channelId = client.slackChannelId;
     if (!channelId) {
-      channelId = (await createSlackChannel(slug)) ?? undefined;
-      if (channelId) {
-        await updateClient(client.id, { slackChannelId: channelId });
-      }
+      return NextResponse.json(
+        { success: false, error: '슬랙 채널이 설정되지 않았습니다. 클라이언트 설정에서 슬랙 채널 ID를 입력해주세요.' },
+        { status: 400 }
+      );
     }
 
     // 비밀번호 결정: 재발급이거나 기존 비밀번호가 없으면 새로 생성
@@ -48,18 +48,10 @@ export async function POST(request: NextRequest) {
       password = client.portalPassword;
     }
 
-    // 슬랙으로 전송
-    const targetChannel = channelId || process.env.SLACK_QNA_CHANNEL_ID;
-    if (!targetChannel) {
-      return NextResponse.json(
-        { success: false, error: '슬랙 채널이 설정되지 않았습니다.' },
-        { status: 500 }
-      );
-    }
-
+    // 슬랙으로 전송 (클라이언트에 설정된 채널로)
     const actionText = isNew ? '새로 생성됨' : '기존 비밀번호';
     const success = await sendSlackMessage({
-      channel: targetChannel,
+      channel: channelId,
       text: `🔐 포털 비밀번호 (${actionText})`,
       blocks: [
         {

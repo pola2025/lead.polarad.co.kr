@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getClientBySlug, updateClient, addFieldToLeadsTable, deleteFieldFromLeadsTable } from '@/lib/airtable';
+import { getClientBySlug, updateClient } from '@/lib/airtable';
+import { syncFormFieldsToAirtable } from '@/lib/form-fields';
 import { DEFAULT_FORM_FIELDS, FormField } from '@/types';
 import { sendSlackMessage } from '@/lib/slack';
-
-// 기본 필드 ID (Airtable에 이미 존재)
-const DEFAULT_FIELD_IDS = ['name', 'phone', 'email', 'businessName', 'industry', 'kakaoId', 'address', 'birthdate', 'status', 'memo', 'ipAddress', 'userAgent', 'createdAt'];
 
 // 포털 세션 확인
 async function verifyPortalSession(slug: string): Promise<string | null> {
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(`portal_${slug}`);
+  const sessionCookie = cookieStore.get(`portal_auth_${slug}`);
   return sessionCookie?.value || null;
 }
 
@@ -132,36 +130,11 @@ export async function PUT(
       }
     }
 
-    // 커스텀 필드 변경 감지 및 Airtable 연동
+    // 폼 필드 변경 시 Airtable Leads 테이블 스키마 동기화
     if (body.formFields && client.leadsTableId) {
       const oldFields: FormField[] = client.formFields || DEFAULT_FORM_FIELDS;
       const newFields: FormField[] = body.formFields;
-
-      // 이전 커스텀 필드 ID 목록
-      const oldCustomFieldIds = oldFields
-        .filter(f => !DEFAULT_FIELD_IDS.includes(f.id))
-        .map(f => f.id);
-
-      // 새 커스텀 필드 ID 목록
-      const newCustomFieldIds = newFields
-        .filter(f => !DEFAULT_FIELD_IDS.includes(f.id))
-        .map(f => f.id);
-
-      // 추가된 커스텀 필드
-      const addedFieldIds = newCustomFieldIds.filter(id => !oldCustomFieldIds.includes(id));
-      for (const fieldId of addedFieldIds) {
-        const field = newFields.find(f => f.id === fieldId);
-        if (field) {
-          const airtableType = field.type === 'textarea' ? 'multilineText' : 'singleLineText';
-          await addFieldToLeadsTable(client.leadsTableId, fieldId, airtableType);
-        }
-      }
-
-      // 삭제된 커스텀 필드
-      const deletedFieldIds = oldCustomFieldIds.filter(id => !newCustomFieldIds.includes(id));
-      for (const fieldId of deletedFieldIds) {
-        await deleteFieldFromLeadsTable(client.leadsTableId, fieldId);
-      }
+      await syncFormFieldsToAirtable(client.leadsTableId, oldFields, newFields);
     }
 
     // 업데이트 실행

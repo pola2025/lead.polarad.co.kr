@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
 import { cookies } from "next/headers";
 import { getGA4Settings } from "@/lib/airtable";
+import { getPortalCookieName } from "@/lib/auth";
 
 // GA4 클라이언트 초기화 (공통 설정 사용)
 function getAnalyticsClient(clientEmail: string, privateKeyOrJson: string) {
@@ -42,7 +43,7 @@ export async function GET(
 
   // 인증 확인
   const cookieStore = await cookies();
-  const authToken = cookieStore.get(`portal_${slug}`)?.value;
+  const authToken = cookieStore.get(getPortalCookieName(slug))?.value;
 
   if (!authToken) {
     return NextResponse.json(

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   GripVertical,
   Plus,
@@ -39,6 +40,20 @@ const NEW_FIELD_TEMPLATE: Omit<FormField, "id" | "order"> = {
   enabled: true,
 };
 
+// Portal로 렌더링하는 Modal 래퍼
+function ModalPortal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(children, document.body);
+}
+
 export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorProps) {
   const [editingField, setEditingField] = useState<FormField | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -52,9 +67,9 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
     .filter((f) => f.enabled)
     .sort((a, b) => a.order - b.order);
 
-  // 비활성화된 프리셋 필드
+  // 비활성화된 프리셋 필드 (이메일 제외 - 이메일은 삭제 불가)
   const disabledPresets = PRESET_OPTIONAL_FIELDS.filter(
-    (preset) => !fields.find((f) => f.id === preset.id)?.enabled
+    (preset) => preset.id !== "email" && !fields.find((f) => f.id === preset.id)?.enabled
   );
 
   // 필드 활성화/비활성화 토글
@@ -284,7 +299,7 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
                   type="checkbox"
                   checked={field.required}
                   onChange={() => toggleRequired(field.id)}
-                  disabled={PRESET_BASIC_FIELDS.some((p) => p.id === field.id)}
+                  disabled={PRESET_BASIC_FIELDS.some((p) => p.id === field.id) || field.id === "email"}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
                 />
                 <span className="text-[11px] sm:text-xs text-gray-600 whitespace-nowrap">필수</span>
@@ -302,8 +317,8 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
                 </button>
               )}
 
-              {/* 삭제 버튼 */}
-              {!PRESET_BASIC_FIELDS.some((p) => p.id === field.id) && (
+              {/* 삭제 버튼 (이름, 연락처, 이메일은 삭제 불가) */}
+              {!PRESET_BASIC_FIELDS.some((p) => p.id === field.id) && field.id !== "email" && (
                 <button
                   type="button"
                   onClick={() => deleteField(field.id)}
@@ -348,22 +363,26 @@ export default function FormFieldsEditor({ fields, onChange }: FormFieldsEditorP
         커스텀 필드 추가
       </button>
 
-      {/* 커스텀 필드 추가 모달 */}
+      {/* 커스텀 필드 추가 모달 - Portal로 렌더링하여 form 중첩 방지 */}
       {showAddModal && (
-        <AddFieldModal
-          onSave={addCustomField}
-          onClose={() => setShowAddModal(false)}
-          existingFields={fields}
-        />
+        <ModalPortal>
+          <AddFieldModal
+            onSave={addCustomField}
+            onClose={() => setShowAddModal(false)}
+            existingFields={fields}
+          />
+        </ModalPortal>
       )}
 
-      {/* 옵션 편집 모달 */}
+      {/* 옵션 편집 모달 - Portal로 렌더링하여 form 중첩 방지 */}
       {showOptionsModal && (
-        <OptionsModal
-          field={showOptionsModal}
-          onSave={(options) => saveOptions(showOptionsModal.id, options)}
-          onClose={() => setShowOptionsModal(null)}
-        />
+        <ModalPortal>
+          <OptionsModal
+            field={showOptionsModal}
+            onSave={(options) => saveOptions(showOptionsModal.id, options)}
+            onClose={() => setShowOptionsModal(null)}
+          />
+        </ModalPortal>
       )}
     </div>
   );

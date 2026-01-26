@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import type { FormField, Lead, LeadStatus } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
+import { LandingFormFields, PrivacyCheckbox, FormDisclaimer } from "@/components/LandingFormFields";
 
 // 상태 레이블 (관리자와 동일)
 const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
@@ -1514,36 +1515,19 @@ export default function PortalDashboardPage() {
                       수집 정보 설정에서 필드를 추가하세요.
                     </p>
                   ) : (
-                    sortedEnabledFields.map((field) => (
-                      <div key={field.id}>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                          {field.label}
-                          {field.required && (
-                            <span className="text-red-500 ml-0.5">*</span>
-                          )}
-                        </label>
-                        <input
-                          type="text"
-                          placeholder={field.placeholder}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                        />
-                      </div>
-                    ))
+                    <LandingFormFields
+                      fields={sortedEnabledFields}
+                      formData={{}}
+                      onChange={() => {}}
+                      isPreview={true}
+                    />
                   )}
 
-                  {/* 개인정보 이용동의 */}
-                  <div className="pt-2">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        defaultChecked
-                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">
-                        <span className="text-blue-600 underline">개인정보 이용약관</span>에 동의합니다. <span className="text-red-500">*</span>
-                      </span>
-                    </label>
-                  </div>
+                  <PrivacyCheckbox
+                    checked={true}
+                    onChange={() => {}}
+                    isPreview={true}
+                  />
 
                   <button
                     onClick={() => setPreviewStep(3)}
@@ -1553,10 +1537,7 @@ export default function PortalDashboardPage() {
                     {messages.ctaButtonText || "상담 신청하기"}
                   </button>
 
-                  <div className="text-xs text-gray-500 text-center space-y-1">
-                    <p>본 접수정보는 상담접수에만 이용되며 상담 후 폐기됩니다.</p>
-                    <p>카카오 로그인은 친구추가, 채널추가, 메세지발송에 활용되지 않으며, 접수자 인증목적으로만 사용됩니다.</p>
-                  </div>
+                  <FormDisclaimer />
                 </div>
 
                 {/* 뒤로 가기 */}

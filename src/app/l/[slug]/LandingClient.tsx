@@ -3,10 +3,11 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { Check, ArrowRight, ArrowLeft, CheckCircle, Loader2, ChevronDown } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { formatPhoneInput, isPhoneComplete, validateName } from "@/lib/validation";
 import type { FormField, ProductFeature } from "@/types";
 import HeatmapTracker from "@/components/HeatmapTracker";
+import { LandingFormFields, PrivacyCheckbox, FormDisclaimer } from "@/components/LandingFormFields";
 
 interface ClientData {
   id: string;
@@ -21,6 +22,14 @@ interface ClientData {
   thankYouMessage?: string;
   productFeatures?: ProductFeature[];
   formFields?: FormField[];
+  // 푸터 사업자 정보
+  footerCompanyName?: string;
+  footerCeo?: string;
+  footerBusinessNumber?: string;
+  footerEcommerceNumber?: string;
+  footerAddress?: string;
+  footerPhone?: string;
+  footerEmail?: string;
 }
 
 // 기본 폼 필드
@@ -222,7 +231,7 @@ export default function LandingClient({ client }: LandingClientProps) {
 
           {client.landingDescription && (
             <p className="text-gray-600 text-center mb-8 whitespace-pre-line">
-              {client.landingDescription}
+              {client.landingDescription.trim()}
             </p>
           )}
 
@@ -264,15 +273,17 @@ export default function LandingClient({ client }: LandingClientProps) {
           {/* 사업자 정보 푸터 */}
           <footer className="mt-12 pt-6 border-t border-gray-200">
             <div className="text-xs text-gray-400 space-y-0.5">
-              <p className="font-medium text-gray-500">폴라애드</p>
-              <p>대표: 이재호 | 사업자등록번호: 808-03-00327</p>
-              <p>통신판매업: 제2025-서울금천-1908호</p>
-              <p>주소: 서울특별시 금천구 가산디지털2로 98,<br />롯데 IT 캐슬 2동 11층 1107</p>
-              <p>전화: 032-345-9834 | 이메일: mkt@polarad.co.kr</p>
+              <p className="font-medium text-gray-500">{client.footerCompanyName || "폴라애드"}</p>
+              <p>대표: {client.footerCeo || "이재호"} | 사업자등록번호: {client.footerBusinessNumber || "808-03-00327"}</p>
+              {(client.footerEcommerceNumber || !client.footerCompanyName) && (
+                <p>통신판매업: {client.footerEcommerceNumber || "제2025-서울금천-1908호"}</p>
+              )}
+              <p>주소: {client.footerAddress || "서울특별시 금천구 가산디지털2로 98, 롯데 IT 캐슬 2동 11층 1107"}</p>
+              <p>전화: {client.footerPhone || "032-345-9834"} | 이메일: {client.footerEmail || "mkt@polarad.co.kr"}</p>
               <p className="pt-3">
                 <a href="/privacy" target="_blank" className="text-gray-500 hover:text-gray-600 underline">개인정보처리방침</a>
               </p>
-              <p className="pt-2">© {new Date().getFullYear()} PolarAd. All rights reserved.</p>
+              <p className="pt-2">© {new Date().getFullYear()} {client.footerCompanyName || "PolarAd"}. All rights reserved.</p>
             </div>
           </footer>
         </div>
@@ -337,133 +348,27 @@ export default function LandingClient({ client }: LandingClientProps) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
-          {visibleFields.map((field) => (
-            <div key={field.id}>
-              <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 mb-1.5">
-                {field.label} {field.required && <span className="text-red-500">*</span>}
-              </label>
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 space-y-3 sm:space-y-4">
+          <LandingFormFields
+            fields={visibleFields}
+            formData={formData}
+            onChange={handleInputChange}
+            onCheckboxChange={handleCheckboxChange}
+            kakaoEmail={kakaoEmail}
+            getInputType={getInputType}
+            getInputMode={getInputMode}
+            isPhoneComplete={isPhoneComplete}
+          />
 
-              {field.type === "textarea" && (
-                <textarea
-                  id={field.id}
-                  required={field.required}
-                  value={formData[field.id] || ""}
-                  onChange={(e) => handleInputChange(field.id, e.target.value)}
-                  placeholder={field.placeholder}
-                  rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-              )}
-
-              {field.type === "select" && (
-                <div className="relative">
-                  <select
-                    id={field.id}
-                    required={field.required}
-                    value={formData[field.id] || ""}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
-                  >
-                    <option value="">{field.placeholder || "선택하세요"}</option>
-                    {field.options?.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                </div>
-              )}
-
-              {field.type === "radio" && (
-                <div className="space-y-2 mt-1">
-                  {field.options?.map((opt) => (
-                    <label key={opt.value} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 cursor-pointer">
-                      <input
-                        type="radio"
-                        name={field.id}
-                        value={opt.value}
-                        checked={formData[field.id] === opt.value}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        className="h-4 w-4 text-blue-600"
-                      />
-                      <span className="text-gray-700">{opt.label}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-
-              {field.type === "checkbox" && (
-                <div className="space-y-2 mt-1">
-                  {field.options?.map((opt) => {
-                    const selected = formData[field.id]?.split(",").filter(Boolean) || [];
-                    return (
-                      <label key={opt.value} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          value={opt.value}
-                          checked={selected.includes(opt.value)}
-                          onChange={(e) => handleCheckboxChange(field.id, opt.value, e.target.checked)}
-                          className="h-4 w-4 rounded text-blue-600"
-                        />
-                        <span className="text-gray-700">{opt.label}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-
-              {!["textarea", "select", "radio", "checkbox"].includes(field.type) && (
-                <input
-                  type={getInputType(field.id)}
-                  id={field.id}
-                  required={field.required}
-                  value={formData[field.id] || ""}
-                  onChange={(e) => handleInputChange(field.id, e.target.value)}
-                  placeholder={field.placeholder}
-                  inputMode={getInputMode(field.id)}
-                  autoComplete={field.id === "phone" ? "tel" : field.id === "email" ? "email" : field.id === "name" ? "name" : undefined}
-                  readOnly={(field.id === "email" || field.type === "email") && !!kakaoEmail}
-                  className={`w-full rounded-lg border px-4 py-3 text-base focus:outline-none ${
-                    (field.id === "email" || field.type === "email") && kakaoEmail
-                      ? "border-yellow-300 bg-yellow-50 text-gray-700 cursor-not-allowed"
-                      : "border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  }`}
-                />
-              )}
-
-              {(field.id === "phone" || field.type === "phone") && formData[field.id] && !isPhoneComplete(formData[field.id]) && (
-                <p className="mt-1 text-xs text-gray-500">010-0000-0000 형식으로 입력해주세요</p>
-              )}
-            </div>
-          ))}
-
-          {/* 개인정보 이용동의 */}
-          <div className="pt-2">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={privacyAgreed}
-                onChange={(e) => setPrivacyAgreed(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">
-                <a
-                  href="/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline hover:text-blue-700"
-                >
-                  개인정보 이용약관
-                </a>
-                에 동의합니다. <span className="text-red-500">*</span>
-              </span>
-            </label>
-          </div>
+          <PrivacyCheckbox
+            checked={privacyAgreed}
+            onChange={setPrivacyAgreed}
+          />
 
           <button
             type="submit"
             disabled={submitting || !isFormValid}
-            className="w-full rounded-lg px-4 py-3 text-base font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-lg px-4 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: primaryColor }}
           >
             {submitting ? (
@@ -476,10 +381,7 @@ export default function LandingClient({ client }: LandingClientProps) {
             )}
           </button>
 
-          <div className="text-xs text-gray-500 text-center space-y-1">
-            <p>본 접수정보는 상담접수에만 이용되며 상담 후 폐기됩니다.</p>
-            <p>카카오 로그인은 친구추가, 채널추가, 메세지발송에 활용되지 않으며, 접수자 인증목적으로만 사용됩니다.</p>
-          </div>
+          <FormDisclaimer />
         </form>
       </div>
     </div>

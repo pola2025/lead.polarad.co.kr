@@ -25,8 +25,9 @@ export async function POST(request: NextRequest) {
     }
 
     const title = client.landingTitle || `${client.name} - 상담 신청`;
-    const description = client.landingDescription || `${client.name}에서 제공하는 서비스에 대해 상담을 신청하세요.`;
     const primaryColor = client.primaryColor || "#3b82f6";
+    // 서비스 특징 (최대 3개만 표시)
+    const features = (client.productFeatures || []).slice(0, 3);
 
     // ImageResponse를 사용해서 이미지 생성
     const imageResponse = new ImageResponse(
@@ -84,19 +85,33 @@ export async function POST(request: NextRequest) {
             {title}
           </div>
 
-          {/* 설명 */}
-          <div
-            style={{
-              display: "flex",
-              fontSize: "26px",
-              color: "#6b7280",
-              textAlign: "center",
-              maxWidth: "800px",
-              lineHeight: 1.5,
-            }}
-          >
-            {description.length > 80 ? description.slice(0, 80) + "..." : description}
-          </div>
+          {/* 서비스 특징 */}
+          {features.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+                marginTop: "8px",
+              }}
+            >
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    fontSize: "24px",
+                    color: "#374151",
+                  }}
+                >
+                  <span style={{ fontSize: "28px" }}>{feature.icon || "✓"}</span>
+                  <span>{feature.text.length > 40 ? feature.text.slice(0, 40) + "..." : feature.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* CTA 버튼 스타일 */}
           <div

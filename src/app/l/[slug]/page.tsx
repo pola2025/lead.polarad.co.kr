@@ -78,6 +78,14 @@ export default async function LandingPage({ params }: PageProps) {
         thankYouMessage: client.thankYouMessage,
         productFeatures: client.productFeatures,
         formFields: client.formFields,
+        // 푸터 사업자 정보
+        footerCompanyName: client.footerCompanyName,
+        footerCeo: client.footerCeo,
+        footerBusinessNumber: client.footerBusinessNumber,
+        footerEcommerceNumber: client.footerEcommerceNumber,
+        footerAddress: client.footerAddress,
+        footerPhone: client.footerPhone,
+        footerEmail: client.footerEmail,
       }}
     />
   );

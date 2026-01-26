@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientById, updateClient, deleteClient } from "@/lib/airtable";
 import { sendClientUpdatedNotification } from "@/lib/slack";
+import { syncFormFieldsToAirtable } from "@/lib/form-fields";
+import type { FormField } from "@/types";
 
 export async function GET(
   request: NextRequest,
@@ -67,6 +69,13 @@ export async function PUT(
 
     // 기존 데이터 조회 (변경 감지용)
     const oldClient = await getClientById(id);
+
+    // 폼 필드 변경 시 Airtable Leads 테이블 스키마 동기화
+    if (body.formFields && oldClient?.leadsTableId) {
+      const newFields = body.formFields as FormField[];
+      const oldFields = oldClient.formFields || [];
+      await syncFormFieldsToAirtable(oldClient.leadsTableId, oldFields, newFields);
+    }
 
     const client = await updateClient(id, body);
 
