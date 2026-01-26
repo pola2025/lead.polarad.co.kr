@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   Loader2,
   Save,
@@ -94,7 +94,13 @@ interface ClientData {
 export default function PortalDashboardPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
+
+  // URL 파라미터에서 탭과 하이라이트할 리드 ID 가져오기
+  const tabParam = searchParams.get("tab");
+  const highlightLeadId = searchParams.get("lead");
+  const leadCardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const [client, setClient] = useState<ClientData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -257,6 +263,39 @@ export default function PortalDashboardPage() {
       fetchAnalytics();
     }
   }, [statsPeriod, activeTab, fetchAnalytics]);
+
+  // URL 파라미터에 따라 탭 설정
+  useEffect(() => {
+    if (tabParam === "leads") {
+      setActiveTab("leads");
+    } else if (tabParam === "stats") {
+      setActiveTab("stats");
+    } else if (tabParam === "fields") {
+      setActiveTab("fields");
+    } else if (tabParam === "messages") {
+      setActiveTab("messages");
+    } else if (tabParam === "notifications") {
+      setActiveTab("notifications");
+    }
+  }, [tabParam]);
+
+  // 하이라이트된 리드로 스크롤
+  useEffect(() => {
+    if (highlightLeadId && activeTab === "leads" && !leadsLoading && leads.length > 0) {
+      const targetCard = leadCardRefs.current[highlightLeadId];
+      if (targetCard) {
+        // 약간의 딜레이 후 스크롤 (렌더링 완료 대기)
+        setTimeout(() => {
+          targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+          // 하이라이트 효과
+          targetCard.classList.add("ring-2", "ring-primary-500", "ring-offset-2");
+          setTimeout(() => {
+            targetCard.classList.remove("ring-2", "ring-primary-500", "ring-offset-2");
+          }, 3000);
+        }, 100);
+      }
+    }
+  }, [highlightLeadId, activeTab, leadsLoading, leads]);
 
   const handleLogout = async () => {
     try {
@@ -887,7 +926,10 @@ export default function PortalDashboardPage() {
                 {filteredLeads.map((lead) => (
                   <div
                     key={lead.id}
-                    className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4"
+                    ref={(el) => { leadCardRefs.current[lead.id] = el; }}
+                    className={`bg-white rounded-xl border border-gray-200 p-3 sm:p-4 transition-all duration-300 ${
+                      highlightLeadId === lead.id ? "ring-2 ring-primary-500 ring-offset-2 bg-primary-50" : ""
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">

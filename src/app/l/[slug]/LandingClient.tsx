@@ -50,7 +50,26 @@ export default function LandingClient({ client }: LandingClientProps) {
   const [kakaoEmail, setKakaoEmail] = useState<string | null>(null);
   const [kakaoId, setKakaoId] = useState<string | null>(null);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
+  const [showFooter, setShowFooter] = useState(false);
   const searchParams = useSearchParams();
+
+  // 스크롤 방향 감지 - 위로 스크롤하면 푸터 표시
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const isScrollingUp = currentScrollY < lastScrollY;
+      const isNearBottom = window.innerHeight + currentScrollY >= document.body.scrollHeight - 100;
+
+      // 위로 스크롤하거나 맨 아래 근처이면 푸터 표시
+      setShowFooter(isScrollingUp || isNearBottom);
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // 폼 데이터 초기화
   const initialFormData = useMemo(() => {
@@ -214,8 +233,9 @@ export default function LandingClient({ client }: LandingClientProps) {
   // 소개 페이지
   if (step === "intro") {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <HeatmapTracker clientSlug={client.slug} />
+      <>
+        <div className="min-h-screen bg-gray-50">
+          <HeatmapTracker clientSlug={client.slug} />
         <div className="max-w-md mx-auto px-4 py-12">
           {client.logoUrl && (
             <div className="flex justify-center mb-8">
@@ -270,24 +290,31 @@ export default function LandingClient({ client }: LandingClientProps) {
           )}
 
 
-          {/* 사업자 정보 푸터 */}
-          <footer className="mt-12 pt-6 border-t border-gray-200">
-            <div className="text-xs text-gray-400 space-y-0.5">
-              <p className="font-medium text-gray-500">{client.footerCompanyName || "폴라애드"}</p>
-              <p>대표: {client.footerCeo || "이재호"} | 사업자등록번호: {client.footerBusinessNumber || "808-03-00327"}</p>
-              {(client.footerEcommerceNumber || !client.footerCompanyName) && (
-                <p>통신판매업: {client.footerEcommerceNumber || "제2025-서울금천-1908호"}</p>
-              )}
-              <p>주소: {client.footerAddress || "서울특별시 금천구 가산디지털2로 98, 롯데 IT 캐슬 2동 11층 1107"}</p>
-              <p>전화: {client.footerPhone || "032-345-9834"} | 이메일: {client.footerEmail || "mkt@polarad.co.kr"}</p>
-              <p className="pt-3">
-                <a href="/privacy" target="_blank" className="text-gray-500 hover:text-gray-600 underline">개인정보처리방침</a>
-              </p>
-              <p className="pt-2">© {new Date().getFullYear()} {client.footerCompanyName || "PolarAd"}. All rights reserved.</p>
-            </div>
-          </footer>
+          {/* 푸터 공간 확보 */}
+          <div className="h-20" />
         </div>
       </div>
+
+      {/* 사업자 정보 푸터 - 스크롤 업 시 표시 */}
+      <footer
+        className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 transition-transform duration-300 z-50 ${
+          showFooter ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="max-w-lg mx-auto text-[10px] text-gray-400 space-y-0.5">
+          <p className="font-medium text-gray-500">{client.footerCompanyName || "폴라애드"}</p>
+          <p>대표: {client.footerCeo || "이재호"} | 사업자: {client.footerBusinessNumber || "808-03-00327"}</p>
+          {(client.footerEcommerceNumber || !client.footerCompanyName) && (
+            <p>통신판매: {client.footerEcommerceNumber || "제2025-서울금천-1908호"}</p>
+          )}
+          <p className="truncate">주소: {client.footerAddress || "서울특별시 금천구 가산디지털2로 98"}</p>
+          <div className="flex justify-between items-center pt-1">
+            <a href="/privacy" target="_blank" className="text-gray-500 hover:text-gray-600 underline">개인정보처리방침</a>
+            <span>© {new Date().getFullYear()} {client.footerCompanyName || "PolarAd"}</span>
+          </div>
+        </div>
+      </footer>
+      </>
     );
   }
 

@@ -196,17 +196,30 @@ export async function POST(request: NextRequest) {
     }
 
     // 카카오 로그인 리드가 있으면 업데이트, 없으면 새로 생성
+    let createdLeadId: string;
     if (kakaoId) {
       const existingLead = await findKakaoLoginLead(client.leadsTableId, kakaoId, clientId);
       if (existingLead) {
         // 기존 kakao_login 리드를 new 상태로 업데이트
-        await updateLead(existingLead.id, client.leadsTableId, clientId, leadData);
+        const updatedLead = await updateLead(existingLead.id, client.leadsTableId, clientId, leadData);
+        createdLeadId = updatedLead.id;
         console.log(`[Lead] Updated kakao_login lead ${existingLead.id} to new status`);
       } else {
-        await createLead(client.leadsTableId, clientId, leadData);
+        const newLead = await createLead(client.leadsTableId, clientId, leadData);
+        createdLeadId = newLead.id;
       }
     } else {
-      await createLead(client.leadsTableId, clientId, leadData);
+      const newLead = await createLead(client.leadsTableId, clientId, leadData);
+      createdLeadId = newLead.id;
+    }
+
+    // 텔레그램 알림용 접수 데이터 구성
+    const telegramLeadData: { label: string; value: string }[] = [];
+    for (const field of enabledFields) {
+      const value = body[field.id];
+      if (value && field.id !== 'name' && field.id !== 'phone') {
+        telegramLeadData.push({ label: field.label, value: String(value) });
+      }
     }
 
     // 텔레그램 알림 (비동기 - 실패해도 리드 저장은 성공)
@@ -214,8 +227,10 @@ export async function POST(request: NextRequest) {
       sendTelegramNotification(client.telegramChatId, {
         clientName: client.name,
         clientSlug: client.slug,
+        leadId: createdLeadId,
         leadName: normalizedName,
         phone: normalizedPhone,
+        additionalFields: telegramLeadData,
       }).catch((err) => {
         console.error("Telegram notification failed:", err);
       });
@@ -291,8 +306,10 @@ async function sendTelegramNotification(
   data: {
     clientName: string;
     clientSlug: string;
+    leadId: string;
     leadName: string;
     phone: string;
+    additionalFields?: { label: string; value: string }[];
   }
 ) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -304,19 +321,28 @@ async function sendTelegramNotification(
     normalizedChatId = `-${chatId}`;
   }
 
-  // 포털 URL 생성
-  const portalUrl = `https://lead.polarad.co.kr/portal/${data.clientSlug}`;
+  // 포털 URL 생성 (리드 ID 포함)
+  const portalUrl = `https://lead.polarad.co.kr/portal/${data.clientSlug}?tab=leads&lead=${data.leadId}`;
+
+  // 추가 필드 문자열 생성
+  let additionalFieldsText = "";
+  if (data.additionalFields && data.additionalFields.length > 0) {
+    additionalFieldsText = data.additionalFields
+      .map((f) => `📝 ${f.label}: ${f.value}`)
+      .join("\n");
+    additionalFieldsText = "\n" + additionalFieldsText;
+  }
 
   const message = `🔔 새로운 리드 접수
 
-📋 클라이언트: ${data.clientName}
+📋 ${data.clientName}
+━━━━━━━━━━━━━━━
 👤 이름: ${data.leadName}
-📞 연락처: ${data.phone}
-🕐 시간: ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
+📞 연락처: ${data.phone}${additionalFieldsText}
+━━━━━━━━━━━━━━━
+🕐 ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
 
-[접수내역확인](${portalUrl})
-
--Polarad lead System-`;
+[👉 접수내역 확인하기](${portalUrl})`;
 
   await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: "POST",
