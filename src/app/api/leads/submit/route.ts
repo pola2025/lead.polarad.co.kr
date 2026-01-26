@@ -328,7 +328,7 @@ async function sendTelegramNotification(
   let additionalFieldsText = "";
   if (data.additionalFields && data.additionalFields.length > 0) {
     additionalFieldsText = data.additionalFields
-      .map((f) => `📝 ${f.label}: ${f.value}`)
+      .map((f) => `• ${f.label}: ${f.value}`)
       .join("\n");
     additionalFieldsText = "\n" + additionalFieldsText;
   }
