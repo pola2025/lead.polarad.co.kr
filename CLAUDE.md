@@ -2,9 +2,17 @@
 
 ## Airtable 필드 관리 (CRITICAL)
 
-### 필수 규칙
+### 자동 포함 필드 (새 클라이언트 생성 시)
 
-**새 필드 추가 시 반드시 다음 순서를 따를 것:**
+`LEADS_TABLE_FIELDS` (airtable.ts)에 정의된 필드들은 새 클라이언트 리드 테이블 생성 시 자동 포함:
+
+- `utmSource`, `utmAd` - UTM 추적
+- `customFieldsData` - 커스텀 필드 JSON 저장
+- 기본 필드 (name, phone, email, status 등)
+
+### 기존 클라이언트에 필드 추가 시
+
+**반드시 다음 순서를 따를 것:**
 
 1. **Airtable에 필드 먼저 생성** (코드 수정 전!)
 2. **코드에서 필드 사용 추가**
