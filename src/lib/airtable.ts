@@ -470,6 +470,18 @@ export async function deleteClient(id: string): Promise<void> {
 // ==================== 리드 (클라이언트별 테이블) ====================
 
 function parseLeadRecord(record: Airtable.Record<Airtable.FieldSet>, clientId: string): Lead {
+  // 커스텀 필드 추출 (custom_로 시작하는 필드)
+  const customFields: Record<string, string> = {};
+  const fields = record.fields;
+  for (const key of Object.keys(fields)) {
+    if (key.startsWith('custom_')) {
+      const value = fields[key];
+      if (value !== undefined && value !== null && value !== '') {
+        customFields[key] = String(value);
+      }
+    }
+  }
+
   return {
     id: record.id,
     clientId: clientId,
@@ -486,6 +498,7 @@ function parseLeadRecord(record: Airtable.Record<Airtable.FieldSet>, clientId: s
     ipAddress: record.get("ipAddress") as string | undefined,
     userAgent: record.get("userAgent") as string | undefined,
     createdAt: record.get("createdAt") as string,
+    customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
   };
 }
 

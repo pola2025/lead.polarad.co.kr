@@ -195,6 +195,8 @@ export interface Lead {
   ipAddress?: string;
   userAgent?: string;
   createdAt: string;
+  // 커스텀 필드 (custom_로 시작하는 필드들)
+  customFields?: Record<string, string>;
 }
 
 // 블랙리스트

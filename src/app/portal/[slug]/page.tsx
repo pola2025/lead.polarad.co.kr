@@ -35,6 +35,13 @@ const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
   converted: { label: "전환", class: "bg-green-100 text-green-800" },
   blacklist: { label: "블랙리스트", class: "bg-red-100 text-red-800" },
 };
+
+// 커스텀 필드 라벨 가져오기
+const getCustomFieldLabel = (fieldId: string, fields: FormField[]): string => {
+  const field = fields.find(f => f.id === fieldId);
+  return field?.label || fieldId.replace('custom_', '');
+};
+
 import { formatOperatingHours } from "@/lib/operating-hours";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
 
@@ -974,6 +981,16 @@ export default function PortalDashboardPage() {
                             )}
                             {lead.kakaoId && (
                               <p className="text-yellow-600">카카오: {lead.kakaoId}</p>
+                            )}
+                            {/* 커스텀 필드 */}
+                            {lead.customFields && Object.keys(lead.customFields).length > 0 && (
+                              <>
+                                {Object.entries(lead.customFields).map(([key, value]) => (
+                                  <p key={key}>
+                                    {getCustomFieldLabel(key, formFields)}: {value}
+                                  </p>
+                                ))}
+                              </>
                             )}
                           </div>
                           {/* 문의사항/메모 */}
