@@ -86,7 +86,15 @@ const LEADS_TABLE_FIELDS: LeadsTableField[] = [
   { name: "memo", type: "multilineText" },
   { name: "ipAddress", type: "singleLineText" },
   { name: "userAgent", type: "singleLineText" },
-  { name: "createdAt", type: "dateTime", options: { dateFormat: { name: "iso" }, timeFormat: { name: "24hour" }, timeZone: "Asia/Seoul" } },
+  {
+    name: "createdAt",
+    type: "dateTime",
+    options: {
+      dateFormat: { name: "iso" },
+      timeFormat: { name: "24hour" },
+      timeZone: "Asia/Seoul",
+    },
+  },
   // UTM 추적 (광고 출처)
   { name: "utmSource", type: "singleLineText" },
   { name: "utmAd", type: "singleLineText" },
@@ -94,7 +102,9 @@ const LEADS_TABLE_FIELDS: LeadsTableField[] = [
   { name: "customFieldsData", type: "multilineText" },
 ];
 
-export async function createLeadsTableForClient(clientSlug: string): Promise<string> {
+export async function createLeadsTableForClient(
+  clientSlug: string,
+): Promise<string> {
   const tableName = `Leads_${clientSlug}`;
 
   const response = await fetch(
@@ -109,16 +119,37 @@ export async function createLeadsTableForClient(clientSlug: string): Promise<str
         name: tableName,
         fields: LEADS_TABLE_FIELDS,
       }),
-    }
+    },
   );
 
   if (!response.ok) {
     const error = await response.json();
+    // 이미 같은 이름의 테이블이 존재하면 해당 테이블 ID를 재사용
+    if (error?.error?.type === "DUPLICATE_TABLE_NAME") {
+      console.log(`테이블 ${tableName} 이미 존재 → 기존 테이블 ID 조회`);
+      const existingId = await findLeadsTableId(tableName);
+      if (existingId) return existingId;
+    }
     throw new Error(`테이블 생성 실패: ${JSON.stringify(error)}`);
   }
 
   const result = await response.json();
-  return result.id; // 새로 생성된 테이블 ID 반환
+  return result.id;
+}
+
+async function findLeadsTableId(tableName: string): Promise<string | null> {
+  const response = await fetch(
+    `https://api.airtable.com/v0/meta/bases/${getBaseId()}/tables`,
+    {
+      headers: { Authorization: `Bearer ${getApiKey()}` },
+    },
+  );
+  if (!response.ok) return null;
+  const { tables } = await response.json();
+  const found = tables?.find(
+    (t: { name: string; id: string }) => t.name === tableName,
+  );
+  return found?.id ?? null;
 }
 
 export async function deleteLeadsTable(tableId: string): Promise<void> {
@@ -129,7 +160,7 @@ export async function deleteLeadsTable(tableId: string): Promise<void> {
       headers: {
         Authorization: `Bearer ${getApiKey()}`,
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -143,7 +174,7 @@ export async function deleteLeadsTable(tableId: string): Promise<void> {
 export async function addFieldToLeadsTable(
   tableId: string,
   fieldName: string,
-  fieldType: "singleLineText" | "multilineText" = "singleLineText"
+  fieldType: "singleLineText" | "multilineText" = "singleLineText",
 ): Promise<{ success: boolean; fieldId?: string; error?: string }> {
   try {
     const response = await fetch(
@@ -158,7 +189,7 @@ export async function addFieldToLeadsTable(
           name: fieldName,
           type: fieldType,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -169,7 +200,10 @@ export async function addFieldToLeadsTable(
         return { success: true };
       }
       console.error("필드 추가 실패:", error);
-      return { success: false, error: error.error?.message || "필드 추가 실패" };
+      return {
+        success: false,
+        error: error.error?.message || "필드 추가 실패",
+      };
     }
 
     const result = await response.json();
@@ -184,7 +218,7 @@ export async function addFieldToLeadsTable(
 // Leads 테이블에서 필드 삭제 (주의: 데이터도 함께 삭제됨)
 export async function deleteFieldFromLeadsTable(
   tableId: string,
-  fieldName: string
+  fieldName: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // 먼저 테이블 스키마를 조회하여 필드 ID 찾기
@@ -194,7 +228,7 @@ export async function deleteFieldFromLeadsTable(
         headers: {
           Authorization: `Bearer ${getApiKey()}`,
         },
-      }
+      },
     );
 
     if (!schemaResponse.ok) {
@@ -207,7 +241,9 @@ export async function deleteFieldFromLeadsTable(
       return { success: false, error: "테이블을 찾을 수 없음" };
     }
 
-    const field = table.fields.find((f: { name: string }) => f.name === fieldName);
+    const field = table.fields.find(
+      (f: { name: string }) => f.name === fieldName,
+    );
     if (!field) {
       // 필드가 없으면 성공으로 처리
       console.log(`필드 ${fieldName} 이미 없음`);
@@ -222,13 +258,16 @@ export async function deleteFieldFromLeadsTable(
         headers: {
           Authorization: `Bearer ${getApiKey()}`,
         },
-      }
+      },
     );
 
     if (!deleteResponse.ok) {
       const error = await deleteResponse.json();
       console.error("필드 삭제 실패:", error);
-      return { success: false, error: error.error?.message || "필드 삭제 실패" };
+      return {
+        success: false,
+        error: error.error?.message || "필드 삭제 실패",
+      };
     }
 
     console.log(`✅ 필드 삭제 성공: ${fieldName}`);
@@ -254,7 +293,9 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
   }
 
   // productFeatures JSON 파싱
-  const productFeaturesRaw = record.get("productFeatures") as string | undefined;
+  const productFeaturesRaw = record.get("productFeatures") as
+    | string
+    | undefined;
   let productFeatures: ProductFeature[] | undefined;
   if (productFeaturesRaw) {
     try {
@@ -308,7 +349,10 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     ncpServiceId: record.get("ncpServiceId") as string | undefined,
     ncpSenderPhone: record.get("ncpSenderPhone") as string | undefined,
     // 운영시간 설정
-    operatingDays: record.get("operatingDays") as 'weekdays' | 'everyday' | undefined,
+    operatingDays: record.get("operatingDays") as
+      | "weekdays"
+      | "everyday"
+      | undefined,
     operatingStartTime: record.get("operatingStartTime") as string | undefined,
     operatingEndTime: record.get("operatingEndTime") as string | undefined,
     // OG 이미지 URL
@@ -318,8 +362,12 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     // 푸터 사업자 정보
     footerCompanyName: record.get("footerCompanyName") as string | undefined,
     footerCeo: record.get("footerCeo") as string | undefined,
-    footerBusinessNumber: record.get("footerBusinessNumber") as string | undefined,
-    footerEcommerceNumber: record.get("footerEcommerceNumber") as string | undefined,
+    footerBusinessNumber: record.get("footerBusinessNumber") as
+      | string
+      | undefined,
+    footerEcommerceNumber: record.get("footerEcommerceNumber") as
+      | string
+      | undefined,
     footerAddress: record.get("footerAddress") as string | undefined,
     footerPhone: record.get("footerPhone") as string | undefined,
     footerEmail: record.get("footerEmail") as string | undefined,
@@ -362,7 +410,7 @@ export async function getClientBySlug(slug: string): Promise<Client | null> {
 }
 
 export async function createClient(
-  data: Omit<Client, "id" | "createdAt" | "leadsTableId">
+  data: Omit<Client, "id" | "createdAt" | "leadsTableId">,
 ): Promise<Client> {
   // 1. 클라이언트 전용 Leads 테이블 생성
   const leadsTableId = await createLeadsTableForClient(data.slug);
@@ -398,7 +446,7 @@ export async function createClient(
 
 export async function updateClient(
   id: string,
-  data: Partial<Omit<Client, "id" | "createdAt" | "leadsTableId">>
+  data: Partial<Omit<Client, "id" | "createdAt" | "leadsTableId">>,
 ): Promise<Client> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateData: Record<string, any> = {};
@@ -409,68 +457,107 @@ export async function updateClient(
   if (data.status) updateData.status = data.status;
 
   // 선택 필드 (빈 문자열은 null로 변환)
-  if (data.kakaoClientId !== undefined) updateData.kakaoClientId = data.kakaoClientId || null;
-  if (data.kakaoClientSecret !== undefined) updateData.kakaoClientSecret = data.kakaoClientSecret || null;
-  if (data.telegramChatId !== undefined) updateData.telegramChatId = data.telegramChatId || null;
-  if (data.slackChannelId !== undefined) updateData.slackChannelId = data.slackChannelId || null;
-  if (data.landingTitle !== undefined) updateData.landingTitle = data.landingTitle || null;
-  if (data.landingDescription !== undefined) updateData.landingDescription = data.landingDescription || null;
-  if (data.primaryColor !== undefined) updateData.primaryColor = data.primaryColor || null;
+  if (data.kakaoClientId !== undefined)
+    updateData.kakaoClientId = data.kakaoClientId || null;
+  if (data.kakaoClientSecret !== undefined)
+    updateData.kakaoClientSecret = data.kakaoClientSecret || null;
+  if (data.telegramChatId !== undefined)
+    updateData.telegramChatId = data.telegramChatId || null;
+  if (data.slackChannelId !== undefined)
+    updateData.slackChannelId = data.slackChannelId || null;
+  if (data.landingTitle !== undefined)
+    updateData.landingTitle = data.landingTitle || null;
+  if (data.landingDescription !== undefined)
+    updateData.landingDescription = data.landingDescription || null;
+  if (data.primaryColor !== undefined)
+    updateData.primaryColor = data.primaryColor || null;
   if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl || null;
-  if (data.ctaButtonText !== undefined) updateData.ctaButtonText = data.ctaButtonText || null;
-  if (data.thankYouTitle !== undefined) updateData.thankYouTitle = data.thankYouTitle || null;
-  if (data.thankYouMessage !== undefined) updateData.thankYouMessage = data.thankYouMessage || null;
+  if (data.ctaButtonText !== undefined)
+    updateData.ctaButtonText = data.ctaButtonText || null;
+  if (data.thankYouTitle !== undefined)
+    updateData.thankYouTitle = data.thankYouTitle || null;
+  if (data.thankYouMessage !== undefined)
+    updateData.thankYouMessage = data.thankYouMessage || null;
 
   // 폼 필드 설정 (JSON으로 저장)
   if (data.formFields !== undefined) {
-    updateData.formFields = data.formFields ? JSON.stringify(data.formFields) : null;
+    updateData.formFields = data.formFields
+      ? JSON.stringify(data.formFields)
+      : null;
   }
 
   // 상품 특징 (JSON으로 저장)
   if (data.productFeatures !== undefined) {
-    updateData.productFeatures = data.productFeatures ? JSON.stringify(data.productFeatures) : null;
+    updateData.productFeatures = data.productFeatures
+      ? JSON.stringify(data.productFeatures)
+      : null;
   }
 
   // 날짜 필드 (빈 문자열은 null로 변환)
-  if (data.contractStart !== undefined) updateData.contractStart = data.contractStart || null;
-  if (data.contractEnd !== undefined) updateData.contractEnd = data.contractEnd || null;
+  if (data.contractStart !== undefined)
+    updateData.contractStart = data.contractStart || null;
+  if (data.contractEnd !== undefined)
+    updateData.contractEnd = data.contractEnd || null;
 
   // 고객 알림 설정
   if (data.smsEnabled !== undefined) updateData.smsEnabled = data.smsEnabled;
-  if (data.smsTemplate !== undefined) updateData.smsTemplate = data.smsTemplate || null;
-  if (data.emailEnabled !== undefined) updateData.emailEnabled = data.emailEnabled;
-  if (data.emailSubject !== undefined) updateData.emailSubject = data.emailSubject || null;
-  if (data.emailTemplate !== undefined) updateData.emailTemplate = data.emailTemplate || null;
+  if (data.smsTemplate !== undefined)
+    updateData.smsTemplate = data.smsTemplate || null;
+  if (data.emailEnabled !== undefined)
+    updateData.emailEnabled = data.emailEnabled;
+  if (data.emailSubject !== undefined)
+    updateData.emailSubject = data.emailSubject || null;
+  if (data.emailTemplate !== undefined)
+    updateData.emailTemplate = data.emailTemplate || null;
 
   // NCP SENS 설정
-  if (data.ncpAccessKey !== undefined) updateData.ncpAccessKey = data.ncpAccessKey || null;
-  if (data.ncpSecretKey !== undefined) updateData.ncpSecretKey = data.ncpSecretKey || null;
-  if (data.ncpServiceId !== undefined) updateData.ncpServiceId = data.ncpServiceId || null;
-  if (data.ncpSenderPhone !== undefined) updateData.ncpSenderPhone = data.ncpSenderPhone || null;
+  if (data.ncpAccessKey !== undefined)
+    updateData.ncpAccessKey = data.ncpAccessKey || null;
+  if (data.ncpSecretKey !== undefined)
+    updateData.ncpSecretKey = data.ncpSecretKey || null;
+  if (data.ncpServiceId !== undefined)
+    updateData.ncpServiceId = data.ncpServiceId || null;
+  if (data.ncpSenderPhone !== undefined)
+    updateData.ncpSenderPhone = data.ncpSenderPhone || null;
 
   // 운영시간 설정
-  if (data.operatingDays !== undefined) updateData.operatingDays = data.operatingDays || null;
-  if (data.operatingStartTime !== undefined) updateData.operatingStartTime = data.operatingStartTime || null;
-  if (data.operatingEndTime !== undefined) updateData.operatingEndTime = data.operatingEndTime || null;
+  if (data.operatingDays !== undefined)
+    updateData.operatingDays = data.operatingDays || null;
+  if (data.operatingStartTime !== undefined)
+    updateData.operatingStartTime = data.operatingStartTime || null;
+  if (data.operatingEndTime !== undefined)
+    updateData.operatingEndTime = data.operatingEndTime || null;
 
   // OG 이미지 URL
-  if (data.ogImageUrl !== undefined) updateData.ogImageUrl = data.ogImageUrl || null;
+  if (data.ogImageUrl !== undefined)
+    updateData.ogImageUrl = data.ogImageUrl || null;
 
   // 포털 비밀번호
-  if (data.portalPassword !== undefined) updateData.portalPassword = data.portalPassword || null;
+  if (data.portalPassword !== undefined)
+    updateData.portalPassword = data.portalPassword || null;
 
   // 푸터 사업자 정보
-  if (data.footerCompanyName !== undefined) updateData.footerCompanyName = data.footerCompanyName || null;
-  if (data.footerCeo !== undefined) updateData.footerCeo = data.footerCeo || null;
-  if (data.footerBusinessNumber !== undefined) updateData.footerBusinessNumber = data.footerBusinessNumber || null;
-  if (data.footerEcommerceNumber !== undefined) updateData.footerEcommerceNumber = data.footerEcommerceNumber || null;
-  if (data.footerAddress !== undefined) updateData.footerAddress = data.footerAddress || null;
-  if (data.footerPhone !== undefined) updateData.footerPhone = data.footerPhone || null;
-  if (data.footerEmail !== undefined) updateData.footerEmail = data.footerEmail || null;
+  if (data.footerCompanyName !== undefined)
+    updateData.footerCompanyName = data.footerCompanyName || null;
+  if (data.footerCeo !== undefined)
+    updateData.footerCeo = data.footerCeo || null;
+  if (data.footerBusinessNumber !== undefined)
+    updateData.footerBusinessNumber = data.footerBusinessNumber || null;
+  if (data.footerEcommerceNumber !== undefined)
+    updateData.footerEcommerceNumber = data.footerEcommerceNumber || null;
+  if (data.footerAddress !== undefined)
+    updateData.footerAddress = data.footerAddress || null;
+  if (data.footerPhone !== undefined)
+    updateData.footerPhone = data.footerPhone || null;
+  if (data.footerEmail !== undefined)
+    updateData.footerEmail = data.footerEmail || null;
 
   // 광고 추적 링크 (JSON으로 저장)
   if (data.adLinks !== undefined) {
-    updateData.adLinks = data.adLinks && data.adLinks.length > 0 ? JSON.stringify(data.adLinks) : null;
+    updateData.adLinks =
+      data.adLinks && data.adLinks.length > 0
+        ? JSON.stringify(data.adLinks)
+        : null;
   }
 
   const record = await getClientsTable().update(id, updateData);
@@ -493,7 +580,10 @@ export async function deleteClient(id: string): Promise<void> {
 
 // ==================== 리드 (클라이언트별 테이블) ====================
 
-function parseLeadRecord(record: Airtable.Record<Airtable.FieldSet>, clientId: string): Lead {
+function parseLeadRecord(
+  record: Airtable.Record<Airtable.FieldSet>,
+  clientId: string,
+): Lead {
   // 커스텀 필드 추출 (customFieldsData JSON 필드에서 파싱)
   let customFields: Record<string, string> = {};
   const customFieldsData = record.get("customFieldsData") as string | undefined;
@@ -521,7 +611,8 @@ function parseLeadRecord(record: Airtable.Record<Airtable.FieldSet>, clientId: s
     ipAddress: record.get("ipAddress") as string | undefined,
     userAgent: record.get("userAgent") as string | undefined,
     createdAt: record.get("createdAt") as string,
-    customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
+    customFields:
+      Object.keys(customFields).length > 0 ? customFields : undefined,
     // UTM 추적 (광고 출처)
     utmSource: record.get("utmSource") as string | undefined,
     utmAd: record.get("utmAd") as string | undefined,
@@ -531,7 +622,7 @@ function parseLeadRecord(record: Airtable.Record<Airtable.FieldSet>, clientId: s
 export async function getLeadsByClient(
   clientId: string,
   leadsTableId: string,
-  options?: { status?: LeadStatus; limit?: number }
+  options?: { status?: LeadStatus; limit?: number },
 ): Promise<Lead[]> {
   const filterParts: string[] = [];
 
@@ -539,7 +630,8 @@ export async function getLeadsByClient(
     filterParts.push(`{status} = "${options.status}"`);
   }
 
-  const filterByFormula = filterParts.length > 0 ? `AND(${filterParts.join(", ")})` : "";
+  const filterByFormula =
+    filterParts.length > 0 ? `AND(${filterParts.join(", ")})` : "";
 
   const records = await getClientLeadsTable(leadsTableId)
     .select({
@@ -553,14 +645,21 @@ export async function getLeadsByClient(
 }
 
 // 전체 리드 조회 (모든 클라이언트)
-export async function getAllLeads(options?: { status?: LeadStatus; limit?: number }): Promise<Lead[]> {
+export async function getAllLeads(options?: {
+  status?: LeadStatus;
+  limit?: number;
+}): Promise<Lead[]> {
   const clients = await getClients();
   const allLeads: Lead[] = [];
 
   for (const client of clients) {
     if (client.leadsTableId) {
       try {
-        const leads = await getLeadsByClient(client.id, client.leadsTableId, options);
+        const leads = await getLeadsByClient(
+          client.id,
+          client.leadsTableId,
+          options,
+        );
         allLeads.push(...leads);
       } catch (error) {
         console.error(`클라이언트 ${client.name}의 리드 조회 실패:`, error);
@@ -569,7 +668,9 @@ export async function getAllLeads(options?: { status?: LeadStatus; limit?: numbe
   }
 
   // 전체 리드를 createdAt 기준 내림차순 정렬
-  allLeads.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  allLeads.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   // limit 적용
   if (options?.limit) {
@@ -582,7 +683,7 @@ export async function getAllLeads(options?: { status?: LeadStatus; limit?: numbe
 export async function getLeadById(
   leadId: string,
   leadsTableId: string,
-  clientId: string
+  clientId: string,
 ): Promise<Lead | null> {
   try {
     const record = await getClientLeadsTable(leadsTableId).find(leadId);
@@ -593,7 +694,9 @@ export async function getLeadById(
 }
 
 // 리드 ID로 조회 (클라이언트 정보 모를 때)
-export async function findLeadById(leadId: string): Promise<{ lead: Lead; client: Client } | null> {
+export async function findLeadById(
+  leadId: string,
+): Promise<{ lead: Lead; client: Client } | null> {
   const clients = await getClients();
 
   for (const client of clients) {
@@ -616,7 +719,7 @@ export async function findLeadById(leadId: string): Promise<{ lead: Lead; client
 export async function findKakaoLoginLead(
   leadsTableId: string,
   kakaoId: string,
-  clientId: string
+  clientId: string,
 ): Promise<Lead | null> {
   try {
     const records = await getClientLeadsTable(leadsTableId)
@@ -637,7 +740,7 @@ export async function createLead(
   leadsTableId: string,
   clientId: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: Record<string, any>
+  data: Record<string, any>,
 ): Promise<Lead> {
   // 기본 필드
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -663,7 +766,7 @@ export async function createLead(
   // 커스텀 필드를 JSON으로 저장 (개별 컬럼이 아닌 customFieldsData 필드에)
   const customFields: Record<string, string> = {};
   for (const key of Object.keys(data)) {
-    if (key.startsWith('custom_') && data[key]) {
+    if (key.startsWith("custom_") && data[key]) {
       customFields[key] = String(data[key]);
     }
   }
@@ -681,7 +784,7 @@ export async function updateLead(
   leadsTableId: string,
   clientId: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: Record<string, any>
+  data: Record<string, any>,
 ): Promise<Lead> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateData: any = {};
@@ -690,7 +793,8 @@ export async function updateLead(
   if (data.name) updateData.name = data.name;
   if (data.phone) updateData.phone = data.phone;
   if (data.email !== undefined) updateData.email = data.email;
-  if (data.businessName !== undefined) updateData.businessName = data.businessName;
+  if (data.businessName !== undefined)
+    updateData.businessName = data.businessName;
   if (data.industry !== undefined) updateData.industry = data.industry;
   if (data.kakaoId !== undefined) updateData.kakaoId = data.kakaoId;
   if (data.address !== undefined) updateData.address = data.address;
@@ -707,7 +811,7 @@ export async function updateLead(
   // 커스텀 필드를 JSON으로 저장 (개별 컬럼이 아닌 customFieldsData 필드에)
   const customFields: Record<string, string> = {};
   for (const key of Object.keys(data)) {
-    if (key.startsWith('custom_') && data[key] !== undefined) {
+    if (key.startsWith("custom_") && data[key] !== undefined) {
       customFields[key] = String(data[key]);
     }
   }
@@ -715,19 +819,25 @@ export async function updateLead(
     updateData.customFieldsData = JSON.stringify(customFields);
   }
 
-  const record = await getClientLeadsTable(leadsTableId).update(leadId, updateData);
+  const record = await getClientLeadsTable(leadsTableId).update(
+    leadId,
+    updateData,
+  );
 
   return parseLeadRecord(record, clientId);
 }
 
-export async function deleteLead(leadId: string, leadsTableId: string): Promise<void> {
+export async function deleteLead(
+  leadId: string,
+  leadsTableId: string,
+): Promise<void> {
   await getClientLeadsTable(leadsTableId).destroy(leadId);
 }
 
 // ==================== 블랙리스트 ====================
 
 export async function getBlacklist(clientId?: string): Promise<Blacklist[]> {
-  const escapedClientId = clientId ? escapeAirtableFormula(clientId) : '';
+  const escapedClientId = clientId ? escapeAirtableFormula(clientId) : "";
   const filterByFormula = clientId
     ? `OR({clientId} = BLANK(), {clientId} = "${escapedClientId}")`
     : "";
@@ -750,7 +860,7 @@ export async function getBlacklist(clientId?: string): Promise<Blacklist[]> {
 }
 
 export async function createBlacklistEntry(
-  data: Omit<Blacklist, "id" | "createdAt">
+  data: Omit<Blacklist, "id" | "createdAt">,
 ): Promise<Blacklist> {
   const record = await getBlacklistTable().create({
     ...(data.clientId && { clientId: data.clientId }),
@@ -778,12 +888,16 @@ export async function deleteBlacklistEntry(id: string): Promise<void> {
 
 export async function isBlacklisted(
   clientId: string,
-  data: { phone?: string; kakaoId?: string; ip?: string }
+  data: { phone?: string; kakaoId?: string; ip?: string },
 ): Promise<boolean> {
   const blacklist = await getBlacklist(clientId);
 
   for (const entry of blacklist) {
-    if (entry.type === "phone" && data.phone && data.phone.includes(entry.value)) {
+    if (
+      entry.type === "phone" &&
+      data.phone &&
+      data.phone.includes(entry.value)
+    ) {
       return true;
     }
     if (entry.type === "kakaoId" && data.kakaoId === entry.value) {
@@ -808,7 +922,7 @@ export interface HeatmapClick {
   viewportWidth: number;
   viewportHeight: number;
   elementSelector?: string;
-  deviceType: 'mobile' | 'desktop' | 'tablet';
+  deviceType: "mobile" | "desktop" | "tablet";
   createdAt: string;
 }
 
@@ -817,7 +931,9 @@ function getHeatmapTable() {
 }
 
 // 히트맵 클릭 저장
-export async function saveHeatmapClick(data: Omit<HeatmapClick, "id" | "createdAt">): Promise<HeatmapClick> {
+export async function saveHeatmapClick(
+  data: Omit<HeatmapClick, "id" | "createdAt">,
+): Promise<HeatmapClick> {
   try {
     const record = await getHeatmapTable().create({
       clientSlug: data.clientSlug,
@@ -840,7 +956,7 @@ export async function saveHeatmapClick(data: Omit<HeatmapClick, "id" | "createdA
       viewportWidth: record.get("viewportWidth") as number,
       viewportHeight: record.get("viewportHeight") as number,
       elementSelector: record.get("elementSelector") as string | undefined,
-      deviceType: record.get("deviceType") as 'mobile' | 'desktop' | 'tablet',
+      deviceType: record.get("deviceType") as "mobile" | "desktop" | "tablet",
       createdAt: record.get("createdAt") as string,
     };
   } catch (error) {
@@ -854,11 +970,11 @@ export async function getHeatmapClicks(
   clientSlug: string,
   options?: {
     period?: "7d" | "30d" | "90d" | "custom";
-    deviceType?: 'mobile' | 'desktop' | 'tablet';
+    deviceType?: "mobile" | "desktop" | "tablet";
     limit?: number;
     startDate?: string;
     endDate?: string;
-  }
+  },
 ): Promise<HeatmapClick[]> {
   try {
     const escapedSlug = escapeAirtableFormula(clientSlug);
@@ -870,9 +986,12 @@ export async function getHeatmapClicks(
       const start = new Date(options.startDate);
       const end = new Date(options.endDate);
       end.setHours(23, 59, 59, 999);
-      filterParts.push(`AND(IS_AFTER({createdAt}, "${start.toISOString()}"), IS_BEFORE({createdAt}, "${end.toISOString()}"))`);
+      filterParts.push(
+        `AND(IS_AFTER({createdAt}, "${start.toISOString()}"), IS_BEFORE({createdAt}, "${end.toISOString()}"))`,
+      );
     } else if (options?.period && options.period !== "custom") {
-      const days = options.period === "7d" ? 7 : options.period === "30d" ? 30 : 90;
+      const days =
+        options.period === "7d" ? 7 : options.period === "30d" ? 30 : 90;
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
       filterParts.push(`IS_AFTER({createdAt}, "${startDate.toISOString()}")`);
@@ -883,9 +1002,10 @@ export async function getHeatmapClicks(
       filterParts.push(`{deviceType} = "${options.deviceType}"`);
     }
 
-    const filterByFormula = filterParts.length > 1
-      ? `AND(${filterParts.join(", ")})`
-      : filterParts[0];
+    const filterByFormula =
+      filterParts.length > 1
+        ? `AND(${filterParts.join(", ")})`
+        : filterParts[0];
 
     const records = await getHeatmapTable()
       .select({
@@ -904,7 +1024,7 @@ export async function getHeatmapClicks(
       viewportWidth: record.get("viewportWidth") as number,
       viewportHeight: record.get("viewportHeight") as number,
       elementSelector: record.get("elementSelector") as string | undefined,
-      deviceType: record.get("deviceType") as 'mobile' | 'desktop' | 'tablet',
+      deviceType: record.get("deviceType") as "mobile" | "desktop" | "tablet",
       createdAt: record.get("createdAt") as string,
     }));
   } catch (error) {
@@ -918,16 +1038,19 @@ export async function getHeatmapAggregated(
   clientSlug: string,
   options?: {
     period?: "7d" | "30d" | "90d" | "custom";
-    deviceType?: 'mobile' | 'desktop' | 'tablet';
+    deviceType?: "mobile" | "desktop" | "tablet";
     startDate?: string;
     endDate?: string;
-  }
+  },
 ): Promise<{
   points: { x: number; y: number; value: number }[];
   elements: { selector: string; clicks: number }[];
   total: number;
 }> {
-  const clicks = await getHeatmapClicks(clientSlug, { ...options, limit: 10000 });
+  const clicks = await getHeatmapClicks(clientSlug, {
+    ...options,
+    limit: 10000,
+  });
 
   // 좌표 그룹화 (5% 단위로 반올림)
   const pointMap = new Map<string, number>();
@@ -943,7 +1066,10 @@ export async function getHeatmapAggregated(
 
     // 요소별 클릭 수
     if (click.elementSelector) {
-      elementMap.set(click.elementSelector, (elementMap.get(click.elementSelector) || 0) + 1);
+      elementMap.set(
+        click.elementSelector,
+        (elementMap.get(click.elementSelector) || 0) + 1,
+      );
     }
   });
 
@@ -994,9 +1120,10 @@ export async function getGA4Settings(): Promise<GA4Settings | null> {
     const record = records[0];
     return {
       id: record.id,
-      ga4PropertyId: record.get("ga4PropertyId") as string || "",
-      ga4ServiceAccountEmail: record.get("ga4ServiceAccountEmail") as string || "",
-      ga4PrivateKey: record.get("ga4PrivateKey") as string || "",
+      ga4PropertyId: (record.get("ga4PropertyId") as string) || "",
+      ga4ServiceAccountEmail:
+        (record.get("ga4ServiceAccountEmail") as string) || "",
+      ga4PrivateKey: (record.get("ga4PrivateKey") as string) || "",
       updatedAt: record.get("updatedAt") as string,
     };
   } catch (error) {
@@ -1005,7 +1132,9 @@ export async function getGA4Settings(): Promise<GA4Settings | null> {
   }
 }
 
-export async function saveGA4Settings(data: Omit<GA4Settings, "id" | "updatedAt">): Promise<GA4Settings> {
+export async function saveGA4Settings(
+  data: Omit<GA4Settings, "id" | "updatedAt">,
+): Promise<GA4Settings> {
   const existingSettings = await getGA4Settings();
 
   if (existingSettings?.id) {
@@ -1025,9 +1154,10 @@ export async function saveGA4Settings(data: Omit<GA4Settings, "id" | "updatedAt"
 
     return {
       id: record.id,
-      ga4PropertyId: record.get("ga4PropertyId") as string || "",
-      ga4ServiceAccountEmail: record.get("ga4ServiceAccountEmail") as string || "",
-      ga4PrivateKey: record.get("ga4PrivateKey") as string || "",
+      ga4PropertyId: (record.get("ga4PropertyId") as string) || "",
+      ga4ServiceAccountEmail:
+        (record.get("ga4ServiceAccountEmail") as string) || "",
+      ga4PrivateKey: (record.get("ga4PrivateKey") as string) || "",
       updatedAt: record.get("updatedAt") as string,
     };
   } else {
@@ -1042,9 +1172,10 @@ export async function saveGA4Settings(data: Omit<GA4Settings, "id" | "updatedAt"
 
     return {
       id: record.id,
-      ga4PropertyId: record.get("ga4PropertyId") as string || "",
-      ga4ServiceAccountEmail: record.get("ga4ServiceAccountEmail") as string || "",
-      ga4PrivateKey: record.get("ga4PrivateKey") as string || "",
+      ga4PropertyId: (record.get("ga4PropertyId") as string) || "",
+      ga4ServiceAccountEmail:
+        (record.get("ga4ServiceAccountEmail") as string) || "",
+      ga4PrivateKey: (record.get("ga4PrivateKey") as string) || "",
       updatedAt: record.get("updatedAt") as string,
     };
   }
