@@ -4,43 +4,68 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Lock, Loader2 } from "lucide-react";
 
+type Step = "initial" | "sent";
+
 export default function PortalLoginPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
 
-  const [password, setPassword] = useState("");
+  const [step, setStep] = useState<Step>("initial");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const isLocked = lockedUntil !== null && Date.now() < lockedUntil;
+
+  async function handleSend() {
     setError("");
-
+    setLoading(true);
     try {
       const res = await fetch("/api/portal/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, password }),
+        body: JSON.stringify({ slug, action: "send" }),
       });
-
       const data = await res.json();
-
       if (!data.success) {
-        setError(data.error || "로그인에 실패했습니다.");
+        setError(data.error || "발송 중 오류가 발생했습니다.");
         return;
       }
-
-      // 포털 대시보드로 이동
-      router.push(`/portal/${slug}`);
-    } catch (err) {
-      console.error(err);
-      setError("네트워크 오류가 발생했습니다.");
+      setStep("sent");
+      setCode("");
+    } catch {
+      setError("발송 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault();
+    if (isLocked) return;
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/portal/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, action: "verify", code }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.error || "인증에 실패했습니다.");
+        if (data.lockedUntil) setLockedUntil(data.lockedUntil);
+        return;
+      }
+      router.push(`/portal/${slug}`);
+    } catch {
+      setError("인증 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -68,44 +93,72 @@ export default function PortalLoginPage() {
             </div>
           )}
 
-          {/* 폼 */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {step === "initial" && (
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                비밀번호
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="비밀번호를 입력하세요"
-                required
-                autoFocus
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              />
+              <p className="text-sm text-gray-600 text-center mb-6">
+                등록된 텔레그램으로 인증코드를 발송합니다.
+              </p>
+              <button
+                onClick={handleSend}
+                disabled={loading}
+                className="w-full rounded-lg bg-primary-600 px-4 py-3 text-base font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    발송 중...
+                  </span>
+                ) : (
+                  "텔레그램으로 인증코드 받기"
+                )}
+              </button>
             </div>
+          )}
 
-            <button
-              type="submit"
-              disabled={loading || !password}
-              className="w-full rounded-lg bg-primary-600 px-4 py-3 text-base font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  로그인 중...
-                </span>
-              ) : (
-                "로그인"
-              )}
-            </button>
-          </form>
-
-          {/* 안내 */}
-          <p className="mt-6 text-xs text-gray-400 text-center">
-            비밀번호를 모르시면 관리자에게 문의하세요
-          </p>
+          {step === "sent" && (
+            <form onSubmit={handleVerify} className="space-y-4">
+              <p className="text-sm text-gray-600 text-center">
+                텔레그램으로 발송된 6자리 코드를 입력하세요.
+                <br />
+                <span className="text-xs text-gray-400">유효시간 5분</span>
+              </p>
+              <input
+                type="text"
+                value={code}
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-2xl tracking-widest font-mono focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                placeholder="000000"
+                maxLength={6}
+                inputMode="numeric"
+                autoFocus
+                disabled={isLocked}
+              />
+              <button
+                type="submit"
+                disabled={loading || code.length !== 6 || isLocked}
+                className="w-full rounded-lg bg-primary-600 px-4 py-3 text-base font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    확인 중...
+                  </span>
+                ) : (
+                  "확인"
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={loading}
+                className="w-full text-sm text-gray-500 hover:text-gray-700 underline"
+              >
+                코드 재발송
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>
