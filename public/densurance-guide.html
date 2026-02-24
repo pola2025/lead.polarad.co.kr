@@ -96,6 +96,24 @@
         line-height: 1.65;
       }
 
+      /* ── 모바일 가독성 ── */
+      @media (max-width: 430px) {
+        .section-desc,
+        .info-card p,
+        .step-desc,
+        .flow-note,
+        .warn-box,
+        .price-sub,
+        .tab-card ul li,
+        .kakao-note li,
+        .kakao-note p,
+        .footer-box p,
+        .footer-box small {
+          word-break: keep-all;
+          overflow-wrap: break-word;
+        }
+      }
+
       /* ── 카드 ── */
       .card {
         background: #fff;
@@ -929,7 +947,9 @@
                   >(선택 · 별도 개발)</span
                 >
               </div>
-              <div class="price-sub">자체 카카오 채널 기반 개발 납품 방식</div>
+              <div class="price-sub">
+                클라이언트 자체 카카오 계정 인증 기반 개발 납품 방식
+              </div>
             </div>
             <div class="price-right">
               <div class="price-amount kakao">+300,000원</div>
@@ -970,10 +990,11 @@
                     margin-bottom: 4px;
                   "
                 >
-                  기본 서비스 (현재)
+                  기본 서비스 (현재 포함)
                 </p>
                 <p style="font-size: 13px; color: #64748b; line-height: 1.5">
-                  고객이 랜딩 페이지에서 이름·연락처를 직접 입력하여 신청
+                  폴라애드 카카오 계정 기반의 '카카오로 시작하기' 버튼 제공 —
+                  카카오 정보 자동 입력 기능 사용 가능
                 </p>
               </div>
               <div
@@ -992,11 +1013,11 @@
                     margin-bottom: 4px;
                   "
                 >
-                  카카오 로그인 연동 시
+                  자체 카카오 로그인 연동 시
                 </p>
                 <p style="font-size: 13px; color: #713f12; line-height: 1.5">
-                  '카카오로 시작하기' 버튼으로 로그인 → 카카오 계정
-                  정보(이름·전화번호) 자동 입력 후 신청
+                  클라이언트 본인의 카카오 비즈니스 계정으로 직접 서비스 인증 →
+                  독립적인 카카오 로그인 환경 구축 (브랜드명·채널 연결)
                 </p>
               </div>
             </div>
@@ -1012,22 +1033,14 @@
                   gap: 7px;
                 "
               >
-                <li style="display: flex; gap: 8px">
-                  <span style="color: #d97706; flex-shrink: 0">•</span>카카오
-                  비즈니스 채널(카카오톡 채널) 보유 필요
-                </li>
-                <li style="display: flex; gap: 8px">
-                  <span style="color: #d97706; flex-shrink: 0">•</span>자체
-                  도메인 연결 필요 (고객사 전용 도메인 기반 개발)
-                </li>
-                <li style="display: flex; gap: 8px">
-                  <span style="color: #d97706; flex-shrink: 0">•</span>PolarLead
-                  SaaS 방식이 아닌 <strong>개발 납품 방식</strong>으로 진행
-                </li>
-                <li style="display: flex; gap: 8px">
-                  <span style="color: #d97706; flex-shrink: 0">•</span>이후 월
-                  이용료는 서비스 유지보수 비용으로 전환됩니다
-                </li>
+                <!-- prettier-ignore -->
+                <li style="display: flex; gap: 8px"><span style="color: #d97706; flex-shrink: 0">•</span><span>카카오 비즈니스 채널<br>(카카오톡 채널)<br>보유 필요</span></li>
+                <!-- prettier-ignore -->
+                <li style="display: flex; gap: 8px"><span style="color: #d97706; flex-shrink: 0">•</span><span>자체 도메인 연결 필요<br>(고객사 전용 도메인 기반 개발)</span></li>
+                <!-- prettier-ignore -->
+                <li style="display: flex; gap: 8px"><span style="color: #d97706; flex-shrink: 0">•</span><span>PolarLead SaaS가 아닌<br><strong>개발 납품 방식으로 진행</strong></span></li>
+                <!-- prettier-ignore -->
+                <li style="display: flex; gap: 8px"><span style="color: #d97706; flex-shrink: 0">•</span><span>이후 월 이용료는<br>서비스 유지보수 비용으로<br>전환됩니다</span></li>
               </ul>
             </div>
           </div>
