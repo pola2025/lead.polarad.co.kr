@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getClientById, updateClient, deleteClient } from "@/lib/airtable";
 import { sendClientUpdatedNotification } from "@/lib/slack";
 import { syncFormFieldsToAirtable } from "@/lib/form-fields";
@@ -6,7 +7,7 @@ import type { FormField } from "@/types";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -15,7 +16,7 @@ export async function GET(
     if (!client) {
       return NextResponse.json(
         { success: false, error: "클라이언트를 찾을 수 없습니다." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -24,7 +25,7 @@ export async function GET(
     console.error("Failed to fetch client:", error);
     return NextResponse.json(
       { success: false, error: "클라이언트를 가져오는데 실패했습니다." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -50,7 +51,7 @@ const FIELD_LABELS: Record<string, string> = {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -63,7 +64,7 @@ export async function PUT(
           success: false,
           error: "슬러그는 영문 소문자, 숫자, 하이픈만 사용할 수 있습니다.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -74,7 +75,11 @@ export async function PUT(
     if (body.formFields && oldClient?.leadsTableId) {
       const newFields = body.formFields as FormField[];
       const oldFields = oldClient.formFields || [];
-      await syncFormFieldsToAirtable(oldClient.leadsTableId, oldFields, newFields);
+      await syncFormFieldsToAirtable(
+        oldClient.leadsTableId,
+        oldFields,
+        newFields,
+      );
     }
 
     const client = await updateClient(id, body);
@@ -95,6 +100,11 @@ export async function PUT(
       console.error("[Slack] 클라이언트 수정 알림 실패:", err);
     });
 
+    // 랜딩 페이지 캐시 무효화
+    if (client.slug) {
+      revalidatePath(`/l/${client.slug}`);
+    }
+
     return NextResponse.json({ success: true, data: client });
   } catch (error) {
     console.error("Failed to update client:", error);
@@ -104,14 +114,14 @@ export async function PUT(
     }
     return NextResponse.json(
       { success: false, error: "클라이언트 수정에 실패했습니다." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -121,7 +131,7 @@ export async function DELETE(
     console.error("Failed to delete client:", error);
     return NextResponse.json(
       { success: false, error: "클라이언트 삭제에 실패했습니다." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Copy, Check, Link2, ExternalLink, Pencil, X } from "lucide-react";
+import { Plus, Trash2, Copy, Check, Link2, ExternalLink, Pencil, X, Loader2 } from "lucide-react";
 import type { AdLink } from "@/types";
 
 interface AdLinksManagerProps {
+  clientId: string;
   clientSlug: string;
   adLinks: AdLink[];
   onUpdate: (adLinks: AdLink[]) => void;
@@ -12,6 +13,7 @@ interface AdLinksManagerProps {
 }
 
 export default function AdLinksManager({
+  clientId,
   clientSlug,
   adLinks,
   onUpdate,
@@ -27,6 +29,42 @@ export default function AdLinksManager({
   });
   const [editLink, setEditLink] = useState<AdLink | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // 광고 링크 즉시 저장
+  const saveAdLinks = async (updatedLinks: AdLink[]): Promise<boolean> => {
+    setSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      const res = await fetch(`/api/clients/${clientId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adLinks: updatedLinks }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        setSaveError(data.error || "저장에 실패했습니다.");
+        return false;
+      }
+
+      onUpdate(updatedLinks);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+      return true;
+    } catch (err) {
+      console.error("Failed to save ad links:", err);
+      setSaveError("네트워크 오류가 발생했습니다.");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const baseUrl =
     typeof window !== "undefined"
@@ -44,7 +82,7 @@ export default function AdLinksManager({
   };
 
   // 새 링크 추가
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newLink.slug || !newLink.utmSource || !newLink.utmAd) {
       alert("슬러그, 광고 소스, 광고명은 필수입니다.");
       return;
@@ -67,15 +105,20 @@ export default function AdLinksManager({
       memo: newLink.memo || undefined,
     };
 
-    onUpdate([...adLinks, addedLink]);
-    setNewLink({ slug: "", utmSource: "meta", utmAd: "", memo: "" });
-    setIsAdding(false);
+    const updatedLinks = [...adLinks, addedLink];
+    const success = await saveAdLinks(updatedLinks);
+
+    if (success) {
+      setNewLink({ slug: "", utmSource: "meta", utmAd: "", memo: "" });
+      setIsAdding(false);
+    }
   };
 
   // 링크 삭제
-  const handleDelete = (slug: string) => {
+  const handleDelete = async (slug: string) => {
     if (!confirm("이 광고 링크를 삭제하시겠습니까?")) return;
-    onUpdate(adLinks.filter((link) => link.slug !== slug));
+    const updatedLinks = adLinks.filter((link) => link.slug !== slug);
+    await saveAdLinks(updatedLinks);
   };
 
   // 수정 시작
@@ -91,7 +134,7 @@ export default function AdLinksManager({
   };
 
   // 수정 저장
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (!editLink || !editingSlug) return;
 
     if (!editLink.utmSource || !editLink.utmAd) {
@@ -111,12 +154,16 @@ export default function AdLinksManager({
       }
     }
 
-    const updated = adLinks.map((link) =>
+    const updatedLinks = adLinks.map((link) =>
       link.slug === editingSlug ? editLink : link
     );
-    onUpdate(updated);
-    setEditingSlug(null);
-    setEditLink(null);
+
+    const success = await saveAdLinks(updatedLinks);
+
+    if (success) {
+      setEditingSlug(null);
+      setEditLink(null);
+    }
   };
 
   // 링크 복사
@@ -145,12 +192,25 @@ export default function AdLinksManager({
         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <Link2 className="w-5 h-5" />
           광고 추적 링크
+          {saving && (
+            <span className="inline-flex items-center gap-1 text-sm font-normal text-blue-600">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              저장 중...
+            </span>
+          )}
+          {saveSuccess && (
+            <span className="inline-flex items-center gap-1 text-sm font-normal text-green-600">
+              <Check className="w-4 h-4" />
+              저장됨
+            </span>
+          )}
         </h3>
         {!isReadOnly && !isAdding && (
           <button
             type="button"
             onClick={() => setIsAdding(true)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+            disabled={saving}
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
             링크 추가
@@ -158,8 +218,23 @@ export default function AdLinksManager({
         )}
       </div>
 
+      {saveError && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          <X className="w-4 h-4 flex-shrink-0" />
+          <span>{saveError}</span>
+          <button
+            type="button"
+            onClick={() => setSaveError(null)}
+            className="ml-auto text-red-500 hover:text-red-700"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       <p className="text-sm text-gray-500">
         광고별 전용 URL을 생성하여 UTM 파라미터 없이도 광고 유입을 추적할 수 있습니다.
+        <span className="text-blue-600 font-medium"> (추가/수정/삭제 시 즉시 저장됩니다)</span>
       </p>
 
       {/* 새 링크 추가 폼 */}
@@ -237,16 +312,25 @@ export default function AdLinksManager({
                 setIsAdding(false);
                 setNewLink({ slug: "", utmSource: "meta", utmAd: "", memo: "" });
               }}
-              className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              disabled={saving}
+              className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
             >
               취소
             </button>
             <button
               type="button"
               onClick={handleAdd}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              disabled={saving}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 inline-flex items-center gap-1"
             >
-              추가
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  저장 중...
+                </>
+              ) : (
+                "추가"
+              )}
             </button>
           </div>
         </div>
