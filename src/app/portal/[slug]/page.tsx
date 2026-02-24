@@ -25,7 +25,11 @@ import {
 } from "lucide-react";
 import type { FormField, Lead, LeadStatus } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
-import { LandingFormFields, PrivacyCheckbox, FormDisclaimer } from "@/components/LandingFormFields";
+import {
+  LandingFormFields,
+  PrivacyCheckbox,
+  FormDisclaimer,
+} from "@/components/LandingFormFields";
 
 // 상태 레이블 (관리자와 동일)
 const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
@@ -38,8 +42,8 @@ const statusLabels: Record<LeadStatus, { label: string; class: string }> = {
 
 // 커스텀 필드 라벨 가져오기
 const getCustomFieldLabel = (fieldId: string, fields: FormField[]): string => {
-  const field = fields.find(f => f.id === fieldId);
-  return field?.label || fieldId.replace('custom_', '');
+  const field = fields.find((f) => f.id === fieldId);
+  return field?.label || fieldId.replace("custom_", "");
 };
 
 import { formatOperatingHours } from "@/lib/operating-hours";
@@ -72,7 +76,12 @@ interface LeadsStatsData {
   month: { leads: number; submissions: number };
   funnel: { logins: number; submissions: number };
   daily: { date: string; leads: number; submissions: number }[];
-  adStats?: { source: string; ad: string; leads: number; submissions: number }[];
+  adStats?: {
+    source: string;
+    ad: string;
+    leads: number;
+    submissions: number;
+  }[];
 }
 
 interface ClientData {
@@ -94,7 +103,7 @@ interface ClientData {
   emailSubject?: string;
   emailTemplate?: string;
   // 운영시간 설정
-  operatingDays?: 'weekdays' | 'everyday';
+  operatingDays?: "weekdays" | "everyday";
   operatingStartTime?: string;
   operatingEndTime?: string;
 }
@@ -115,14 +124,23 @@ export default function PortalDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [activeTab, setActiveTab] = useState<"stats" | "leads" | "fields" | "messages" | "notifications">("stats");
+  const [activeTab, setActiveTab] = useState<
+    "stats" | "leads" | "fields" | "messages" | "notifications"
+  >("stats");
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [leadsStats, setLeadsStats] = useState<LeadsStatsData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [statsPeriod, setStatsPeriod] = useState<"7d" | "30d" | "90d" | "custom">("30d");
-  const [customDateRange, setCustomDateRange] = useState<{ start: string; end: string }>({
-    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+  const [statsPeriod, setStatsPeriod] = useState<
+    "7d" | "30d" | "90d" | "custom"
+  >("30d");
+  const [customDateRange, setCustomDateRange] = useState<{
+    start: string;
+    end: string;
+  }>({
+    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
     end: new Date().toISOString().split("T")[0],
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -157,7 +175,7 @@ export default function PortalDashboardPage() {
 
   // 운영시간 상태
   const [operatingHours, setOperatingHours] = useState({
-    operatingDays: "weekdays" as 'weekdays' | 'everyday',
+    operatingDays: "weekdays" as "weekdays" | "everyday",
     operatingStartTime: "09:00",
     operatingEndTime: "18:00",
   });
@@ -210,9 +228,10 @@ export default function PortalDashboardPage() {
     setAnalyticsLoading(true);
     try {
       // 기간 파라미터 구성
-      const periodParam = statsPeriod === "custom"
-        ? `period=custom&startDate=${customDateRange.start}&endDate=${customDateRange.end}`
-        : `period=${statsPeriod}`;
+      const periodParam =
+        statsPeriod === "custom"
+          ? `period=custom&startDate=${customDateRange.start}&endDate=${customDateRange.end}`
+          : `period=${statsPeriod}`;
 
       // GA4 통계와 리드 통계를 병렬로 조회
       const [analyticsRes, leadsStatsRes] = await Promise.all([
@@ -289,16 +308,29 @@ export default function PortalDashboardPage() {
 
   // 하이라이트된 리드로 스크롤
   useEffect(() => {
-    if (highlightLeadId && activeTab === "leads" && !leadsLoading && leads.length > 0) {
+    if (
+      highlightLeadId &&
+      activeTab === "leads" &&
+      !leadsLoading &&
+      leads.length > 0
+    ) {
       const targetCard = leadCardRefs.current[highlightLeadId];
       if (targetCard) {
         // 약간의 딜레이 후 스크롤 (렌더링 완료 대기)
         setTimeout(() => {
           targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
           // 하이라이트 효과
-          targetCard.classList.add("ring-2", "ring-primary-500", "ring-offset-2");
+          targetCard.classList.add(
+            "ring-2",
+            "ring-primary-500",
+            "ring-offset-2",
+          );
           setTimeout(() => {
-            targetCard.classList.remove("ring-2", "ring-primary-500", "ring-offset-2");
+            targetCard.classList.remove(
+              "ring-2",
+              "ring-primary-500",
+              "ring-offset-2",
+            );
           }, 3000);
         }, 100);
       }
@@ -365,7 +397,10 @@ export default function PortalDashboardPage() {
   };
 
   // 리드 상태 업데이트
-  const handleUpdateLeadStatus = async (leadId: string, newStatus: LeadStatus) => {
+  const handleUpdateLeadStatus = async (
+    leadId: string,
+    newStatus: LeadStatus,
+  ) => {
     setUpdatingLeadId(leadId);
     try {
       const res = await fetch(`/api/portal/${slug}/leads/${leadId}`, {
@@ -375,7 +410,9 @@ export default function PortalDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setLeads(leads.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)));
+        setLeads(
+          leads.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l)),
+        );
         setOpenMenu(null);
       }
     } catch (err) {
@@ -422,7 +459,9 @@ export default function PortalDashboardPage() {
     .sort((a, b) => a.order - b.order);
 
   // 이메일 필드가 활성화되어 있는지 확인 (카카오 로그인 표시용)
-  const hasEmailField = sortedEnabledFields.some((f) => f.id === "email" || f.type === "email");
+  const hasEmailField = sortedEnabledFields.some(
+    (f) => f.id === "email" || f.type === "email",
+  );
 
   if (loading) {
     return (
@@ -552,934 +591,1267 @@ export default function PortalDashboardPage() {
 
         {/* 메인 콘텐츠 */}
         <main className="flex-1 lg:ml-56 px-4 py-6 pb-24 lg:pb-8 lg:px-8 max-w-4xl mx-auto lg:mx-0">
-        {/* 알림 */}
-        {error && (
-          <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="mb-6 rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-600">
-            {success}
-          </div>
-        )}
+          {/* 알림 */}
+          {error && (
+            <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-6 rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-600">
+              {success}
+            </div>
+          )}
 
-        {/* 탭 제목 */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {activeTab === "stats" && "방문 통계"}
-            {activeTab === "leads" && "접수내역 관리"}
-            {activeTab === "fields" && "수집 정보 설정"}
-            {activeTab === "messages" && "응답 메시지 설정"}
-            {activeTab === "notifications" && "고객 알림 설정"}
-          </h2>
-        </div>
+          {/* 탭 제목 */}
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {activeTab === "stats" && "방문 통계"}
+              {activeTab === "leads" && "접수내역 관리"}
+              {activeTab === "fields" && "수집 정보 설정"}
+              {activeTab === "messages" && "응답 메시지 설정"}
+              {activeTab === "notifications" && "고객 알림 설정"}
+            </h2>
+          </div>
 
-        {/* 방문 통계 v4 */}
-        {activeTab === "stats" && (
-          <div className="space-y-4">
-            {/* 기간 필터 */}
-            <div className="flex items-center gap-1 flex-wrap">
-              {(["7d", "30d", "90d"] as const).map((period) => (
+          {/* 방문 통계 v4 */}
+          {activeTab === "stats" && (
+            <div className="space-y-4">
+              {/* 기간 필터 */}
+              <div className="flex items-center gap-1 flex-wrap">
+                {(["7d", "30d", "90d"] as const).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => {
+                      setStatsPeriod(period);
+                      setShowDatePicker(false);
+                    }}
+                    className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
+                      statsPeriod === period
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {period === "7d"
+                      ? "7일"
+                      : period === "30d"
+                        ? "30일"
+                        : "90일"}
+                  </button>
+                ))}
                 <button
-                  key={period}
-                  onClick={() => { setStatsPeriod(period); setShowDatePicker(false); }}
-                  className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
-                    statsPeriod === period
+                  onClick={() => {
+                    setStatsPeriod("custom");
+                    setShowDatePicker(!showDatePicker);
+                  }}
+                  className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${
+                    statsPeriod === "custom"
                       ? "bg-blue-500 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
-                  {period === "7d" ? "7일" : period === "30d" ? "30일" : "90일"}
-                </button>
-              ))}
-              <button
-                onClick={() => { setStatsPeriod("custom"); setShowDatePicker(!showDatePicker); }}
-                className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${
-                  statsPeriod === "custom"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                <Calendar className="h-3 w-3" />
-                {statsPeriod === "custom"
-                  ? `${customDateRange.start} ~ ${customDateRange.end}`
-                  : "기간선택"}
-              </button>
-            </div>
-
-            {/* 커스텀 날짜 선택 */}
-            {showDatePicker && (
-              <div className="flex items-center gap-2 bg-gray-50 p-3 rounded-lg">
-                <input
-                  type="date"
-                  value={customDateRange.start}
-                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                  className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <span className="text-gray-500 text-xs">~</span>
-                <input
-                  type="date"
-                  value={customDateRange.end}
-                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                  className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <button
-                  onClick={() => { fetchAnalytics(); setShowDatePicker(false); }}
-                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  적용
+                  <Calendar className="h-3 w-3" />
+                  {statsPeriod === "custom"
+                    ? `${customDateRange.start} ~ ${customDateRange.end}`
+                    : "기간선택"}
                 </button>
               </div>
-            )}
 
-            {analyticsLoading ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              </div>
-            ) : analytics ? (
-              <>
-                {/* 1. 전환율 히어로 (축소) */}
-                {(() => {
-                  const visitors = analytics.month.users || 0;
-                  const logins = leadsStats?.funnel.logins || 0;
-                  const submissions = leadsStats?.funnel.submissions || 0;
-                  const conversionRate = visitors > 0 ? Math.round((submissions / visitors) * 100) : 0;
-                  const loginRate = visitors > 0 ? Math.round((logins / visitors) * 100) : 0;
-                  const submitRate = logins > 0 ? Math.round((submissions / logins) * 100) : 0;
+              {/* 커스텀 날짜 선택 */}
+              {showDatePicker && (
+                <div className="flex items-center gap-2 bg-gray-50 p-3 rounded-lg">
+                  <input
+                    type="date"
+                    value={customDateRange.start}
+                    onChange={(e) =>
+                      setCustomDateRange((prev) => ({
+                        ...prev,
+                        start: e.target.value,
+                      }))
+                    }
+                    className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-500 text-xs">~</span>
+                  <input
+                    type="date"
+                    value={customDateRange.end}
+                    onChange={(e) =>
+                      setCustomDateRange((prev) => ({
+                        ...prev,
+                        end: e.target.value,
+                      }))
+                    }
+                    className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={() => {
+                      fetchAnalytics();
+                      setShowDatePicker(false);
+                    }}
+                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    적용
+                  </button>
+                </div>
+              )}
 
-                  return (
-                    <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-4 text-white">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs opacity-80 mb-0.5">{statsPeriod === "7d" ? "7일" : statsPeriod === "30d" ? "30일" : statsPeriod === "90d" ? "90일" : "선택기간"} 전환율</p>
-                          <p className="text-3xl font-bold">{conversionRate}%</p>
-                          <p className="text-xs opacity-70 mt-1">{visitors.toLocaleString()} 방문 → {submissions.toLocaleString()} 접수</p>
-                        </div>
-                        <div className="flex gap-4 text-center">
+              {analyticsLoading ? (
+                <div className="bg-white rounded-xl border border-gray-200 p-12 flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                </div>
+              ) : analytics ? (
+                <>
+                  {/* 1. 전환율 히어로 (축소) */}
+                  {(() => {
+                    const visitors = analytics.month.users || 0;
+                    const logins = leadsStats?.funnel.logins || 0;
+                    const submissions = leadsStats?.funnel.submissions || 0;
+                    const conversionRate =
+                      visitors > 0
+                        ? Math.round((submissions / visitors) * 100)
+                        : 0;
+                    const loginRate =
+                      visitors > 0 ? Math.round((logins / visitors) * 100) : 0;
+                    const submitRate =
+                      logins > 0 ? Math.round((submissions / logins) * 100) : 0;
+
+                    return (
+                      <div className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl p-4 text-white">
+                        <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-xl font-bold">{loginRate}%</p>
-                            <p className="text-[10px] opacity-70">로그인율</p>
+                            <p className="text-xs opacity-80 mb-0.5">
+                              {statsPeriod === "7d"
+                                ? "7일"
+                                : statsPeriod === "30d"
+                                  ? "30일"
+                                  : statsPeriod === "90d"
+                                    ? "90일"
+                                    : "선택기간"}{" "}
+                              전환율
+                            </p>
+                            <p className="text-3xl font-bold">
+                              {conversionRate}%
+                            </p>
+                            <p className="text-xs opacity-70 mt-1">
+                              {visitors.toLocaleString()} 방문 →{" "}
+                              {submissions.toLocaleString()} 접수
+                            </p>
                           </div>
-                          <div>
-                            <p className="text-xl font-bold">{submitRate}%</p>
-                            <p className="text-[10px] opacity-70">접수율</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* 2. 전환 퍼널 */}
-                {(() => {
-                  const visitors = analytics.month.users || 0;
-                  const logins = leadsStats?.funnel.logins || 0;
-                  const submissions = leadsStats?.funnel.submissions || 0;
-                  const loginRate = visitors > 0 ? Math.round((logins / visitors) * 100) : 0;
-                  const submitRate = visitors > 0 ? Math.round((submissions / visitors) * 100) : 0;
-
-                  return (
-                    <div className="bg-white rounded-xl border border-gray-200 p-4">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-3">전환 퍼널</h3>
-                      <div className="space-y-2.5">
-                        <div className="flex items-center gap-2">
-                          <span className="w-14 text-xs text-gray-600">방문</span>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-medium text-gray-900">{visitors.toLocaleString()}명</span>
-                              <span className="text-[10px] text-gray-500">100%</span>
+                          <div className="flex gap-4 text-center">
+                            <div>
+                              <p className="text-xl font-bold">{loginRate}%</p>
+                              <p className="text-[10px] opacity-70">로그인율</p>
                             </div>
-                            <div className="h-2.5 bg-blue-500 rounded-full"></div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="w-14 text-xs text-gray-600">로그인</span>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-medium text-gray-900">{logins.toLocaleString()}명</span>
-                              <span className="text-[10px] text-gray-500">{loginRate}%</span>
-                            </div>
-                            <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${loginRate}%` }}></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="w-14 text-xs text-gray-600">접수완료</span>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-medium text-gray-900">{submissions.toLocaleString()}명</span>
-                              <span className="text-[10px] text-gray-500">{submitRate}%</span>
-                            </div>
-                            <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${submitRate}%` }}></div>
+                            <div>
+                              <p className="text-xl font-bold">{submitRate}%</p>
+                              <p className="text-[10px] opacity-70">접수율</p>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
 
-                {/* 3. 기기별 방문자 (아코디언) */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <h3 className="text-sm font-semibold text-gray-900 p-4 pb-2">기기별 방문자</h3>
-                  {analytics.devices && analytics.devices.length > 0 ? (
-                    <div className="border-t border-gray-100">
-                      {analytics.devices.map((device) => {
-                        const deviceKey = device.device.toLowerCase();
-                        const deviceEmoji = deviceKey === "mobile" ? "📱" : deviceKey === "desktop" ? "💻" : "📟";
-                        const deviceLabel = deviceKey === "mobile" ? "모바일" : deviceKey === "desktop" ? "데스크톱" : "태블릿";
-                        const isExpanded = expandedDevice === deviceKey;
-                        const osData = analytics.deviceOs?.[deviceKey as keyof typeof analytics.deviceOs] || [];
+                  {/* 2. 전환 퍼널 */}
+                  {(() => {
+                    const visitors = analytics.month.users || 0;
+                    const logins = leadsStats?.funnel.logins || 0;
+                    const submissions = leadsStats?.funnel.submissions || 0;
+                    const loginRate =
+                      visitors > 0 ? Math.round((logins / visitors) * 100) : 0;
+                    const submitRate =
+                      visitors > 0
+                        ? Math.round((submissions / visitors) * 100)
+                        : 0;
 
-                        return (
-                          <div key={device.device} className="border-b border-gray-100 last:border-b-0">
-                            <button
-                              onClick={() => setExpandedDevice(isExpanded ? null : deviceKey)}
-                              className="w-full flex items-center justify-between p-3 hover:bg-gray-50"
+                    return (
+                      <div className="bg-white rounded-xl border border-gray-200 p-4">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                          전환 퍼널
+                        </h3>
+                        <div className="space-y-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="w-14 text-xs text-gray-600">
+                              방문
+                            </span>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-gray-900">
+                                  {visitors.toLocaleString()}명
+                                </span>
+                                <span className="text-[10px] text-gray-500">
+                                  100%
+                                </span>
+                              </div>
+                              <div className="h-2.5 bg-blue-500 rounded-full"></div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-14 text-xs text-gray-600">
+                              로그인
+                            </span>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-gray-900">
+                                  {logins.toLocaleString()}명
+                                </span>
+                                <span className="text-[10px] text-gray-500">
+                                  {loginRate}%
+                                </span>
+                              </div>
+                              <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-yellow-500 rounded-full"
+                                  style={{ width: `${loginRate}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-14 text-xs text-gray-600">
+                              접수완료
+                            </span>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-gray-900">
+                                  {submissions.toLocaleString()}명
+                                </span>
+                                <span className="text-[10px] text-gray-500">
+                                  {submitRate}%
+                                </span>
+                              </div>
+                              <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-emerald-500 rounded-full"
+                                  style={{ width: `${submitRate}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* 3. 기기별 방문자 (아코디언) */}
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <h3 className="text-sm font-semibold text-gray-900 p-4 pb-2">
+                      기기별 방문자
+                    </h3>
+                    {analytics.devices && analytics.devices.length > 0 ? (
+                      <div className="border-t border-gray-100">
+                        {analytics.devices.map((device) => {
+                          const deviceKey = device.device.toLowerCase();
+                          const deviceEmoji =
+                            deviceKey === "mobile"
+                              ? "📱"
+                              : deviceKey === "desktop"
+                                ? "💻"
+                                : "📟";
+                          const deviceLabel =
+                            deviceKey === "mobile"
+                              ? "모바일"
+                              : deviceKey === "desktop"
+                                ? "데스크톱"
+                                : "태블릿";
+                          const isExpanded = expandedDevice === deviceKey;
+                          const osData =
+                            analytics.deviceOs?.[
+                              deviceKey as keyof typeof analytics.deviceOs
+                            ] || [];
+
+                          return (
+                            <div
+                              key={device.device}
+                              className="border-b border-gray-100 last:border-b-0"
                             >
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm">{deviceEmoji}</span>
-                                <span className="text-sm text-gray-700">{deviceLabel}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">{device.percentage}%</span>
-                                <span className="text-xs text-gray-400">({device.users.toLocaleString()}명)</span>
-                                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </div>
-                            </button>
-                            {isExpanded && osData.length > 0 && (
-                              <div className="bg-gray-50 px-4 py-2.5 space-y-2">
-                                {osData.slice(0, 3).map((os) => (
-                                  <div key={os.os} className="flex items-center justify-between">
-                                    <span className="text-xs text-gray-600">
-                                      {os.os === "Android" ? "🤖" : os.os === "iOS" ? "🍎" : os.os === "Windows" ? "🪟" : os.os === "Macintosh" ? "🍎" : "💻"} {os.os}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                        <div className="h-full bg-green-500 rounded-full" style={{ width: `${os.percentage}%` }}></div>
-                                      </div>
-                                      <span className="text-xs font-medium w-8">{os.percentage}%</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-gray-400 text-sm">기기 데이터가 없습니다</div>
-                  )}
-                </div>
-
-                {/* 4. 지역별 방문자 */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">지역별 방문자</h3>
-                  {analytics.regions && analytics.regions.length > 0 ? (
-                    <div className="space-y-2">
-                      {analytics.regions.slice(0, 5).map((region, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500 w-16 truncate">{region.city}</span>
-                          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-rose-500 rounded-full" style={{ width: `${region.percentage}%` }}></div>
-                          </div>
-                          <span className="text-xs font-medium w-8 text-right">{region.percentage}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-400 text-sm text-center py-4">지역 데이터가 없습니다</p>
-                  )}
-                </div>
-
-                {/* 5. 히트맵 카드 */}
-                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold mb-1">클릭 히트맵</h3>
-                      <p className="text-xs opacity-80">터치/클릭 위치 분석</p>
-                    </div>
-                    <button
-                      onClick={() => router.push(`/portal/${slug}/heatmap`)}
-                      className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      전체보기
-                    </button>
-                  </div>
-                </div>
-
-                {/* 유입 경로 (기존) */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">유입 경로 TOP 5</h3>
-                  {analytics.sources && analytics.sources.length > 0 ? (
-                    <div className="space-y-2.5">
-                      {analytics.sources.map((source, idx) => {
-                        const maxUsers = analytics.sources[0]?.users || 1;
-                        const width = (source.users / maxUsers) * 100;
-                        return (
-                          <div key={idx} className="flex items-center gap-2">
-                            <span className="w-5 text-xs text-gray-400">{idx + 1}</span>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs text-gray-700 truncate max-w-[180px]">
-                                  {source.source === "(direct) / (none)" ? "직접 방문" : source.source}
-                                </span>
-                                <span className="text-xs font-medium text-gray-900">{source.users}명</span>
-                              </div>
-                              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${width}%` }} />
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-gray-400 text-sm text-center py-4">유입 데이터가 없습니다</p>
-                  )}
-                </div>
-
-                {/* 광고별 접수 통계 */}
-                {leadsStats?.adStats && leadsStats.adStats.length > 0 && (
-                  <div className="bg-white rounded-xl border border-gray-200 p-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3">📢 광고별 접수 현황</h3>
-                    <div className="space-y-2.5">
-                      {leadsStats.adStats.slice(0, 5).map((ad, idx) => {
-                        const maxLeads = leadsStats.adStats![0]?.leads || 1;
-                        const width = (ad.leads / maxLeads) * 100;
-                        const conversionRate = ad.leads > 0 ? Math.round((ad.submissions / ad.leads) * 100) : 0;
-                        return (
-                          <div key={idx} className="flex items-center gap-2">
-                            <span className="w-5 text-xs text-gray-400">{idx + 1}</span>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs text-gray-700 truncate max-w-[140px]" title={ad.ad !== '-' ? ad.ad : ad.source}>
-                                  {ad.ad !== '-' ? ad.ad : ad.source}
-                                </span>
+                              <button
+                                onClick={() =>
+                                  setExpandedDevice(
+                                    isExpanded ? null : deviceKey,
+                                  )
+                                }
+                                className="w-full flex items-center justify-between p-3 hover:bg-gray-50"
+                              >
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-gray-900">{ad.submissions}건</span>
-                                  <span className="text-[10px] text-gray-400">({conversionRate}%)</span>
+                                  <span className="text-sm">{deviceEmoji}</span>
+                                  <span className="text-sm text-gray-700">
+                                    {deviceLabel}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium">
+                                    {device.percentage}%
+                                  </span>
+                                  <span className="text-xs text-gray-400">
+                                    ({device.users.toLocaleString()}명)
+                                  </span>
+                                  <svg
+                                    className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 9l-7 7-7-7"
+                                    />
+                                  </svg>
+                                </div>
+                              </button>
+                              {isExpanded && osData.length > 0 && (
+                                <div className="bg-gray-50 px-4 py-2.5 space-y-2">
+                                  {osData.slice(0, 3).map((os) => (
+                                    <div
+                                      key={os.os}
+                                      className="flex items-center justify-between"
+                                    >
+                                      <span className="text-xs text-gray-600">
+                                        {os.os === "Android"
+                                          ? "🤖"
+                                          : os.os === "iOS"
+                                            ? "🍎"
+                                            : os.os === "Windows"
+                                              ? "🪟"
+                                              : os.os === "Macintosh"
+                                                ? "🍎"
+                                                : "💻"}{" "}
+                                        {os.os}
+                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                          <div
+                                            className="h-full bg-green-500 rounded-full"
+                                            style={{
+                                              width: `${os.percentage}%`,
+                                            }}
+                                          ></div>
+                                        </div>
+                                        <span className="text-xs font-medium w-8">
+                                          {os.percentage}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-gray-400 text-sm">
+                        기기 데이터가 없습니다
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. 지역별 방문자 */}
+                  <div className="bg-white rounded-xl border border-gray-200 p-4">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                      지역별 방문자
+                    </h3>
+                    {analytics.regions && analytics.regions.length > 0 ? (
+                      <div className="space-y-2">
+                        {analytics.regions.slice(0, 5).map((region, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500 w-16 truncate">
+                              {region.city}
+                            </span>
+                            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-rose-500 rounded-full"
+                                style={{ width: `${region.percentage}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs font-medium w-8 text-right">
+                              {region.percentage}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 text-sm text-center py-4">
+                        지역 데이터가 없습니다
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 유입 경로 (기존) */}
+                  <div className="bg-white rounded-xl border border-gray-200 p-4">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                      유입 경로 TOP 5
+                    </h3>
+                    {analytics.sources && analytics.sources.length > 0 ? (
+                      <div className="space-y-2.5">
+                        {analytics.sources.map((source, idx) => {
+                          const maxUsers = analytics.sources[0]?.users || 1;
+                          const width = (source.users / maxUsers) * 100;
+                          return (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span className="w-5 text-xs text-gray-400">
+                                {idx + 1}
+                              </span>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs text-gray-700 truncate max-w-[180px]">
+                                    {source.source === "(direct) / (none)"
+                                      ? "직접 방문"
+                                      : source.source}
+                                  </span>
+                                  <span className="text-xs font-medium text-gray-900">
+                                    {source.users}명
+                                  </span>
+                                </div>
+                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-blue-500 rounded-full"
+                                    style={{ width: `${width}%` }}
+                                  />
                                 </div>
                               </div>
-                              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-purple-500 rounded-full" style={{ width: `${width}%` }} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 text-sm text-center py-4">
+                        유입 데이터가 없습니다
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 광고별 접수 통계 */}
+                  {leadsStats?.adStats && leadsStats.adStats.length > 0 && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-4">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                        📢 광고별 접수 현황
+                      </h3>
+                      <div className="space-y-2.5">
+                        {leadsStats.adStats.slice(0, 5).map((ad, idx) => {
+                          const maxLeads = leadsStats.adStats![0]?.leads || 1;
+                          const width = (ad.leads / maxLeads) * 100;
+                          const conversionRate =
+                            ad.leads > 0
+                              ? Math.round((ad.submissions / ad.leads) * 100)
+                              : 0;
+                          return (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span className="w-5 text-xs text-gray-400">
+                                {idx + 1}
+                              </span>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span
+                                    className="text-xs text-gray-700 truncate max-w-[140px]"
+                                    title={ad.ad !== "-" ? ad.ad : ad.source}
+                                  >
+                                    {ad.ad !== "-" ? ad.ad : ad.source}
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-medium text-gray-900">
+                                      {ad.submissions}건
+                                    </span>
+                                    <span className="text-[10px] text-gray-400">
+                                      ({conversionRate}%)
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-purple-500 rounded-full"
+                                    style={{ width: `${width}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-2 text-center">
+                        Meta 광고 URL에 utm_ad 매개변수 필요
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                  <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="h-8 w-8 text-amber-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    GA4 연동이 필요합니다
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
+                    방문 통계를 확인하려면 Google Analytics 4 설정이 필요합니다.
+                    관리자에게 GA4 연동을 요청해주세요.
+                  </p>
+                  <button
+                    onClick={fetchAnalytics}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    <Loader2 className="h-4 w-4" />
+                    다시 시도
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 접수내역 관리 */}
+          {activeTab === "leads" && (
+            <div className="space-y-4 pb-20 lg:pb-4">
+              {/* 검색 및 필터 */}
+              <div className="flex gap-2 sm:gap-3">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="검색..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+                <select
+                  value={filterStatus}
+                  onChange={(e) =>
+                    setFilterStatus(e.target.value as LeadStatus | "")
+                  }
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="">전체</option>
+                  <option value="kakao_login">카카오만</option>
+                  <option value="new">신규</option>
+                  <option value="contacted">연락완료</option>
+                  <option value="converted">전환</option>
+                  <option value="blacklist">블랙리스트</option>
+                </select>
+              </div>
+
+              {/* 통계 요약 - 모바일에서는 가로 스크롤 */}
+              <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 sm:overflow-visible">
+                <div className="flex-shrink-0 w-[72px] sm:w-auto bg-yellow-50 rounded-lg p-2 sm:p-3 text-center">
+                  <p className="text-base sm:text-lg font-bold text-yellow-700">
+                    {leads.filter((l) => l.status === "kakao_login").length}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-yellow-600 whitespace-nowrap">
+                    카카오만
+                  </p>
+                </div>
+                <div className="flex-shrink-0 w-[72px] sm:w-auto bg-blue-50 rounded-lg p-2 sm:p-3 text-center">
+                  <p className="text-base sm:text-lg font-bold text-blue-700">
+                    {leads.filter((l) => l.status === "new").length}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-blue-600 whitespace-nowrap">
+                    신규
+                  </p>
+                </div>
+                <div className="flex-shrink-0 w-[72px] sm:w-auto bg-purple-50 rounded-lg p-2 sm:p-3 text-center">
+                  <p className="text-base sm:text-lg font-bold text-purple-700">
+                    {leads.filter((l) => l.status === "contacted").length}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-purple-600 whitespace-nowrap">
+                    연락완료
+                  </p>
+                </div>
+                <div className="flex-shrink-0 w-[72px] sm:w-auto bg-green-50 rounded-lg p-2 sm:p-3 text-center">
+                  <p className="text-base sm:text-lg font-bold text-green-700">
+                    {leads.filter((l) => l.status === "converted").length}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-green-600 whitespace-nowrap">
+                    전환
+                  </p>
+                </div>
+                <div className="flex-shrink-0 w-[72px] sm:w-auto bg-red-50 rounded-lg p-2 sm:p-3 text-center">
+                  <p className="text-base sm:text-lg font-bold text-red-700">
+                    {leads.filter((l) => l.status === "blacklist").length}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-red-600 whitespace-nowrap">
+                    블랙
+                  </p>
+                </div>
+              </div>
+
+              {/* 리드 목록 */}
+              {leadsLoading ? (
+                <div className="bg-white rounded-xl border border-gray-200 p-12 flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                </div>
+              ) : filteredLeads.length === 0 ? (
+                <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                  <ClipboardList className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">접수내역이 없습니다.</p>
+                </div>
+              ) : (
+                <div className="space-y-2 sm:space-y-3">
+                  {filteredLeads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      ref={(el) => {
+                        leadCardRefs.current[lead.id] = el;
+                      }}
+                      className={`bg-white rounded-xl border border-gray-200 p-3 sm:p-4 transition-all duration-300 ${
+                        highlightLeadId === lead.id
+                          ? "ring-2 ring-primary-500 ring-offset-2 bg-primary-50"
+                          : ""
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          {/* 상태 + 날짜 */}
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <span
+                              className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${statusLabels[lead.status].class}`}
+                            >
+                              {statusLabels[lead.status].label}
+                            </span>
+                            <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                              {new Date(lead.createdAt).toLocaleDateString(
+                                "ko-KR",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </span>
+                          </div>
+                          {/* 정보 */}
+                          <div className="space-y-1">
+                            {lead.name && (
+                              <p className="text-sm font-medium text-gray-900">
+                                {lead.name}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-gray-600">
+                              {lead.phone && (
+                                <span className="flex items-center gap-1 whitespace-nowrap">
+                                  <Phone className="h-3 w-3 flex-shrink-0" />
+                                  <a
+                                    href={`tel:${lead.phone}`}
+                                    className="hover:underline"
+                                  >
+                                    {lead.phone}
+                                  </a>
+                                </span>
+                              )}
+                              {lead.email && (
+                                <span className="flex items-center gap-1 min-w-0">
+                                  <Mail className="h-3 w-3 flex-shrink-0" />
+                                  <span className="truncate">{lead.email}</span>
+                                </span>
+                              )}
+                            </div>
+                            {/* 추가 정보 */}
+                            <div className="text-[12px] text-gray-500 space-y-0.5">
+                              {lead.businessName && (
+                                <p>
+                                  상호: {lead.businessName}
+                                  {lead.industry && ` (${lead.industry})`}
+                                </p>
+                              )}
+                              {lead.address && <p>주소: {lead.address}</p>}
+                              {lead.birthdate && (
+                                <p>생년월일: {lead.birthdate}</p>
+                              )}
+                              {lead.kakaoId && (
+                                <p className="text-yellow-600">
+                                  카카오: {lead.kakaoId}
+                                </p>
+                              )}
+                              {/* 커스텀 필드 */}
+                              {lead.customFields &&
+                                Object.keys(lead.customFields).length > 0 && (
+                                  <>
+                                    {Object.entries(lead.customFields).map(
+                                      ([key, value]) => (
+                                        <p key={key}>
+                                          {getCustomFieldLabel(key, formFields)}
+                                          : {value}
+                                        </p>
+                                      ),
+                                    )}
+                                  </>
+                                )}
+                              {/* UTM 광고 출처 */}
+                              {(lead.utmSource || lead.utmAd) && (
+                                <p className="text-blue-600">
+                                  📊 유입광고: {lead.utmAd || lead.utmSource}
+                                </p>
+                              )}
+                            </div>
+                            {/* 문의사항/메모 */}
+                            {lead.memo && (
+                              <div className="mt-2 p-2.5 bg-blue-50 border border-blue-100 rounded-lg">
+                                <p className="text-[11px] text-blue-500 font-medium mb-1">
+                                  💬 문의사항
+                                </p>
+                                <p className="text-[13px] text-gray-800 whitespace-pre-wrap">
+                                  {lead.memo}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {/* 빠른 상태 변경 버튼 */}
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-2">
+                          {/* 상태 버튼들 */}
+                          <div className="flex flex-wrap justify-end gap-1.5">
+                            {updatingLeadId === lead.id ? (
+                              <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                <span>변경중...</span>
+                              </div>
+                            ) : (
+                              <>
+                                {(lead.status === "contacted" ||
+                                  lead.status === "converted") && (
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateLeadStatus(lead.id, "new")
+                                    }
+                                    className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap"
+                                  >
+                                    ↩️ 신규
+                                  </button>
+                                )}
+                                {lead.status !== "contacted" && (
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateLeadStatus(
+                                        lead.id,
+                                        "contacted",
+                                      )
+                                    }
+                                    className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors whitespace-nowrap"
+                                  >
+                                    📞 연락완료
+                                  </button>
+                                )}
+                                {lead.status !== "converted" && (
+                                  <button
+                                    onClick={() =>
+                                      handleUpdateLeadStatus(
+                                        lead.id,
+                                        "converted",
+                                      )
+                                    }
+                                    className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors whitespace-nowrap"
+                                  >
+                                    ✅ 전환
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-gray-400 sm:hidden">
+                            버튼 클릭시 상태 적용
+                          </p>
+                          {/* 더보기 메뉴 */}
+                          <div className="relative">
+                            <button
+                              onClick={() =>
+                                setOpenMenu(
+                                  openMenu === lead.id ? null : lead.id,
+                                )
+                              }
+                              className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </button>
+                            {openMenu === lead.id && (
+                              <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                                <button
+                                  onClick={() =>
+                                    handleUpdateLeadStatus(lead.id, "new")
+                                  }
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                                >
+                                  신규로 변경
+                                </button>
+                                <div className="border-t border-gray-100 my-1"></div>
+                                <button
+                                  onClick={() =>
+                                    handleUpdateLeadStatus(lead.id, "blacklist")
+                                  }
+                                  className="w-full px-3 py-2 text-left text-sm text-orange-600 hover:bg-orange-50"
+                                >
+                                  블랙리스트
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteLead(lead.id)}
+                                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 수집 정보 설정 */}
+          {activeTab === "fields" && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-4">
+                수집할 정보 선택 및 순서 설정
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
+                활성화할 필드를 선택하고, 드래그하여 순서를 변경하세요.
+              </p>
+              <FormFieldsEditor fields={formFields} onChange={setFormFields} />
+            </div>
+          )}
+
+          {/* 응답 메시지 설정 */}
+          {activeTab === "messages" && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                응답 메시지 설정
+              </h2>
+              <p className="text-sm text-gray-500 mb-6">
+                버튼 텍스트와 신청 완료 후 표시될 메시지를 설정하세요.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    신청 버튼 텍스트
+                  </label>
+                  <input
+                    type="text"
+                    value={messages.ctaButtonText}
+                    onChange={(e) =>
+                      setMessages({
+                        ...messages,
+                        ctaButtonText: e.target.value,
+                      })
+                    }
+                    placeholder="상담 신청하기"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    완료 페이지 제목
+                  </label>
+                  <input
+                    type="text"
+                    value={messages.thankYouTitle}
+                    onChange={(e) =>
+                      setMessages({
+                        ...messages,
+                        thankYouTitle: e.target.value,
+                      })
+                    }
+                    placeholder="신청이 완료되었습니다"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    완료 페이지 메시지
+                  </label>
+                  <textarea
+                    value={messages.thankYouMessage}
+                    onChange={(e) =>
+                      setMessages({
+                        ...messages,
+                        thankYouMessage: e.target.value,
+                      })
+                    }
+                    placeholder="빠른 시일 내에 연락드리겠습니다. 감사합니다!"
+                    rows={3}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 고객 알림 설정 */}
+          {activeTab === "notifications" && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                고객 SMS/이메일 알림
+              </h2>
+              <p className="text-sm text-gray-500 mb-6">
+                리드 접수 시 고객에게 자동으로 SMS 또는 이메일을 발송합니다.
+              </p>
+
+              <div className="space-y-6">
+                {/* SMS 설정 */}
+                <div className="border-b border-gray-200 pb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900">
+                        SMS 알림
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        리드 접수 시 고객에게 확인 SMS 발송
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={notifications.smsEnabled}
+                        onChange={(e) =>
+                          setNotifications({
+                            ...notifications,
+                            smsEnabled: e.target.checked,
+                          })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    </label>
+                  </div>
+
+                  {notifications.smsEnabled && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          SMS 템플릿
+                        </label>
+                        <textarea
+                          value={notifications.smsTemplate}
+                          onChange={(e) =>
+                            setNotifications({
+                              ...notifications,
+                              smsTemplate: e.target.value,
+                            })
+                          }
+                          rows={5}
+                          placeholder={`[${client?.name || "업체명"}] {name}님, 상담 신청이 접수되었습니다. 빠른 시일 내에 연락드리겠습니다. 감사합니다.`}
+                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          변수: {"{name}"}, {"{clientName}"}, {"{date}"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          미리보기
+                        </label>
+                        <div className="bg-gray-900 rounded-2xl p-4 h-[180px] flex items-center justify-center">
+                          <div className="bg-gray-100 rounded-lg p-3 max-w-[220px] shadow-sm">
+                            <p className="text-xs text-gray-800 whitespace-pre-wrap">
+                              {(
+                                notifications.smsTemplate ||
+                                `[${client?.name || "업체명"}] {name}님, 상담 신청이 접수되었습니다. 빠른 시일 내에 연락드리겠습니다. 감사합니다.`
+                              )
+                                .replace(/\{name\}/g, "홍길동")
+                                .replace(
+                                  /\{clientName\}/g,
+                                  client?.name || "업체명",
+                                )
+                                .replace(
+                                  /\{date\}/g,
+                                  new Date().toLocaleDateString("ko-KR"),
+                                )}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200 whitespace-pre-line">
+                              {`[운영시간]\n${operatingHours.operatingStartTime}~${operatingHours.operatingEndTime}${operatingHours.operatingDays === "weekdays" ? "(토/공휴일 휴무)" : "(연중무휴)"}`}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 이메일 설정 */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900">
+                        이메일 알림
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        리드 접수 시 고객에게 확인 이메일 발송
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={notifications.emailEnabled}
+                        onChange={(e) =>
+                          setNotifications({
+                            ...notifications,
+                            emailEnabled: e.target.checked,
+                          })
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    </label>
+                  </div>
+
+                  {notifications.emailEnabled && (
+                    <div className="space-y-4">
+                      {/* 이메일 안내 문구 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          이메일 안내 문구
+                        </label>
+                        <textarea
+                          value={notifications.emailTemplate}
+                          onChange={(e) =>
+                            setNotifications({
+                              ...notifications,
+                              emailTemplate: e.target.value,
+                            })
+                          }
+                          rows={3}
+                          placeholder="상담 신청이 정상적으로 접수되었습니다. 빠른 시일 내에 담당자가 연락드리겠습니다."
+                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          이메일 본문에 표시될 안내 문구입니다.
+                        </p>
+                      </div>
+
+                      {/* 이메일 미리보기 */}
+                      <div className="rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+                          <span className="text-xs text-gray-500">
+                            이메일 미리보기
+                          </span>
+                        </div>
+                        <div className="bg-gray-100 p-4">
+                          <div className="bg-white rounded-lg shadow-sm max-w-[320px] mx-auto overflow-hidden">
+                            {/* 상단 로고 영역 */}
+                            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+                              {client?.logoUrl ? (
+                                <img
+                                  src={client.logoUrl}
+                                  alt="로고"
+                                  className="h-6 object-contain"
+                                />
+                              ) : (
+                                <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-400">
+                                  로고
+                                </div>
+                              )}
+                              <span className="text-xs text-gray-600 font-medium">
+                                {client?.landingTitle || client?.name}
+                              </span>
+                            </div>
+                            {/* 헤더 */}
+                            <div
+                              className="p-4 text-center"
+                              style={{
+                                background: `linear-gradient(135deg, ${client?.primaryColor || "#3b82f6"} 0%, ${client?.primaryColor || "#3b82f6"}dd 100%)`,
+                              }}
+                            >
+                              <div className="w-10 h-10 bg-white/20 rounded-full mx-auto flex items-center justify-center mb-2">
+                                <span className="text-white text-xl">✓</span>
+                              </div>
+                              <p className="text-white font-semibold text-sm">
+                                접수 완료
+                              </p>
+                            </div>
+                            {/* 본문 */}
+                            <div className="p-4">
+                              <p className="text-gray-800 text-sm font-medium mb-2">
+                                안녕하세요, 홍길동님!
+                              </p>
+                              <p className="text-gray-600 text-xs mb-3 whitespace-pre-line">
+                                {notifications.emailTemplate ||
+                                  "상담 신청이 정상적으로 접수되었습니다.\n빠른 시일 내에 담당자가 연락드리겠습니다."}
+                              </p>
+                              <div className="bg-gray-50 rounded p-2 text-xs mb-2">
+                                <p
+                                  className="text-gray-500 mb-1"
+                                  style={{
+                                    color: client?.primaryColor || "#3b82f6",
+                                  }}
+                                >
+                                  접수 내용
+                                </p>
+                                <p className="text-gray-700">이름: 홍길동</p>
+                                <p className="text-gray-700">
+                                  연락처: 010-6624-6615
+                                </p>
+                              </div>
+                              <div className="bg-blue-50 rounded p-2 text-xs">
+                                <p className="text-blue-600 font-medium mb-0.5">
+                                  📞 운영시간
+                                </p>
+                                <p className="text-blue-700">
+                                  {`${operatingHours.operatingStartTime}~${operatingHours.operatingEndTime}${operatingHours.operatingDays === "weekdays" ? "(토/공휴일 휴무)" : "(연중무휴)"}`}
+                                </p>
                               </div>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                    <p className="text-[10px] text-gray-400 mt-2 text-center">Meta 광고 URL에 utm_ad 매개변수 필요</p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="h-8 w-8 text-amber-500" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">GA4 연동이 필요합니다</h3>
-                <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
-                  방문 통계를 확인하려면 Google Analytics 4 설정이 필요합니다.
-                  관리자에게 GA4 연동을 요청해주세요.
-                </p>
-                <button
-                  onClick={fetchAnalytics}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <Loader2 className="h-4 w-4" />
-                  다시 시도
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 접수내역 관리 */}
-        {activeTab === "leads" && (
-          <div className="space-y-4 pb-20 lg:pb-4">
-            {/* 검색 및 필터 */}
-            <div className="flex gap-2 sm:gap-3">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="검색..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as LeadStatus | "")}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              >
-                <option value="">전체</option>
-                <option value="kakao_login">카카오만</option>
-                <option value="new">신규</option>
-                <option value="contacted">연락완료</option>
-                <option value="converted">전환</option>
-                <option value="blacklist">블랙리스트</option>
-              </select>
-            </div>
-
-            {/* 통계 요약 - 모바일에서는 가로 스크롤 */}
-            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 sm:overflow-visible">
-              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-yellow-50 rounded-lg p-2 sm:p-3 text-center">
-                <p className="text-base sm:text-lg font-bold text-yellow-700">{leads.filter(l => l.status === "kakao_login").length}</p>
-                <p className="text-[10px] sm:text-xs text-yellow-600 whitespace-nowrap">카카오만</p>
-              </div>
-              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-blue-50 rounded-lg p-2 sm:p-3 text-center">
-                <p className="text-base sm:text-lg font-bold text-blue-700">{leads.filter(l => l.status === "new").length}</p>
-                <p className="text-[10px] sm:text-xs text-blue-600 whitespace-nowrap">신규</p>
-              </div>
-              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-purple-50 rounded-lg p-2 sm:p-3 text-center">
-                <p className="text-base sm:text-lg font-bold text-purple-700">{leads.filter(l => l.status === "contacted").length}</p>
-                <p className="text-[10px] sm:text-xs text-purple-600 whitespace-nowrap">연락완료</p>
-              </div>
-              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-green-50 rounded-lg p-2 sm:p-3 text-center">
-                <p className="text-base sm:text-lg font-bold text-green-700">{leads.filter(l => l.status === "converted").length}</p>
-                <p className="text-[10px] sm:text-xs text-green-600 whitespace-nowrap">전환</p>
-              </div>
-              <div className="flex-shrink-0 w-[72px] sm:w-auto bg-red-50 rounded-lg p-2 sm:p-3 text-center">
-                <p className="text-base sm:text-lg font-bold text-red-700">{leads.filter(l => l.status === "blacklist").length}</p>
-                <p className="text-[10px] sm:text-xs text-red-600 whitespace-nowrap">블랙</p>
-              </div>
-            </div>
-
-            {/* 리드 목록 */}
-            {leadsLoading ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              </div>
-            ) : filteredLeads.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <ClipboardList className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">접수내역이 없습니다.</p>
-              </div>
-            ) : (
-              <div className="space-y-2 sm:space-y-3">
-                {filteredLeads.map((lead) => (
-                  <div
-                    key={lead.id}
-                    ref={(el) => { leadCardRefs.current[lead.id] = el; }}
-                    className={`bg-white rounded-xl border border-gray-200 p-3 sm:p-4 transition-all duration-300 ${
-                      highlightLeadId === lead.id ? "ring-2 ring-primary-500 ring-offset-2 bg-primary-50" : ""
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        {/* 상태 + 날짜 */}
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${statusLabels[lead.status].class}`}>
-                            {statusLabels[lead.status].label}
-                          </span>
-                          <span className="text-[11px] text-gray-400 whitespace-nowrap">
-                            {new Date(lead.createdAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                        {/* 정보 */}
-                        <div className="space-y-1">
-                          {lead.name && (
-                            <p className="text-sm font-medium text-gray-900">{lead.name}</p>
-                          )}
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-gray-600">
-                            {lead.phone && (
-                              <span className="flex items-center gap-1 whitespace-nowrap">
-                                <Phone className="h-3 w-3 flex-shrink-0" />
-                                <a href={`tel:${lead.phone}`} className="hover:underline">{lead.phone}</a>
-                              </span>
-                            )}
-                            {lead.email && (
-                              <span className="flex items-center gap-1 min-w-0">
-                                <Mail className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">{lead.email}</span>
-                              </span>
-                            )}
-                          </div>
-                          {/* 추가 정보 */}
-                          <div className="text-[12px] text-gray-500 space-y-0.5">
-                            {lead.businessName && (
-                              <p>상호: {lead.businessName}{lead.industry && ` (${lead.industry})`}</p>
-                            )}
-                            {lead.address && (
-                              <p>주소: {lead.address}</p>
-                            )}
-                            {lead.birthdate && (
-                              <p>생년월일: {lead.birthdate}</p>
-                            )}
-                            {lead.kakaoId && (
-                              <p className="text-yellow-600">카카오: {lead.kakaoId}</p>
-                            )}
-                            {/* 커스텀 필드 */}
-                            {lead.customFields && Object.keys(lead.customFields).length > 0 && (
-                              <>
-                                {Object.entries(lead.customFields).map(([key, value]) => (
-                                  <p key={key}>
-                                    {getCustomFieldLabel(key, formFields)}: {value}
-                                  </p>
-                                ))}
-                              </>
-                            )}
-                            {/* UTM 광고 출처 */}
-                            {(lead.utmSource || lead.utmAd) && (
-                              <p className="text-blue-600">
-                                📊 유입광고: {lead.utmAd || lead.utmSource}
-                              </p>
-                            )}
-                          </div>
-                          {/* 문의사항/메모 */}
-                          {lead.memo && (
-                            <div className="mt-2 p-2.5 bg-blue-50 border border-blue-100 rounded-lg">
-                              <p className="text-[11px] text-blue-500 font-medium mb-1">💬 문의사항</p>
-                              <p className="text-[13px] text-gray-800 whitespace-pre-wrap">{lead.memo}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      {/* 빠른 상태 변경 버튼 */}
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-2">
-                        {/* 상태 버튼들 */}
-                        <div className="flex flex-wrap justify-end gap-1.5">
-                          {updatingLeadId === lead.id ? (
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500">
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              <span>변경중...</span>
-                            </div>
-                          ) : (
-                            <>
-                              {(lead.status === "contacted" || lead.status === "converted") && (
-                                <button
-                                  onClick={() => handleUpdateLeadStatus(lead.id, "new")}
-                                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap"
-                                >
-                                  ↩️ 신규
-                                </button>
-                              )}
-                              {lead.status !== "contacted" && (
-                                <button
-                                  onClick={() => handleUpdateLeadStatus(lead.id, "contacted")}
-                                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors whitespace-nowrap"
-                                >
-                                  📞 연락완료
-                                </button>
-                              )}
-                              {lead.status !== "converted" && (
-                                <button
-                                  onClick={() => handleUpdateLeadStatus(lead.id, "converted")}
-                                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors whitespace-nowrap"
-                                >
-                                  ✅ 전환
-                                </button>
-                              )}
-                            </>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-gray-400 sm:hidden">버튼 클릭시 상태 적용</p>
-                        {/* 더보기 메뉴 */}
-                        <div className="relative">
-                          <button
-                            onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
-                            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                          {openMenu === lead.id && (
-                            <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                              <button
-                                onClick={() => handleUpdateLeadStatus(lead.id, "new")}
-                                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                              >
-                                신규로 변경
-                              </button>
-                              <div className="border-t border-gray-100 my-1"></div>
-                              <button
-                                onClick={() => handleUpdateLeadStatus(lead.id, "blacklist")}
-                                className="w-full px-3 py-2 text-left text-sm text-orange-600 hover:bg-orange-50"
-                              >
-                                블랙리스트
-                              </button>
-                              <button
-                                onClick={() => handleDeleteLead(lead.id)}
-                                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                              >
-                                삭제
-                              </button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 수집 정보 설정 */}
-        {activeTab === "fields" && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-4">
-              수집할 정보 선택 및 순서 설정
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
-              활성화할 필드를 선택하고, 드래그하여 순서를 변경하세요.
-            </p>
-            <FormFieldsEditor fields={formFields} onChange={setFormFields} />
-          </div>
-        )}
-
-        {/* 응답 메시지 설정 */}
-        {activeTab === "messages" && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              응답 메시지 설정
-            </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              버튼 텍스트와 신청 완료 후 표시될 메시지를 설정하세요.
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  신청 버튼 텍스트
-                </label>
-                <input
-                  type="text"
-                  value={messages.ctaButtonText}
-                  onChange={(e) =>
-                    setMessages({ ...messages, ctaButtonText: e.target.value })
-                  }
-                  placeholder="상담 신청하기"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  완료 페이지 제목
-                </label>
-                <input
-                  type="text"
-                  value={messages.thankYouTitle}
-                  onChange={(e) =>
-                    setMessages({ ...messages, thankYouTitle: e.target.value })
-                  }
-                  placeholder="신청이 완료되었습니다"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  완료 페이지 메시지
-                </label>
-                <textarea
-                  value={messages.thankYouMessage}
-                  onChange={(e) =>
-                    setMessages({ ...messages, thankYouMessage: e.target.value })
-                  }
-                  placeholder="빠른 시일 내에 연락드리겠습니다. 감사합니다!"
-                  rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 고객 알림 설정 */}
-        {activeTab === "notifications" && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              고객 SMS/이메일 알림
-            </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              리드 접수 시 고객에게 자동으로 SMS 또는 이메일을 발송합니다.
-            </p>
-
-            <div className="space-y-6">
-              {/* SMS 설정 */}
-              <div className="border-b border-gray-200 pb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">SMS 알림</h3>
-                    <p className="text-xs text-gray-500">리드 접수 시 고객에게 확인 SMS 발송</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notifications.smsEnabled}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, smsEnabled: e.target.checked })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                  </label>
+                  )}
                 </div>
 
-                {notifications.smsEnabled && (
-                  <div className="grid grid-cols-2 gap-4">
+                {/* 운영시간 설정 */}
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Clock className="h-5 w-5 text-gray-600" />
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        SMS 템플릿
-                      </label>
-                      <textarea
-                        value={notifications.smsTemplate}
-                        onChange={(e) =>
-                          setNotifications({ ...notifications, smsTemplate: e.target.value })
-                        }
-                        rows={5}
-                        placeholder={`[${client?.name || '업체명'}] {name}님, 상담 신청이 접수되었습니다. 빠른 시일 내에 연락드리겠습니다. 감사합니다.`}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        변수: {"{name}"}, {"{clientName}"}, {"{date}"}
+                      <h3 className="text-sm font-medium text-gray-900">
+                        운영시간 설정
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        SMS/이메일 알림에 운영시간 안내가 자동으로 추가됩니다.
                       </p>
                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* 운영요일 */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        운영요일
+                      </label>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="operatingDays"
+                            value="weekdays"
+                            checked={
+                              operatingHours.operatingDays === "weekdays"
+                            }
+                            onChange={(e) =>
+                              setOperatingHours({
+                                ...operatingHours,
+                                operatingDays: e.target.value as
+                                  | "weekdays"
+                                  | "everyday",
+                              })
+                            }
+                            className="w-4 h-4 text-primary-600 focus:ring-primary-500"
+                          />
+                          <span className="text-sm text-gray-700">
+                            주중 (월~금)
+                          </span>
+                          {operatingHours.operatingDays === "weekdays" && (
+                            <span className="text-xs text-amber-600">
+                              ⚠️ 공휴일도 휴무입니다
+                            </span>
+                          )}
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="operatingDays"
+                            value="everyday"
+                            checked={
+                              operatingHours.operatingDays === "everyday"
+                            }
+                            onChange={(e) =>
+                              setOperatingHours({
+                                ...operatingHours,
+                                operatingDays: e.target.value as
+                                  | "weekdays"
+                                  | "everyday",
+                              })
+                            }
+                            className="w-4 h-4 text-primary-600 focus:ring-primary-500"
+                          />
+                          <span className="text-sm text-gray-700">
+                            연중무휴 (휴무없음)
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* 운영시간 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        운영시간
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={operatingHours.operatingStartTime}
+                          onChange={(e) =>
+                            setOperatingHours({
+                              ...operatingHours,
+                              operatingStartTime: e.target.value,
+                            })
+                          }
+                          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        >
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hour = i.toString().padStart(2, "0");
+                            return (
+                              <option key={hour} value={`${hour}:00`}>
+                                {hour}:00
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <span className="text-gray-500">~</span>
+                        <select
+                          value={operatingHours.operatingEndTime}
+                          onChange={(e) =>
+                            setOperatingHours({
+                              ...operatingHours,
+                              operatingEndTime: e.target.value,
+                            })
+                          }
+                          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                        >
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hour = i.toString().padStart(2, "0");
+                            return (
+                              <option key={hour} value={`${hour}:00`}>
+                                {hour}:00
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* 미리보기 */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
                         미리보기
                       </label>
-                      <div className="bg-gray-900 rounded-2xl p-4 h-[180px] flex items-center justify-center">
-                        <div className="bg-gray-100 rounded-lg p-3 max-w-[220px] shadow-sm">
-                          <p className="text-xs text-gray-800 whitespace-pre-wrap">
-                            {(notifications.smsTemplate || `[${client?.name || '업체명'}] {name}님, 상담 신청이 접수되었습니다. 빠른 시일 내에 연락드리겠습니다. 감사합니다.`)
-                              .replace(/\{name\}/g, '홍길동')
-                              .replace(/\{clientName\}/g, client?.name || '업체명')
-                              .replace(/\{date\}/g, new Date().toLocaleDateString('ko-KR'))}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200 whitespace-pre-line">
-                            {`[운영시간]\n${operatingHours.operatingStartTime}~${operatingHours.operatingEndTime}${operatingHours.operatingDays === 'weekdays' ? '(토/공휴일 휴무)' : '(연중무휴)'}`}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 이메일 설정 */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">이메일 알림</h3>
-                    <p className="text-xs text-gray-500">리드 접수 시 고객에게 확인 이메일 발송</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notifications.emailEnabled}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, emailEnabled: e.target.checked })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                  </label>
-                </div>
-
-                {notifications.emailEnabled && (
-                  <div className="space-y-4">
-                    {/* 이메일 안내 문구 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        이메일 안내 문구
-                      </label>
-                      <textarea
-                        value={notifications.emailTemplate}
-                        onChange={(e) =>
-                          setNotifications({ ...notifications, emailTemplate: e.target.value })
-                        }
-                        rows={3}
-                        placeholder="상담 신청이 정상적으로 접수되었습니다. 빠른 시일 내에 담당자가 연락드리겠습니다."
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        이메일 본문에 표시될 안내 문구입니다.
+                      <p className="text-sm text-gray-800">
+                        {formatOperatingHours({
+                          operatingDays: operatingHours.operatingDays,
+                          operatingStartTime: operatingHours.operatingStartTime,
+                          operatingEndTime: operatingHours.operatingEndTime,
+                        })}
                       </p>
                     </div>
-
-                    {/* 이메일 미리보기 */}
-                    <div className="rounded-xl border border-gray-200 overflow-hidden">
-                      <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-                        <span className="text-xs text-gray-500">이메일 미리보기</span>
-                      </div>
-                      <div className="bg-gray-100 p-4">
-                        <div className="bg-white rounded-lg shadow-sm max-w-[320px] mx-auto overflow-hidden">
-                          {/* 상단 로고 영역 */}
-                          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-                            {client?.logoUrl ? (
-                              <img src={client.logoUrl} alt="로고" className="h-6 object-contain" />
-                            ) : (
-                              <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-400">로고</div>
-                            )}
-                            <span className="text-xs text-gray-600 font-medium">{client?.landingTitle || client?.name}</span>
-                          </div>
-                          {/* 헤더 */}
-                          <div
-                            className="p-4 text-center"
-                            style={{ background: `linear-gradient(135deg, ${client?.primaryColor || '#3b82f6'} 0%, ${client?.primaryColor || '#3b82f6'}dd 100%)` }}
-                          >
-                            <div className="w-10 h-10 bg-white/20 rounded-full mx-auto flex items-center justify-center mb-2">
-                              <span className="text-white text-xl">✓</span>
-                            </div>
-                            <p className="text-white font-semibold text-sm">접수 완료</p>
-                          </div>
-                          {/* 본문 */}
-                          <div className="p-4">
-                            <p className="text-gray-800 text-sm font-medium mb-2">안녕하세요, 홍길동님!</p>
-                            <p className="text-gray-600 text-xs mb-3 whitespace-pre-line">
-                              {notifications.emailTemplate || "상담 신청이 정상적으로 접수되었습니다.\n빠른 시일 내에 담당자가 연락드리겠습니다."}
-                            </p>
-                            <div className="bg-gray-50 rounded p-2 text-xs mb-2">
-                              <p className="text-gray-500 mb-1" style={{ color: client?.primaryColor || '#3b82f6' }}>접수 내용</p>
-                              <p className="text-gray-700">이름: 홍길동</p>
-                              <p className="text-gray-700">연락처: 010-6624-6615</p>
-                            </div>
-                            <div className="bg-blue-50 rounded p-2 text-xs">
-                              <p className="text-blue-600 font-medium mb-0.5">📞 운영시간</p>
-                              <p className="text-blue-700">
-                                {`${operatingHours.operatingStartTime}~${operatingHours.operatingEndTime}${operatingHours.operatingDays === 'weekdays' ? '(토/공휴일 휴무)' : '(연중무휴)'}`}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 운영시간 설정 */}
-              <div className="border-t border-gray-200 pt-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Clock className="h-5 w-5 text-gray-600" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">운영시간 설정</h3>
-                    <p className="text-xs text-gray-500">SMS/이메일 알림에 운영시간 안내가 자동으로 추가됩니다.</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {/* 운영요일 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      운영요일
-                    </label>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="operatingDays"
-                          value="weekdays"
-                          checked={operatingHours.operatingDays === "weekdays"}
-                          onChange={(e) =>
-                            setOperatingHours({ ...operatingHours, operatingDays: e.target.value as 'weekdays' | 'everyday' })
-                          }
-                          className="w-4 h-4 text-primary-600 focus:ring-primary-500"
-                        />
-                        <span className="text-sm text-gray-700">주중 (월~금)</span>
-                        {operatingHours.operatingDays === "weekdays" && (
-                          <span className="text-xs text-amber-600">⚠️ 공휴일도 휴무입니다</span>
-                        )}
-                      </label>
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="operatingDays"
-                          value="everyday"
-                          checked={operatingHours.operatingDays === "everyday"}
-                          onChange={(e) =>
-                            setOperatingHours({ ...operatingHours, operatingDays: e.target.value as 'weekdays' | 'everyday' })
-                          }
-                          className="w-4 h-4 text-primary-600 focus:ring-primary-500"
-                        />
-                        <span className="text-sm text-gray-700">연중무휴 (휴무없음)</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* 운영시간 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      운영시간
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={operatingHours.operatingStartTime}
-                        onChange={(e) =>
-                          setOperatingHours({ ...operatingHours, operatingStartTime: e.target.value })
-                        }
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      >
-                        {Array.from({ length: 24 }, (_, i) => {
-                          const hour = i.toString().padStart(2, "0");
-                          return (
-                            <option key={hour} value={`${hour}:00`}>
-                              {hour}:00
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <span className="text-gray-500">~</span>
-                      <select
-                        value={operatingHours.operatingEndTime}
-                        onChange={(e) =>
-                          setOperatingHours({ ...operatingHours, operatingEndTime: e.target.value })
-                        }
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      >
-                        {Array.from({ length: 24 }, (_, i) => {
-                          const hour = i.toString().padStart(2, "0");
-                          return (
-                            <option key={hour} value={`${hour}:00`}>
-                              {hour}:00
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* 미리보기 */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                      미리보기
-                    </label>
-                    <p className="text-sm text-gray-800">
-                      {formatOperatingHours({
-                        operatingDays: operatingHours.operatingDays,
-                        operatingStartTime: operatingHours.operatingStartTime,
-                        operatingEndTime: operatingHours.operatingEndTime,
-                      })}
-                    </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 저장 버튼 */}
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
-          >
-            <Save className="h-4 w-4" />
-            {saving ? "저장 중..." : "설정 저장"}
-          </button>
-        </div>
+          {/* 저장 버튼 */}
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 text-sm font-medium text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" />
+              {saving ? "저장 중..." : "설정 저장"}
+            </button>
+          </div>
         </main>
       </div>
 
@@ -1490,7 +1862,9 @@ export default function PortalDashboardPage() {
             {/* 모달 헤더 */}
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">고객 여정 시뮬레이션</h3>
+                <h3 className="font-semibold text-gray-900">
+                  고객 여정 시뮬레이션
+                </h3>
                 <button
                   onClick={() => {
                     setShowPreview(false);
@@ -1512,8 +1886,8 @@ export default function PortalDashboardPage() {
                       previewStep === step
                         ? "bg-primary-600 text-white"
                         : previewStep > step
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-500"
                     }`}
                   >
                     <span
@@ -1521,8 +1895,8 @@ export default function PortalDashboardPage() {
                         previewStep === step
                           ? "bg-white text-primary-600"
                           : previewStep > step
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-300 text-white"
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-300 text-white"
                       }`}
                     >
                       {previewStep > step ? "✓" : step}
@@ -1562,7 +1936,8 @@ export default function PortalDashboardPage() {
 
                 {/* 설명 */}
                 <p className="text-gray-600 text-center mb-8 text-sm whitespace-pre-line flex-1">
-                  {client?.landingDescription || "랜딩 페이지 설명이 여기에 표시됩니다."}
+                  {client?.landingDescription ||
+                    "랜딩 페이지 설명이 여기에 표시됩니다."}
                 </p>
 
                 {/* 카카오 로그인 버튼 - 이메일 필드가 있을 때 */}
@@ -1573,18 +1948,34 @@ export default function PortalDashboardPage() {
                       className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
                       style={{ backgroundColor: "#FEE500", color: "#000000" }}
                     >
-                      <svg width="24" height="24" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-                        <path fill="#000000" d="M128 36C70.562 36 24 72.713 24 118c0 29.279 19.466 54.97 48.748 69.477-1.593 5.494-10.237 35.344-10.581 37.689 0 0-.207 1.762.934 2.434s2.483.15 2.483.15c3.272-.457 37.943-24.811 43.944-29.03 5.995.849 12.168 1.28 18.472 1.28 57.438 0 104-36.713 104-82 0-45.287-46.562-82-104-82z"/>
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 256 256"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fill="#000000"
+                          d="M128 36C70.562 36 24 72.713 24 118c0 29.279 19.466 54.97 48.748 69.477-1.593 5.494-10.237 35.344-10.581 37.689 0 0-.207 1.762.934 2.434s2.483.15 2.483.15c3.272-.457 37.943-24.811 43.944-29.03 5.995.849 12.168 1.28 18.472 1.28 57.438 0 104-36.713 104-82 0-45.287-46.562-82-104-82z"
+                        />
                       </svg>
                       카카오로 시작하기
                     </button>
-                    <p className="text-base text-gray-600 text-center">카카오 <span className="font-semibold text-gray-800">로그인 후 상담접수</span>가 가능합니다.</p>
+                    <p className="text-base text-gray-600 text-center">
+                      카카오{" "}
+                      <span className="font-semibold text-gray-800">
+                        로그인 후 상담접수
+                      </span>
+                      가 가능합니다.
+                    </p>
                   </div>
                 ) : (
                   <button
                     onClick={() => setPreviewStep(2)}
                     className="w-full rounded-xl px-4 py-4 text-base font-medium text-white shadow-lg hover:shadow-xl transition-all"
-                    style={{ backgroundColor: client?.primaryColor || "#3b82f6" }}
+                    style={{
+                      backgroundColor: client?.primaryColor || "#3b82f6",
+                    }}
                   >
                     {messages.ctaButtonText || "상담 신청하기"} →
                   </button>
@@ -1632,7 +2023,9 @@ export default function PortalDashboardPage() {
                   <button
                     onClick={() => setPreviewStep(3)}
                     className="w-full rounded-lg px-4 py-3 text-sm font-medium text-white mt-2"
-                    style={{ backgroundColor: client?.primaryColor || "#3b82f6" }}
+                    style={{
+                      backgroundColor: client?.primaryColor || "#3b82f6",
+                    }}
                   >
                     {messages.ctaButtonText || "상담 신청하기"}
                   </button>
@@ -1656,7 +2049,9 @@ export default function PortalDashboardPage() {
                 {/* 체크 아이콘 */}
                 <div
                   className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-                  style={{ backgroundColor: `${client?.primaryColor || "#3b82f6"}20` }}
+                  style={{
+                    backgroundColor: `${client?.primaryColor || "#3b82f6"}20`,
+                  }}
                 >
                   <svg
                     className="w-10 h-10"
