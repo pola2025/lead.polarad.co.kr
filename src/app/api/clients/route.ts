@@ -11,7 +11,7 @@ export async function GET() {
     console.error("Failed to fetch clients:", error);
     return NextResponse.json(
       { success: false, error: "클라이언트 목록을 가져오는데 실패했습니다." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     if (!body.name || !body.slug) {
       return NextResponse.json(
         { success: false, error: "이름과 슬러그는 필수입니다." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: "슬러그는 영문 소문자, 숫자, 하이픈만 사용할 수 있습니다.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: "이미 사용 중인 슬러그입니다. 다른 슬러그를 입력해주세요.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -83,10 +83,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: client }, { status: 201 });
   } catch (error) {
-    console.error("Failed to create client:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Failed to create client:", message);
     return NextResponse.json(
-      { success: false, error: "클라이언트 생성에 실패했습니다." },
-      { status: 500 }
+      { success: false, error: `클라이언트 생성에 실패했습니다: ${message}` },
+      { status: 500 },
     );
   }
 }
