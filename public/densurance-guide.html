@@ -938,6 +938,31 @@
           </div>
         </div>
 
+        <!-- prettier-ignore -->
+        <div class="card" style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:0">
+          <p style="font-size:13px;font-weight:700;color:#64748b;margin-bottom:12px">💳 결제 안내 · 선결제 계좌이체</p>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div>
+              <p style="font-size:13px;color:#94a3b8;margin-bottom:4px">우리은행 · 폴라애드(이재호)</p>
+              <p id="account-num" style="font-size:18px;font-weight:800;color:#0f172a;letter-spacing:0.04em">1005-302-954803</p>
+            </div>
+            <button onclick="copyAccount()" id="copy-btn" style="flex-shrink:0;background:#1e293b;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer">복사</button>
+          </div>
+        </div>
+        <script>
+          function copyAccount() {
+            navigator.clipboard.writeText("1005302954803").then(function () {
+              var btn = document.getElementById("copy-btn");
+              btn.textContent = "복사됨 ✓";
+              btn.style.background = "#16a34a";
+              setTimeout(function () {
+                btn.textContent = "복사";
+                btn.style.background = "#1e293b";
+              }, 2000);
+            });
+          }
+        </script>
+
         <div class="price-card">
           <div class="price-row">
             <div>
@@ -1045,89 +1070,6 @@
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- 결제 -->
-      <section>
-        <div
-          class="card"
-          style="
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 20px;
-          "
-        >
-          <p
-            style="
-              font-size: 13px;
-              font-weight: 700;
-              color: #64748b;
-              margin-bottom: 12px;
-            "
-          >
-            💳 결제 안내 · 선결제 계좌이체
-          </p>
-          <div
-            style="
-              background: #f8fafc;
-              border: 1px solid #e2e8f0;
-              border-radius: 12px;
-              padding: 16px 18px;
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              gap: 12px;
-            "
-          >
-            <div>
-              <p style="font-size: 13px; color: #94a3b8; margin-bottom: 4px">
-                우리은행 · 폴라애드(이재호)
-              </p>
-              <p
-                id="account-num"
-                style="
-                  font-size: 18px;
-                  font-weight: 800;
-                  color: #0f172a;
-                  letter-spacing: 0.04em;
-                "
-              >
-                1005-302-954803
-              </p>
-            </div>
-            <button
-              onclick="copyAccount()"
-              id="copy-btn"
-              style="
-                flex-shrink: 0;
-                background: #1e293b;
-                color: #fff;
-                border: none;
-                border-radius: 8px;
-                padding: 8px 14px;
-                font-size: 13px;
-                font-weight: 600;
-                cursor: pointer;
-              "
-            >
-              복사
-            </button>
-          </div>
-        </div>
-        <script>
-          function copyAccount() {
-            navigator.clipboard.writeText("1005302954803").then(function () {
-              var btn = document.getElementById("copy-btn");
-              btn.textContent = "복사됨 ✓";
-              btn.style.background = "#16a34a";
-              setTimeout(function () {
-                btn.textContent = "복사";
-                btn.style.background = "#1e293b";
-              }, 2000);
-            });
-          }
-        </script>
       </section>
 
       <!-- 문의 -->
