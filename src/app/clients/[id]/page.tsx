@@ -927,10 +927,16 @@ export default function EditClientPage({
                 name="telegramChatId"
                 value={formData.telegramChatId}
                 onChange={handleChange}
+                placeholder="-1001234567890"
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
               <p className="mt-1 text-xs text-gray-500">
-                리드 접수 알림이 이 채널로 전송됩니다.
+                리드 접수 알림과 포털 로그인 OTP가 이 채널로 전송됩니다.
+              </p>
+              <p className="mt-1 text-xs text-amber-600 font-medium">
+                ⚠️ 그룹·채널 ID는 반드시 앞에{" "}
+                <code className="bg-amber-50 px-1 rounded">-</code> 를 포함해야
+                합니다. (예: -1001234567890)
               </p>
             </div>
           </div>
