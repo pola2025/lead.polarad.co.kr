@@ -14,8 +14,10 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background: #f8fafc;
         color: #1e293b;
+        min-width: 360px;
       }
 
+      /* ── 헤더 ── */
       .header {
         background: #fff;
         border-bottom: 1px solid #e2e8f0;
@@ -24,7 +26,7 @@
       .header-inner {
         max-width: 720px;
         margin: 0 auto;
-        padding: 0 24px;
+        padding: 0 20px;
       }
       .header-badge {
         display: flex;
@@ -39,80 +41,80 @@
         border-radius: 9999px;
       }
       .header-brand {
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 700;
         color: #2563eb;
         letter-spacing: 0.1em;
         text-transform: uppercase;
       }
       .header h1 {
-        font-size: 22px;
+        font-size: 24px;
         font-weight: 800;
         color: #0f172a;
       }
       .header p {
-        font-size: 13px;
+        font-size: 15px;
         color: #94a3b8;
         margin-top: 4px;
       }
 
+      /* ── 콘텐츠 ── */
       .content {
         max-width: 720px;
         margin: 0 auto;
-        padding: 40px 24px 80px;
+        padding: 36px 20px 80px;
       }
       section {
-        margin-bottom: 56px;
+        margin-bottom: 52px;
       }
 
+      /* ── 섹션 레이블 ── */
       .section-label {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
       .section-num {
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 700;
         color: #2563eb;
         background: #eff6ff;
         border: 1px solid #bfdbfe;
-        padding: 2px 8px;
+        padding: 3px 10px;
         border-radius: 6px;
       }
       .section-title {
-        font-size: 15px;
+        font-size: 18px;
         font-weight: 800;
         color: #0f172a;
       }
       .section-desc {
-        font-size: 13px;
+        font-size: 15px;
         color: #64748b;
-        margin-bottom: 20px;
-        line-height: 1.6;
+        margin-bottom: 18px;
+        line-height: 1.65;
       }
 
-      /* 카드 */
+      /* ── 카드 ── */
       .card {
         background: #fff;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
-        padding: 24px;
+        padding: 20px;
       }
 
-      /* 전체 흐름 */
+      /* ── 전체 흐름 ── */
       .flow-row {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
         align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
+        gap: 8px;
       }
       .flow-box {
-        flex: 1;
-        min-width: 100px;
         border: 2px solid #e2e8f0;
         border-radius: 14px;
-        padding: 14px 10px;
+        padding: 14px 8px;
         text-align: center;
         background: #f8fafc;
       }
@@ -121,11 +123,11 @@
         background: #eff6ff;
       }
       .flow-icon {
-        font-size: 24px;
-        margin-bottom: 4px;
+        font-size: 26px;
+        margin-bottom: 5px;
       }
       .flow-label {
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 700;
         color: #374151;
       }
@@ -133,56 +135,78 @@
         color: #1d4ed8;
       }
       .flow-sub {
-        font-size: 10px;
+        font-size: 12px;
         color: #9ca3af;
-        margin-top: 2px;
+        margin-top: 3px;
       }
       .flow-arrow {
-        font-size: 18px;
+        font-size: 20px;
         color: #cbd5e1;
         font-weight: 700;
+        text-align: center;
       }
       .flow-note {
-        font-size: 11px;
+        font-size: 13px;
         color: #9ca3af;
         text-align: center;
         margin-top: 16px;
+        line-height: 1.5;
       }
 
-      /* 그리드 */
+      /* 모바일: 흐름도를 2열 그리드로 */
+      @media (max-width: 560px) {
+        .flow-row {
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+        .flow-arrow {
+          display: none;
+        }
+        .flow-box {
+          padding: 14px 10px;
+        }
+        .flow-icon {
+          font-size: 28px;
+        }
+        .flow-label {
+          font-size: 14px;
+        }
+        .flow-sub {
+          font-size: 12px;
+        }
+      }
+
+      /* ── 그리드 ── */
       .grid-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
+        gap: 14px;
       }
-      @media (max-width: 600px) {
+      @media (max-width: 560px) {
         .grid-2 {
           grid-template-columns: 1fr;
         }
-        .flow-row {
-          flex-direction: column;
-        }
       }
 
-      /* 폰 목업 */
+      /* ── 폰 목업 ── */
       .phone-wrap {
         border: 2px solid #d1d5db;
         border-radius: 24px;
-        padding: 12px;
-        max-width: 180px;
+        padding: 14px;
+        max-width: 200px;
         margin: 0 auto;
       }
       .phone-header {
         background: #f3f4f6;
         border-radius: 10px;
-        padding: 10px 12px;
-        margin-bottom: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
       }
       .wire-bar {
-        height: 8px;
+        height: 9px;
         background: #d1d5db;
         border-radius: 4px;
-        margin-bottom: 4px;
+        margin-bottom: 5px;
       }
       .wire-bar.short {
         width: 55%;
@@ -190,35 +214,35 @@
       }
       .wire-input {
         border: 1px solid #d1d5db;
-        border-radius: 6px;
-        padding: 6px 8px;
-        margin-bottom: 6px;
+        border-radius: 7px;
+        padding: 8px 10px;
+        margin-bottom: 8px;
         background: #fff;
       }
       .wire-input span {
-        font-size: 9px;
+        font-size: 12px;
         color: #9ca3af;
       }
       .wire-btn {
         background: #3b82f6;
-        border-radius: 8px;
-        padding: 8px;
+        border-radius: 9px;
+        padding: 10px;
         text-align: center;
-        margin-top: 8px;
+        margin-top: 10px;
       }
       .wire-btn span {
-        font-size: 11px;
+        font-size: 13px;
         color: #fff;
         font-weight: 600;
       }
       .wire-privacy {
         text-align: center;
-        margin-top: 6px;
-        font-size: 9px;
+        margin-top: 8px;
+        font-size: 11px;
         color: #9ca3af;
       }
 
-      /* 정보 카드 */
+      /* ── 정보 카드 ── */
       .info-card {
         background: #fff;
         border: 1px solid #e2e8f0;
@@ -227,75 +251,81 @@
         margin-bottom: 10px;
       }
       .info-card-title {
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 700;
         color: #1e293b;
       }
       .info-card code {
-        font-size: 11px;
+        font-size: 13px;
         background: #f1f5f9;
-        padding: 4px 8px;
-        border-radius: 6px;
+        padding: 6px 10px;
+        border-radius: 7px;
         display: block;
-        margin-top: 6px;
+        margin-top: 7px;
         word-break: break-all;
         font-family: monospace;
+        line-height: 1.5;
       }
       .info-card p {
-        font-size: 12px;
+        font-size: 14px;
         color: #64748b;
-        margin-top: 4px;
+        margin-top: 5px;
+        line-height: 1.5;
       }
 
-      /* 로그인 단계 */
+      /* ── 로그인 단계 ── */
       .login-grid {
         display: flex;
         gap: 24px;
         align-items: flex-start;
-        flex-wrap: wrap;
       }
       .steps {
         flex: 1;
-        min-width: 200px;
       }
       .step {
         display: flex;
-        gap: 12px;
-        margin-bottom: 20px;
+        gap: 14px;
+        margin-bottom: 22px;
         align-items: flex-start;
       }
+      .step:last-child {
+        margin-bottom: 0;
+      }
       .step-num {
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         background: #2563eb;
         color: #fff;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 800;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        margin-top: 2px;
+        margin-top: 1px;
       }
       .step-title {
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 700;
         color: #1e293b;
       }
       .step-desc {
-        font-size: 11px;
+        font-size: 13px;
         color: #64748b;
-        margin-top: 2px;
+        margin-top: 3px;
+        line-height: 1.5;
       }
       .step-code {
-        font-size: 11px;
+        font-size: 12px;
         background: #f1f5f9;
-        padding: 2px 8px;
-        border-radius: 5px;
-        display: inline-block;
-        margin-top: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: block;
+        margin-top: 6px;
         font-family: monospace;
+        word-break: break-all;
+        line-height: 1.6;
       }
 
       .login-mock {
@@ -303,11 +333,11 @@
         border-radius: 16px;
         padding: 16px;
         background: #f8fafc;
-        width: 180px;
+        width: 160px;
         flex-shrink: 0;
       }
       .login-mock-label {
-        font-size: 10px;
+        font-size: 12px;
         color: #9ca3af;
         text-align: center;
         margin-bottom: 10px;
@@ -320,63 +350,70 @@
         text-align: center;
       }
       .login-avatar {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         background: #eff6ff;
         border-radius: 50%;
-        margin: 0 auto 8px;
+        margin: 0 auto 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
+        font-size: 20px;
       }
       .login-mock-title {
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 600;
         color: #374151;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
       }
       .login-input-mock {
         background: #f1f5f9;
         border-radius: 6px;
-        height: 28px;
+        height: 32px;
         margin-bottom: 8px;
       }
       .login-btn-mock {
         background: #3b82f6;
         border-radius: 6px;
-        height: 28px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
       }
       .login-btn-mock span {
-        font-size: 10px;
+        font-size: 12px;
         color: #fff;
       }
 
-      /* 경고 박스 */
+      /* 모바일: 목업 숨김 */
+      @media (max-width: 500px) {
+        .login-mock {
+          display: none;
+        }
+      }
+
+      /* ── 경고 박스 ── */
       .warn-box {
         background: #fffbeb;
         border: 1px solid #fde68a;
         border-radius: 10px;
-        padding: 10px 14px;
-        margin-top: 16px;
-        font-size: 12px;
+        padding: 12px 16px;
+        margin-top: 18px;
+        font-size: 14px;
         color: #92400e;
+        line-height: 1.55;
       }
 
-      /* 탭 목업 */
+      /* ── 탭 목업 ── */
       .tab-mock {
         display: flex;
         border: 1px solid #e2e8f0;
         border-radius: 10px;
         overflow: hidden;
-        margin-bottom: 4px;
       }
       .tab-item {
         flex: 1;
-        padding: 10px 4px;
+        padding: 12px 4px;
         text-align: center;
         border-right: 1px solid #e2e8f0;
         background: #fff;
@@ -388,11 +425,11 @@
         background: #eff6ff;
       }
       .tab-icon {
-        font-size: 16px;
+        font-size: 18px;
       }
       .tab-text {
-        font-size: 9px;
-        margin-top: 2px;
+        font-size: 11px;
+        margin-top: 3px;
         color: #6b7280;
       }
       .tab-item.active .tab-text {
@@ -400,12 +437,12 @@
         font-weight: 700;
       }
       .tab-mock-label {
-        font-size: 11px;
+        font-size: 13px;
         color: #9ca3af;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
       }
 
-      /* 기능 카드 */
+      /* ── 기능 카드 ── */
       .tab-card {
         background: #fff;
         border: 1px solid #e2e8f0;
@@ -420,19 +457,19 @@
       .tab-card-header {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
+        gap: 10px;
+        margin-bottom: 14px;
       }
       .tab-card-icon {
-        font-size: 20px;
+        font-size: 22px;
       }
       .tab-card-num {
-        font-size: 10px;
+        font-size: 12px;
         color: #9ca3af;
         display: block;
       }
       .tab-card-title {
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 800;
         color: #0f172a;
       }
@@ -440,83 +477,104 @@
         list-style: none;
       }
       .tab-card ul li {
-        font-size: 12px;
+        font-size: 14px;
         color: #475569;
-        padding: 3px 0;
+        padding: 5px 0;
         display: flex;
-        gap: 8px;
+        gap: 10px;
+        line-height: 1.5;
       }
       .tab-card ul li::before {
         content: "•";
         color: #cbd5e1;
         flex-shrink: 0;
+        margin-top: 1px;
       }
 
-      /* 비용 카드 */
+      /* ── 비용 카드 ── */
       .price-card {
         background: #fff;
         border: 1px solid #e2e8f0;
         border-radius: 14px;
-        padding: 24px;
+        padding: 22px;
         margin-bottom: 12px;
       }
       .price-row {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 16px;
+        gap: 12px;
       }
       .price-label {
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 700;
         color: #0f172a;
-        margin-bottom: 4px;
+        margin-bottom: 5px;
       }
       .price-sub {
-        font-size: 12px;
+        font-size: 14px;
         color: #64748b;
+        line-height: 1.5;
+      }
+      .price-right {
+        text-align: right;
+        flex-shrink: 0;
       }
       .price-amount {
         font-size: 22px;
         font-weight: 800;
         color: #2563eb;
-        text-align: right;
         white-space: nowrap;
       }
       .price-unit {
-        font-size: 11px;
+        font-size: 13px;
         color: #9ca3af;
-        text-align: right;
+        margin-top: 2px;
       }
       .price-tags {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 7px;
         margin-top: 16px;
         padding-top: 16px;
         border-top: 1px solid #f1f5f9;
       }
       .price-tag {
-        font-size: 11px;
+        font-size: 13px;
         background: #eff6ff;
         color: #1d4ed8;
-        padding: 4px 10px;
+        padding: 5px 12px;
         border-radius: 9999px;
       }
       .kakao-note {
         background: #fffbeb;
         border: 1px solid #fef3c7;
         border-radius: 8px;
-        padding: 10px 14px;
-        margin-top: 12px;
-        font-size: 12px;
+        padding: 12px 14px;
+        margin-top: 14px;
+        font-size: 14px;
         color: #92400e;
+        line-height: 1.55;
       }
       .price-amount.kakao {
         color: #d97706;
       }
 
-      /* 푸터 */
+      /* 모바일: 비용 카드 세로 정렬 */
+      @media (max-width: 480px) {
+        .price-row {
+          flex-direction: column;
+          gap: 10px;
+        }
+        .price-right {
+          text-align: left;
+        }
+        .price-amount {
+          font-size: 24px;
+        }
+      }
+
+      /* ── 푸터 ── */
       .footer-box {
         background: #f1f5f9;
         border: 1px solid #e2e8f0;
@@ -525,14 +583,14 @@
         text-align: center;
       }
       .footer-box p {
-        font-size: 13px;
+        font-size: 15px;
         color: #64748b;
       }
       .footer-box small {
-        font-size: 11px;
+        font-size: 13px;
         color: #94a3b8;
         display: block;
-        margin-top: 4px;
+        margin-top: 5px;
       }
     </style>
   </head>
@@ -848,7 +906,7 @@
                 랜딩 페이지 + 포털 관리 + 텔레그램 알림 포함
               </div>
             </div>
-            <div>
+            <div class="price-right">
               <div class="price-amount">360,000원</div>
               <div class="price-unit">연간 · VAT 별도</div>
             </div>
@@ -867,22 +925,111 @@
             <div>
               <div class="price-label">
                 카카오 로그인 연동
-                <span style="font-size: 12px; font-weight: 400; color: #9ca3af"
-                  >(선택)</span
+                <span style="font-size: 13px; font-weight: 400; color: #9ca3af"
+                  >(선택 · 별도 개발)</span
                 >
               </div>
-              <div class="price-sub">
-                자체 카카오 채널로 로그인 연동 시 별도 개발 필요
-              </div>
+              <div class="price-sub">자체 카카오 채널 기반 개발 납품 방식</div>
             </div>
-            <div>
+            <div class="price-right">
               <div class="price-amount kakao">+300,000원</div>
-              <div class="price-unit">1회 · VAT 포함</div>
+              <div class="price-unit">1회 개발비 · VAT 포함</div>
             </div>
           </div>
-          <div class="kakao-note">
-            카카오 비즈니스 채널 보유 시 고객이 카카오 계정으로 랜딩 페이지에
-            로그인 후 신청하는 방식으로 구현 가능합니다.
+          <div
+            style="
+              margin-top: 16px;
+              padding-top: 16px;
+              border-top: 1px solid #f1f5f9;
+            "
+          >
+            <p
+              style="
+                font-size: 14px;
+                font-weight: 700;
+                color: #374151;
+                margin-bottom: 10px;
+              "
+            >
+              📌 무엇이 바뀌나요?
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <div
+                style="
+                  background: #f8fafc;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 10px;
+                  padding: 12px 14px;
+                "
+              >
+                <p
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #374151;
+                    margin-bottom: 4px;
+                  "
+                >
+                  기본 서비스 (현재)
+                </p>
+                <p style="font-size: 13px; color: #64748b; line-height: 1.5">
+                  고객이 랜딩 페이지에서 이름·연락처를 직접 입력하여 신청
+                </p>
+              </div>
+              <div
+                style="
+                  background: #fef9c3;
+                  border: 1px solid #fde047;
+                  border-radius: 10px;
+                  padding: 12px 14px;
+                "
+              >
+                <p
+                  style="
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #713f12;
+                    margin-bottom: 4px;
+                  "
+                >
+                  카카오 로그인 연동 시
+                </p>
+                <p style="font-size: 13px; color: #713f12; line-height: 1.5">
+                  '카카오로 시작하기' 버튼으로 로그인 → 카카오 계정
+                  정보(이름·전화번호) 자동 입력 후 신청
+                </p>
+              </div>
+            </div>
+            <div class="kakao-note" style="margin-top: 12px">
+              <p style="font-weight: 700; margin-bottom: 8px">
+                ⚠️ 개발 조건 및 주의사항
+              </p>
+              <ul
+                style="
+                  list-style: none;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 7px;
+                "
+              >
+                <li style="display: flex; gap: 8px">
+                  <span style="color: #d97706; flex-shrink: 0">•</span>카카오
+                  비즈니스 채널(카카오톡 채널) 보유 필요
+                </li>
+                <li style="display: flex; gap: 8px">
+                  <span style="color: #d97706; flex-shrink: 0">•</span>자체
+                  도메인 연결 필요 (고객사 전용 도메인 기반 개발)
+                </li>
+                <li style="display: flex; gap: 8px">
+                  <span style="color: #d97706; flex-shrink: 0">•</span>PolarLead
+                  SaaS 방식이 아닌 <strong>개발 납품 방식</strong>으로 진행
+                </li>
+                <li style="display: flex; gap: 8px">
+                  <span style="color: #d97706; flex-shrink: 0">•</span>이후 월
+                  이용료는 서비스 유지보수 비용으로 전환됩니다
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
