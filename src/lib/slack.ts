@@ -22,7 +22,9 @@ interface SlackChannelResponse {
 /**
  * 슬랙 메시지 전송
  */
-export async function sendSlackMessage(options: SlackMessageOptions): Promise<boolean> {
+export async function sendSlackMessage(
+  options: SlackMessageOptions,
+): Promise<boolean> {
   const token = process.env.SLACK_BOT_TOKEN;
 
   if (!token) {
@@ -76,11 +78,14 @@ async function findUserByEmail(email: string): Promise<string | null> {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     const result = await response.json();
-    console.log(`[Slack] 사용자 검색 결과:`, result.ok ? result.user?.id : result.error);
+    console.log(
+      `[Slack] 사용자 검색 결과:`,
+      result.ok ? result.user?.id : result.error,
+    );
     return result.ok ? result.user?.id : null;
   } catch (error) {
     console.error("[Slack] 사용자 검색 실패:", error);
@@ -91,9 +96,14 @@ async function findUserByEmail(email: string): Promise<string | null> {
 /**
  * 슬랙 채널에 사용자 초대
  */
-async function inviteUsersToChannel(channelId: string, userIds: string[]): Promise<void> {
+async function inviteUsersToChannel(
+  channelId: string,
+  userIds: string[],
+): Promise<void> {
   const token = process.env.SLACK_BOT_TOKEN;
-  console.log(`[Slack] 채널 ${channelId}에 사용자 초대 시작. 대상: ${userIds.length}명`);
+  console.log(
+    `[Slack] 채널 ${channelId}에 사용자 초대 시작. 대상: ${userIds.length}명`,
+  );
   if (!token || userIds.length === 0) {
     console.log(`[Slack] 초대 건너뜀 (토큰 없음 또는 사용자 0명)`);
     return;
@@ -102,17 +112,20 @@ async function inviteUsersToChannel(channelId: string, userIds: string[]): Promi
   for (const userId of userIds) {
     try {
       console.log(`[Slack] 사용자 ${userId} 초대 시도...`);
-      const response = await fetch("https://slack.com/api/conversations.invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        "https://slack.com/api/conversations.invite",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            channel: channelId,
+            users: userId,
+          }),
         },
-        body: JSON.stringify({
-          channel: channelId,
-          users: userId,
-        }),
-      });
+      );
 
       const result = await response.json();
       if (result.ok) {
@@ -167,7 +180,9 @@ export async function createSlackChannel(name: string): Promise<string | null> {
     if (!result.ok) {
       // 이미 존재하는 채널인 경우 해당 채널 ID 조회
       if (result.error === "name_taken") {
-        console.log(`채널 ${channelName}이 이미 존재합니다. 기존 채널 조회 중...`);
+        console.log(
+          `채널 ${channelName}이 이미 존재합니다. 기존 채널 조회 중...`,
+        );
         channelId = await findSlackChannelByName(channelName);
       } else {
         console.error("슬랙 채널 생성 실패:", result.error);
@@ -175,15 +190,19 @@ export async function createSlackChannel(name: string): Promise<string | null> {
       }
     } else {
       channelId = result.channel?.id || null;
-      console.log(`슬랙 채널 생성 완료: #${result.channel?.name} (${channelId})`);
+      console.log(
+        `슬랙 채널 생성 완료: #${result.channel?.name} (${channelId})`,
+      );
     }
 
     // 관리자 초대 (SLACK_ADMIN_EMAILS 환경변수 사용)
     if (channelId) {
       const adminEmails = process.env.SLACK_ADMIN_EMAILS;
-      console.log(`[Slack] 관리자 초대 시작. SLACK_ADMIN_EMAILS: ${adminEmails}`);
+      console.log(
+        `[Slack] 관리자 초대 시작. SLACK_ADMIN_EMAILS: ${adminEmails}`,
+      );
       if (adminEmails) {
-        const emails = adminEmails.split(",").map(e => e.trim());
+        const emails = adminEmails.split(",").map((e) => e.trim());
         console.log(`[Slack] 초대할 관리자 이메일: ${emails.join(", ")}`);
         const userIds: string[] = [];
 
@@ -192,11 +211,15 @@ export async function createSlackChannel(name: string): Promise<string | null> {
           if (userId) {
             userIds.push(userId);
           } else {
-            console.warn(`[Slack] 이메일 ${email}에 해당하는 사용자를 찾을 수 없음`);
+            console.warn(
+              `[Slack] 이메일 ${email}에 해당하는 사용자를 찾을 수 없음`,
+            );
           }
         }
 
-        console.log(`[Slack] 찾은 사용자 ID: ${userIds.join(", ") || "(없음)"}`);
+        console.log(
+          `[Slack] 찾은 사용자 ID: ${userIds.join(", ") || "(없음)"}`,
+        );
         if (userIds.length > 0) {
           await inviteUsersToChannel(channelId, userIds);
         }
@@ -227,7 +250,7 @@ async function findSlackChannelByName(name: string): Promise<string | null> {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     const result = await response.json();
@@ -238,7 +261,7 @@ async function findSlackChannelByName(name: string): Promise<string | null> {
     }
 
     const channel = result.channels?.find(
-      (ch: { name: string; id: string }) => ch.name === name
+      (ch: { name: string; id: string }) => ch.name === name,
     );
 
     return channel?.id || null;
@@ -253,9 +276,10 @@ async function findSlackChannelByName(name: string): Promise<string | null> {
  */
 export async function sendClientCreatedNotification(
   client: Client,
-  channel?: string
+  channel?: string,
 ): Promise<boolean> {
-  const targetChannel = channel || client.slackChannelId || process.env.SLACK_QNA_CHANNEL_ID;
+  const targetChannel =
+    channel || client.slackChannelId || process.env.SLACK_QNA_CHANNEL_ID;
   if (!targetChannel) {
     console.error("[Slack] 알림 채널이 설정되지 않았습니다.");
     return false;
@@ -280,8 +304,14 @@ export async function sendClientCreatedNotification(
         fields: [
           { type: "mrkdwn", text: `*클라이언트명:*\n${client.name}` },
           { type: "mrkdwn", text: `*슬러그:*\n${client.slug}` },
-          { type: "mrkdwn", text: `*상태:*\n${client.status === "active" ? "✅ 활성" : "⏸️ 대기"}` },
-          { type: "mrkdwn", text: `*랜딩 제목:*\n${client.landingTitle || "-"}` },
+          {
+            type: "mrkdwn",
+            text: `*상태:*\n${client.status === "active" ? "✅ 활성" : "⏸️ 대기"}`,
+          },
+          {
+            type: "mrkdwn",
+            text: `*랜딩 제목:*\n${client.landingTitle || "-"}`,
+          },
         ],
       },
       {
@@ -310,9 +340,10 @@ export async function sendClientCreatedNotification(
 export async function sendClientUpdatedNotification(
   client: Client,
   changes: string[],
-  channel?: string
+  channel?: string,
 ): Promise<boolean> {
-  const targetChannel = channel || client.slackChannelId || process.env.SLACK_QNA_CHANNEL_ID;
+  const targetChannel =
+    channel || client.slackChannelId || process.env.SLACK_QNA_CHANNEL_ID;
   if (!targetChannel) {
     console.error("[Slack] 알림 채널이 설정되지 않았습니다.");
     return false;
@@ -357,70 +388,4 @@ export async function sendClientUpdatedNotification(
       },
     ],
   });
-}
-
-/**
- * 난수 비밀번호 생성 (8자리)
- */
-export function generatePassword(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  let password = "";
-  for (let i = 0; i < 8; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-}
-
-/**
- * 포털 비밀번호 생성 및 슬랙 전송
- * @param slug 클라이언트 slug
- * @param channel 슬랙 채널 ID (기본값: SLACK_QNA_CHANNEL_ID)
- * @returns 생성된 비밀번호 또는 null (실패 시)
- */
-export async function sendPortalPassword(
-  slug: string,
-  channel?: string
-): Promise<string | null> {
-  const password = generatePassword();
-  const targetChannel = channel || process.env.SLACK_QNA_CHANNEL_ID;
-
-  if (!targetChannel) {
-    console.error("슬랙 채널이 설정되지 않았습니다.");
-    return null;
-  }
-
-  const envVarName = `lead_${slug}_PW`;
-  const message = `\`${envVarName}=${password}\``;
-
-  const success = await sendSlackMessage({
-    channel: targetChannel,
-    text: `🔐 포털 비밀번호 생성\n${message}`,
-    blocks: [
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `🔐 *포털 비밀번호 생성*\n클라이언트: \`${slug}\``,
-        },
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `*환경변수 추가:*\n\`\`\`${envVarName}=${password}\`\`\``,
-        },
-      },
-      {
-        type: "context",
-        elements: [
-          {
-            type: "mrkdwn",
-            text: "⚠️ 이 비밀번호를 환경변수에 추가한 후 배포하세요.",
-          },
-        ],
-      },
-    ],
-  });
-
-  return success ? password : null;
 }

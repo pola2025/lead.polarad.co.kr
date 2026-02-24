@@ -5,7 +5,19 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import FormFieldsEditor from "@/components/FormFieldsEditor";
 import AdLinksManager from "@/components/AdLinksManager";
-import { ArrowLeft, Save, Upload, X, Key, ExternalLink, Copy, Check, Send, Image, Loader2, BarChart3 } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Upload,
+  X,
+  Key,
+  ExternalLink,
+  Copy,
+  Check,
+  Image,
+  Loader2,
+  BarChart3,
+} from "lucide-react";
 import Link from "next/link";
 import type { Client, FormField, ProductFeature, AdLink } from "@/types";
 import { DEFAULT_FORM_FIELDS } from "@/types";
@@ -37,7 +49,12 @@ interface SortableFeatureItemProps {
   onDelete: (index: number) => void;
 }
 
-function SortableFeatureItem({ feature, index, onUpdate, onDelete }: SortableFeatureItemProps) {
+function SortableFeatureItem({
+  feature,
+  index,
+  onUpdate,
+  onDelete,
+}: SortableFeatureItemProps) {
   const {
     attributes,
     listeners,
@@ -118,9 +135,9 @@ export default function EditClientPage({
 
   const [uploading, setUploading] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [sendingPassword, setSendingPassword] = useState(false);
-  const [passwordSent, setPasswordSent] = useState(false);
-  const [formFields, setFormFields] = useState<FormField[]>(DEFAULT_FORM_FIELDS);
+
+  const [formFields, setFormFields] =
+    useState<FormField[]>(DEFAULT_FORM_FIELDS);
   const [productFeatures, setProductFeatures] = useState<ProductFeature[]>([]);
   const [adLinks, setAdLinks] = useState<AdLink[]>([]);
   const [generatingOg, setGeneratingOg] = useState(false);
@@ -132,7 +149,7 @@ export default function EditClientPage({
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // 드래그 종료 핸들러
@@ -213,33 +230,6 @@ export default function EditClientPage({
     }
   };
 
-  const sendPasswordToSlack = async (regenerate: boolean = false) => {
-    setSendingPassword(true);
-    setPasswordSent(false);
-    setError("");
-
-    try {
-      const res = await fetch(`/api/portal/generate-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: formData.slug, regenerate }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setPasswordSent(true);
-        setTimeout(() => setPasswordSent(false), 5000);
-      } else {
-        setError(data.error || "비밀번호 전송에 실패했습니다.");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("비밀번호 전송 중 오류가 발생했습니다.");
-    } finally {
-      setSendingPassword(false);
-    }
-  };
-
   useEffect(() => {
     fetchClient();
   }, [id]);
@@ -314,7 +304,9 @@ export default function EditClientPage({
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -420,7 +412,12 @@ export default function EditClientPage({
       const res = await fetch(`/api/clients/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, formFields, productFeatures, adLinks }),
+        body: JSON.stringify({
+          ...formData,
+          formFields,
+          productFeatures,
+          adLinks,
+        }),
       });
 
       const data = await res.json();
@@ -501,7 +498,9 @@ export default function EditClientPage({
             <span className="break-keep">클라이언트 목록</span>
           </Link>
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">클라이언트 수정</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-keep">
+              클라이언트 수정
+            </h1>
             <Link
               href={`/clients/${id}/stats`}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100 transition-colors"
@@ -515,15 +514,18 @@ export default function EditClientPage({
 
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-
-
           {/* 기본 정보 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">기본 정보</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              기본 정보
+            </h2>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   클라이언트명 *
                 </label>
                 <input
@@ -538,11 +540,16 @@ export default function EditClientPage({
               </div>
 
               <div>
-                <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="slug"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   슬러그 (URL용) *
                 </label>
                 <div className="flex items-center">
-                  <span className="text-sm text-gray-500 mr-2">polarlead.kr/</span>
+                  <span className="text-sm text-gray-500 mr-2">
+                    polarlead.kr/
+                  </span>
                   <input
                     type="text"
                     id="slug"
@@ -557,7 +564,10 @@ export default function EditClientPage({
               </div>
 
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="status"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   상태
                 </label>
                 <select
@@ -577,11 +587,16 @@ export default function EditClientPage({
 
           {/* 랜딩 페이지 설정 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">랜딩 페이지 설정</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              랜딩 페이지 설정
+            </h2>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="landingTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="landingTitle"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   랜딩 페이지 제목
                 </label>
                 <input
@@ -595,7 +610,10 @@ export default function EditClientPage({
               </div>
 
               <div>
-                <label htmlFor="landingDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="landingDescription"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   랜딩 페이지 설명
                 </label>
                 <textarea
@@ -610,7 +628,10 @@ export default function EditClientPage({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="primaryColor"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     브랜드 컬러
                   </label>
                   <div className="flex items-center gap-2">
@@ -626,7 +647,10 @@ export default function EditClientPage({
                       type="text"
                       value={formData.primaryColor}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, primaryColor: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          primaryColor: e.target.value,
+                        }))
                       }
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
@@ -647,7 +671,9 @@ export default function EditClientPage({
                         />
                         <button
                           type="button"
-                          onClick={() => setFormData((prev) => ({ ...prev, logoUrl: "" }))}
+                          onClick={() =>
+                            setFormData((prev) => ({ ...prev, logoUrl: "" }))
+                          }
                           className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
                         >
                           <X className="h-3 w-3" />
@@ -682,7 +708,9 @@ export default function EditClientPage({
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">OG 이미지</h3>
+                    <h3 className="text-sm font-medium text-gray-900">
+                      OG 이미지
+                    </h3>
                     <p className="text-xs text-gray-500 mt-1">
                       소셜 미디어 공유 시 표시되는 이미지입니다.
                     </p>
@@ -705,7 +733,9 @@ export default function EditClientPage({
                       className="w-full max-w-md rounded-lg border border-gray-200 shadow-sm"
                     />
                     <div className="mt-2 flex items-center justify-between max-w-md">
-                      <p className="text-xs text-gray-500 break-all flex-1">{ogImageUrl}</p>
+                      <p className="text-xs text-gray-500 break-all flex-1">
+                        {ogImageUrl}
+                      </p>
                       <button
                         type="button"
                         onClick={deleteOgImage}
@@ -723,9 +753,12 @@ export default function EditClientPage({
 
           {/* 상품 특징/혜택 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">서비스 특징</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              서비스 특징
+            </h2>
             <p className="text-sm text-gray-500 mb-4">
-              랜딩 페이지에 표시될 서비스 특징/혜택을 설정합니다. 드래그하여 순서를 변경할 수 있습니다.
+              랜딩 페이지에 표시될 서비스 특징/혜택을 설정합니다. 드래그하여
+              순서를 변경할 수 있습니다.
             </p>
 
             <div className="space-y-3">
@@ -774,11 +807,16 @@ export default function EditClientPage({
 
           {/* 응답 메시지 커스터마이징 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">응답 메시지 설정</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              응답 메시지 설정
+            </h2>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="ctaButtonText" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="ctaButtonText"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   CTA 버튼 텍스트
                 </label>
                 <input
@@ -793,7 +831,10 @@ export default function EditClientPage({
               </div>
 
               <div>
-                <label htmlFor="thankYouTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="thankYouTitle"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   완료 페이지 제목
                 </label>
                 <input
@@ -808,7 +849,10 @@ export default function EditClientPage({
               </div>
 
               <div>
-                <label htmlFor="thankYouMessage" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="thankYouMessage"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   완료 페이지 메시지
                 </label>
                 <textarea
@@ -826,19 +870,27 @@ export default function EditClientPage({
 
           {/* 폼 필드 설정 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">폼 필드 설정</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              폼 필드 설정
+            </h2>
             <p className="text-sm text-gray-500 mb-4">
-              랜딩 페이지에서 수집할 정보를 설정합니다. 필드를 추가/제거하고 순서를 변경할 수 있습니다.
+              랜딩 페이지에서 수집할 정보를 설정합니다. 필드를 추가/제거하고
+              순서를 변경할 수 있습니다.
             </p>
             <FormFieldsEditor fields={formFields} onChange={setFormFields} />
           </div>
 
           {/* 슬랙 설정 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">슬랙 알림 설정</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              슬랙 알림 설정
+            </h2>
 
             <div>
-              <label htmlFor="slackChannelId" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="slackChannelId"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 슬랙 채널 ID
               </label>
               <input
@@ -858,10 +910,15 @@ export default function EditClientPage({
 
           {/* 텔레그램 설정 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">텔레그램 알림 설정</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              텔레그램 알림 설정
+            </h2>
 
             <div>
-              <label htmlFor="telegramChatId" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="telegramChatId"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 텔레그램 채팅 ID
               </label>
               <input
@@ -876,23 +933,29 @@ export default function EditClientPage({
                 리드 접수 알림이 이 채널로 전송됩니다.
               </p>
             </div>
-
           </div>
 
           {/* Meta 광고 추적 안내 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">📊 Meta 광고 추적 설정</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              📊 Meta 광고 추적 설정
+            </h2>
             <p className="text-sm text-gray-600 mb-4">
-              Meta 광고 관리자에서 URL 매개변수를 설정하면 어떤 광고에서 리드가 발생했는지 추적할 수 있습니다.
+              Meta 광고 관리자에서 URL 매개변수를 설정하면 어떤 광고에서 리드가
+              발생했는지 추적할 수 있습니다.
             </p>
 
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">URL 매개변수 (복사해서 사용)</span>
+                <span className="text-sm font-medium text-gray-700">
+                  URL 매개변수 (복사해서 사용)
+                </span>
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard.writeText("utm_source=meta&utm_ad={{ad.name}}");
+                    navigator.clipboard.writeText(
+                      "utm_source=meta&utm_ad={{ad.name}}",
+                    );
                     alert("복사되었습니다!");
                   }}
                   className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
@@ -905,7 +968,8 @@ export default function EditClientPage({
                 utm_source=meta&utm_ad={"{{ad.name}}"}
               </code>
               <p className="mt-2 text-xs text-gray-500">
-                Meta 광고 관리자 → 광고 수정 → 추적 → URL 매개변수에 붙여넣으세요.
+                Meta 광고 관리자 → 광고 수정 → 추적 → URL 매개변수에
+                붙여넣으세요.
               </p>
             </div>
           </div>
@@ -913,6 +977,7 @@ export default function EditClientPage({
           {/* 광고 추적 링크 */}
           <div className="card">
             <AdLinksManager
+              clientId={id}
               clientSlug={formData.slug}
               adLinks={adLinks}
               onUpdate={setAdLinks}
@@ -921,15 +986,21 @@ export default function EditClientPage({
 
           {/* NCP SENS 설정 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">NCP SENS 설정</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              NCP SENS 설정
+            </h2>
             <p className="text-sm text-gray-500 mb-4">
-              SMS 발송을 위한 NCP SENS API 설정입니다. 설정하지 않으면 기본 계정으로 발송됩니다.
+              SMS 발송을 위한 NCP SENS API 설정입니다. 설정하지 않으면 기본
+              계정으로 발송됩니다.
             </p>
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="ncpAccessKey" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="ncpAccessKey"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Access Key
                   </label>
                   <input
@@ -943,7 +1014,10 @@ export default function EditClientPage({
                   />
                 </div>
                 <div>
-                  <label htmlFor="ncpSecretKey" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="ncpSecretKey"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Secret Key
                   </label>
                   <input
@@ -960,7 +1034,10 @@ export default function EditClientPage({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="ncpServiceId" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="ncpServiceId"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Service ID
                   </label>
                   <input
@@ -974,7 +1051,10 @@ export default function EditClientPage({
                   />
                 </div>
                 <div>
-                  <label htmlFor="ncpSenderPhone" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="ncpSenderPhone"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     발신번호
                   </label>
                   <input
@@ -990,7 +1070,8 @@ export default function EditClientPage({
               </div>
 
               <p className="text-xs text-gray-500">
-                NCP 콘솔 → Simple & Easy Notification Service → Project에서 확인할 수 있습니다.
+                NCP 콘솔 → Simple & Easy Notification Service → Project에서
+                확인할 수 있습니다.
               </p>
             </div>
           </div>
@@ -1039,7 +1120,9 @@ export default function EditClientPage({
                       onChange={handleChange}
                       className="w-4 h-4 text-primary-600 focus:ring-primary-500"
                     />
-                    <span className="text-sm text-gray-700">연중무휴 (휴무없음)</span>
+                    <span className="text-sm text-gray-700">
+                      연중무휴 (휴무없음)
+                    </span>
                   </label>
                 </div>
               </div>
@@ -1109,7 +1192,8 @@ export default function EditClientPage({
               </span>
             </h2>
             <p className="text-sm text-gray-500 mb-4">
-              랜딩페이지 하단에 표시될 사업자 정보입니다. 비워두면 폴라애드 정보가 표시됩니다.
+              랜딩페이지 하단에 표시될 사업자 정보입니다. 비워두면 폴라애드
+              정보가 표시됩니다.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1212,7 +1296,9 @@ export default function EditClientPage({
 
           {/* 고객 SMS/이메일 알림 설정 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">고객 SMS/이메일 알림</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              고객 SMS/이메일 알림
+            </h2>
             <p className="text-sm text-gray-500 mb-4">
               리드 접수 시 고객에게 자동으로 SMS 또는 이메일을 발송합니다.
             </p>
@@ -1222,15 +1308,22 @@ export default function EditClientPage({
               <div className="border-b border-gray-200 pb-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">SMS 알림</h3>
-                    <p className="text-xs text-gray-500">리드 접수 시 고객에게 확인 SMS 발송</p>
+                    <h3 className="text-sm font-medium text-gray-900">
+                      SMS 알림
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      리드 접수 시 고객에게 확인 SMS 발송
+                    </p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.smsEnabled || false}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, smsEnabled: e.target.checked }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          smsEnabled: e.target.checked,
+                        }))
                       }
                       className="sr-only peer"
                     />
@@ -1242,7 +1335,10 @@ export default function EditClientPage({
                   <div className="grid grid-cols-2 gap-4">
                     {/* 왼쪽: 메시지 작성 */}
                     <div>
-                      <label htmlFor="smsTemplate" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="smsTemplate"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         SMS 템플릿
                       </label>
                       <textarea
@@ -1266,10 +1362,19 @@ export default function EditClientPage({
                       <div className="bg-gray-900 rounded-2xl p-4 h-[140px] flex items-center justify-center">
                         <div className="bg-gray-100 rounded-lg p-3 max-w-[200px] shadow-sm">
                           <p className="text-xs text-gray-800 whitespace-pre-wrap">
-                            {(formData.smsTemplate || `[${formData.name}] {name}님, 상담 신청이 접수되었습니다. 빠른 시일 내에 연락드리겠습니다. 감사합니다.`)
-                              .replace(/\{name\}/g, '홍길동')
-                              .replace(/\{clientName\}/g, formData.name || '업체명')
-                              .replace(/\{date\}/g, new Date().toLocaleDateString('ko-KR'))}
+                            {(
+                              formData.smsTemplate ||
+                              `[${formData.name}] {name}님, 상담 신청이 접수되었습니다. 빠른 시일 내에 연락드리겠습니다. 감사합니다.`
+                            )
+                              .replace(/\{name\}/g, "홍길동")
+                              .replace(
+                                /\{clientName\}/g,
+                                formData.name || "업체명",
+                              )
+                              .replace(
+                                /\{date\}/g,
+                                new Date().toLocaleDateString("ko-KR"),
+                              )}
                           </p>
                         </div>
                       </div>
@@ -1282,15 +1387,22 @@ export default function EditClientPage({
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">이메일 알림</h3>
-                    <p className="text-xs text-gray-500">리드 접수 시 고객에게 확인 이메일 발송</p>
+                    <h3 className="text-sm font-medium text-gray-900">
+                      이메일 알림
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      리드 접수 시 고객에게 확인 이메일 발송
+                    </p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.emailEnabled || false}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, emailEnabled: e.target.checked }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          emailEnabled: e.target.checked,
+                        }))
                       }
                       className="sr-only peer"
                     />
@@ -1302,7 +1414,9 @@ export default function EditClientPage({
                   <div className="rounded-xl border border-gray-200 overflow-hidden">
                     {/* 이메일 미리보기 헤더 */}
                     <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-                      <span className="text-xs text-gray-500">이메일 미리보기</span>
+                      <span className="text-xs text-gray-500">
+                        이메일 미리보기
+                      </span>
                       <a
                         href="/email-preview.html"
                         target="_blank"
@@ -1319,33 +1433,55 @@ export default function EditClientPage({
                         {/* 상단 로고 영역 */}
                         <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
                           {formData.logoUrl ? (
-                            <img src={formData.logoUrl} alt="로고" className="h-6 object-contain" />
+                            <img
+                              src={formData.logoUrl}
+                              alt="로고"
+                              className="h-6 object-contain"
+                            />
                           ) : (
-                            <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-400">로고</div>
+                            <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-400">
+                              로고
+                            </div>
                           )}
-                          <span className="text-xs text-gray-600 font-medium">{formData.landingTitle || formData.name}</span>
+                          <span className="text-xs text-gray-600 font-medium">
+                            {formData.landingTitle || formData.name}
+                          </span>
                         </div>
                         {/* 헤더 */}
                         <div
                           className="p-4 text-center"
-                          style={{ background: `linear-gradient(135deg, ${formData.primaryColor} 0%, ${formData.primaryColor}dd 100%)` }}
+                          style={{
+                            background: `linear-gradient(135deg, ${formData.primaryColor} 0%, ${formData.primaryColor}dd 100%)`,
+                          }}
                         >
                           <div className="w-8 h-8 bg-white/20 rounded-full mx-auto flex items-center justify-center mb-2">
                             <span className="text-white text-lg">✓</span>
                           </div>
-                          <p className="text-white font-semibold text-sm">접수 완료</p>
+                          <p className="text-white font-semibold text-sm">
+                            접수 완료
+                          </p>
                         </div>
                         {/* 본문 */}
                         <div className="p-4">
-                          <p className="text-gray-800 text-sm font-medium mb-2">안녕하세요, 홍길동님!</p>
+                          <p className="text-gray-800 text-sm font-medium mb-2">
+                            안녕하세요, 홍길동님!
+                          </p>
                           <p className="text-gray-600 text-xs mb-3">
-                            상담 신청이 정상적으로 접수되었습니다.<br />
+                            상담 신청이 정상적으로 접수되었습니다.
+                            <br />
                             빠른 시일 내에 담당자가 연락드리겠습니다.
                           </p>
                           <div className="bg-gray-50 rounded p-2 text-xs">
-                            <p className="text-gray-500 mb-1" style={{ color: formData.primaryColor }}>접수 내용</p>
+                            <p
+                              className="text-gray-500 mb-1"
+                              style={{ color: formData.primaryColor }}
+                            >
+                              접수 내용
+                            </p>
                             <p className="text-gray-700">이름: 홍길동</p>
-                            <p className="text-gray-700">연락처: 010-6624-6615</p>
+                            <p className="text-gray-700">
+                              연락처: 010-6624-6615
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -1358,11 +1494,16 @@ export default function EditClientPage({
 
           {/* 계약 정보 */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">계약 정보</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              계약 정보
+            </h2>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="contractStart" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="contractStart"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   계약 시작일
                 </label>
                 <input
@@ -1376,7 +1517,10 @@ export default function EditClientPage({
               </div>
 
               <div>
-                <label htmlFor="contractEnd" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="contractEnd"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   계약 종료일
                 </label>
                 <input
@@ -1413,15 +1557,20 @@ export default function EditClientPage({
                   <input
                     type="text"
                     readOnly
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/portal/${formData.slug}/login`}
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/portal/${formData.slug}/login`}
                     className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm"
                   />
                   <button
                     type="button"
-                    onClick={() => copyToClipboard(`${window.location.origin}/portal/${formData.slug}/login`, 'url')}
+                    onClick={() =>
+                      copyToClipboard(
+                        `${window.location.origin}/portal/${formData.slug}/login`,
+                        "url",
+                      )
+                    }
                     className="rounded-lg border border-gray-300 p-2 hover:bg-gray-50 transition-colors"
                   >
-                    {copiedField === 'url' ? (
+                    {copiedField === "url" ? (
                       <Check className="h-4 w-4 text-green-500" />
                     ) : (
                       <Copy className="h-4 w-4 text-gray-500" />
@@ -1436,61 +1585,6 @@ export default function EditClientPage({
                     <ExternalLink className="h-4 w-4 text-gray-500" />
                   </a>
                 </div>
-              </div>
-
-              {/* 비밀번호 생성 및 슬랙 전송 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  포털 비밀번호
-                </label>
-                <div className="flex items-center gap-2">
-                  <span className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm text-gray-500">
-                    Airtable에 저장됨 (비밀번호 전송 클릭 시 슬랙으로 전송)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => sendPasswordToSlack(false)}
-                    disabled={sendingPassword}
-                    className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
-                      passwordSent
-                        ? 'bg-green-600 text-white'
-                        : 'bg-primary-600 text-white hover:bg-primary-700'
-                    }`}
-                  >
-                    {passwordSent ? (
-                      <>
-                        <Check className="h-4 w-4" />
-                        전송 완료
-                      </>
-                    ) : sendingPassword ? (
-                      <>
-                        <Send className="h-4 w-4 animate-pulse" />
-                        전송 중...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        비밀번호 전송
-                      </>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (confirm("새 비밀번호를 발급하시겠습니까? 기존 비밀번호는 사용할 수 없게 됩니다.")) {
-                        sendPasswordToSlack(true);
-                      }
-                    }}
-                    disabled={sendingPassword}
-                    className="inline-flex items-center gap-2 rounded-lg border border-orange-300 px-4 py-2 text-sm font-medium text-orange-600 hover:bg-orange-50 transition-colors disabled:opacity-50"
-                  >
-                    <Key className="h-4 w-4" />
-                    재발급
-                  </button>
-                </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  비밀번호가 없으면 새로 생성됩니다. 재발급 시 기존 비밀번호는 무효화됩니다.
-                </p>
               </div>
             </div>
           </div>

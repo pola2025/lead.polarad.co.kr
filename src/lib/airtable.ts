@@ -357,8 +357,6 @@ function parseClientRecord(record: Airtable.Record<Airtable.FieldSet>): Client {
     operatingEndTime: record.get("operatingEndTime") as string | undefined,
     // OG 이미지 URL
     ogImageUrl: record.get("ogImageUrl") as string | undefined,
-    // 포털 비밀번호
-    portalPassword: record.get("portalPassword") as string | undefined,
     // 푸터 사업자 정보
     footerCompanyName: record.get("footerCompanyName") as string | undefined,
     footerCeo: record.get("footerCeo") as string | undefined,
@@ -531,10 +529,6 @@ export async function updateClient(
   // OG 이미지 URL
   if (data.ogImageUrl !== undefined)
     updateData.ogImageUrl = data.ogImageUrl || null;
-
-  // 포털 비밀번호
-  if (data.portalPassword !== undefined)
-    updateData.portalPassword = data.portalPassword || null;
 
   // 푸터 사업자 정보
   if (data.footerCompanyName !== undefined)
